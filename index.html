@@ -2,8 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>AX FESTIVAL 2026 — ME to WE</title>
+<!-- 홈 화면에 추가 = 아이콘 한 번으로 실행 (설치·스토어 없음) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#131519">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="AX FESTIVAL">
 <style>
   /* ═══════ AX FESTIVAL 그래픽 시스템 v4 (Planfit 다크 × SK 민트) ═══════
      다크 차콜 배경 + 명도 계층 서피스(그림자·보더 최소) / 민트 = 행동·진행에만 / 탭 활성 = 화이트 */
@@ -670,6 +678,34 @@ function bePush(kind, val, once) {
 }
 /* 이 기기를 기억 — 두 번째 접속부터는 사번·이름을 다시 묻지 않고 PIN만 받는다.
  * (참여 기록은 서버에 있으므로 여기 남기는 건 "누구인지"뿐) */
+/* ── 홈 화면에 추가 안내 — QR을 매번 찍지 않고 아이콘으로 여는 법 ── */
+function isStandalone() {
+  try {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  } catch (e) { return false; }
+}
+function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
+function a2hsDismissed() {
+  try { return window.localStorage.getItem("axf_a2hs") === "1"; } catch (e) { return false; }
+}
+function a2hsDismiss() {
+  try { window.localStorage.setItem("axf_a2hs", "1"); } catch (e) {}
+  App.render();
+}
+function a2hsCard() {
+  if (isStandalone() || a2hsDismissed()) return "";
+  var how = isIOS()
+    ? '<b>공유 버튼 <span style="font-family:var(--disp)">↑</span> → &ldquo;홈 화면에 추가&rdquo;</b>'
+    : '<b>오른쪽 위 <span style="font-family:var(--disp)">⋮</span> → &ldquo;홈 화면에 추가&rdquo;</b>';
+  return '<div class="card mb12" style="border-color:var(--tint2);background:var(--tint)">' +
+    '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px">' +
+    '<div><b style="font-size:14px;color:var(--mint)">홈 화면에 추가하면 더 편해요</b>' +
+    '<p style="margin-top:5px;font-size:12.5px;line-height:1.65;color:var(--hi)">' + how +
+    '<br><span style="color:var(--muted)">다음부터 QR 없이 아이콘 한 번으로 열립니다.</span></p></div>' +
+    '<button class="chip" style="flex:none;background:transparent;border-color:var(--tint2);color:var(--muted)" onclick="a2hsDismiss()">닫기</button>' +
+    "</div></div>";
+}
+
 var LS_KNOWN = "axf_known";
 function knownGet() {
   try { return JSON.parse(window.localStorage.getItem(LS_KNOWN) || "null"); } catch (e) { return null; }
@@ -1531,6 +1567,7 @@ var Views = {
       '<span class="geo"><span class="disc"></span><span class="tri"></span><span class="tri"></span></span></div>' +
       "</div>" +
       '<p style="font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:10px">' + esc(u.name || "") + "님, 지금 함께하고 있어요</p>" +
+      a2hsCard() +
       '<div class="row mb12" style="gap:8px">' +
       '<div class="kpi hot" style="flex:1"><div class="v">' + c.online.toLocaleString() + '</div><div class="l">함께하는 사람</div></div>' +
       '<div class="kpi" style="flex:1"><div class="v">' + c.ideas.toLocaleString() + '</div><div class="l">모인 아이디어</div></div>' +
