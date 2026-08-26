@@ -221,7 +221,7 @@
   .timer.hot { background: #ff5a4e; color: #fff; }
   /* LED 전광판 공지 띠 — 검정 바탕에 민트 글자가 흐른다 */
   #ledbar { display: none; background: #000; overflow: hidden; white-space: nowrap; padding: 8px 0; border-top: 1px solid rgba(95,235,169,0.25); border-bottom: 1px solid rgba(95,235,169,0.25); }
-  #ledbar .led-track { display: inline-block; padding-left: 100%; animation: ledflow 16s linear infinite; font-family: var(--disp); color: var(--mint); font-size: 15px; letter-spacing: 0.08em; will-change: transform; }
+  #ledbar .led-track { display: inline-block; padding-left: 100%; animation: ledflow 32s linear infinite; font-family: var(--disp); color: var(--mint); font-size: 15px; letter-spacing: 0.08em; will-change: transform; }
   @keyframes ledflow { from { transform: translateX(0); } to { transform: translateX(-100%); } }
   .wall { background: var(--ink); border-radius: 10px; padding: 16px; color: #fff; margin-bottom: 14px; }
   .wall .dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-top: 12px; }
@@ -472,6 +472,11 @@
   /* ── TV 전체화면 모드 (가로 대형 화면 — 프레임 448px 해제, 좌 월 / 우 정보) ── */
   #frame.tv-mode { max-width: none; width: 100vw; height: 100dvh; min-height: 0; overflow: hidden; box-shadow: none; background: #05070B; }
   #frame.tv-mode #view { padding: 0; }
+  /* 범용 송출 전체 화면 — 가로(tv-h)/세로(tv-v) */
+  #frame.tv-full { max-width: none; width: 100vw; min-height: 100dvh; box-shadow: none; background: var(--ink); }
+  #frame.tv-full #view { margin: 0 auto; }
+  #frame.tv-full.tv-h #view { max-width: 1500px; zoom: 1.3; }
+  #frame.tv-full.tv-v #view { max-width: 700px; zoom: 1.12; }
   .tv { position: relative; width: 100vw; height: 100dvh; display: grid; grid-template-columns: 1fr 27vw; gap: 0; background: #05070B; color: #fff; }
   .tv .tv-stage { position: relative; margin: 0; border: 0; border-radius: 0; height: 100dvh; min-height: 0; }
   .tv .tv-side { display: flex; flex-direction: column; justify-content: center; gap: 2.2vh; padding: 4vh 3vw; background: rgba(5,7,11,0.82); border-left: 1px solid rgba(255,255,255,0.1); }
@@ -585,6 +590,7 @@
       <div id="fsOpts"></div>
       <p class="fs-lb">운영</p>
       <button class="fs-admin" onclick="fsSheet(false); App.go('admin')">관리자 모드<span>&rsaquo;</span></button>
+      <button class="fs-admin" onclick="axfLogout()">로그아웃 — 다른 사번으로 입장<span>&rsaquo;</span></button>
       <button class="fs-close" onclick="fsSheet(false)">닫기</button>
     </div>
   </div>
@@ -916,6 +922,12 @@ function knownSet(o) {
 function knownClear() {
   try { window.localStorage.removeItem(LS_KNOWN); } catch (e) {}
 }
+function axfLogout() {
+  try { localStorage.removeItem("axf_user"); localStorage.removeItem("axf_admin_authed"); } catch (e) {}
+  delete MEM.user; delete MEM.admin_authed;
+  knownClear();
+  location.href = location.pathname;
+}
 
 function beStats() {
   if (!BE.on) return;
@@ -973,16 +985,30 @@ function fsSheet(on) {
 fsApply(fsGet());   /* 스플래시·로그인 화면부터 바로 적용 */
 
 var MEM = {};
+/* v19: 영속 저장 — 새로고침·재접속해도 로그인·스탬프가 유지된다 (프라이빗 모드 등은 메모리 폴백) */
+var LS_OK = (function () { try { localStorage.setItem("axf_t", "1"); localStorage.removeItem("axf_t"); return true; } catch (e) { return false; } })();
 var S = {
   get: function (k, fb) {
-    if (MEM[k] !== undefined) return JSON.parse(MEM[k]);
+    var raw = MEM[k];
+    if (raw === undefined && LS_OK) { try { var lv = localStorage.getItem("axf_" + k); if (lv != null) raw = lv; } catch (e) {} }
+    if (raw !== undefined) { try { return JSON.parse(raw); } catch (e) {} }
     return fb === undefined ? fb : JSON.parse(JSON.stringify(fb));
   },
   set: function (k, v) {
-    MEM[k] = JSON.stringify(v);
+    var j = JSON.stringify(v);
+    MEM[k] = j;
+    if (LS_OK) { try { localStorage.setItem("axf_" + k, j); } catch (e) {} }
     window.dispatchEvent(new CustomEvent("axf-store", { detail: k }));
   }
 };
+/* 다른 탭의 변경(관리자 승인 등)을 실시간 수신 */
+if (LS_OK) window.addEventListener("storage", function (e) {
+  if (e.key && e.key.indexOf("axf_") === 0) {
+    var k = e.key.slice(4);
+    if (e.newValue == null) delete MEM[k]; else MEM[k] = e.newValue;
+    window.dispatchEvent(new CustomEvent("axf-store", { detail: k }));
+  }
+});
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 function fmtTime(ts) { return new Date(ts).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }); }
@@ -1835,10 +1861,47 @@ document.addEventListener("keydown", function (e) {
 /* 브라우저 전체화면만 해제된 경우(F11·Esc) 뷰도 함께 복귀 — 화면 크기 변화 재계산 포함 */
 document.addEventListener("fullscreenchange", function () {
   if (!document.fullscreenElement && App.current === "wall_tv") App.go(TV_BACK || "wall_metowe");
+  if (!document.fullscreenElement && TVF.on) tvFullExit();
 });
 window.addEventListener("resize", function () {
-  if (App.current === "wall_tv" && el("mtCv")) mtEnsure();
+  if ((App.current === "wall_tv" || TVF.on) && el("mtCv")) mtEnsure();
 });
+/* ── 범용 송출 전체 화면 (v19) — 모든 사이니지 뷰를 가로/세로로 확대 ── */
+var TVF = { on: false, orient: null };
+function applyTvFull() {
+  var f = el("frame");
+  f.classList.toggle("tv-full", TVF.on);
+  f.classList.toggle("tv-h", TVF.on && TVF.orient === "h");
+  f.classList.toggle("tv-v", TVF.on && TVF.orient === "v");
+}
+function tvFull(orient) {
+  if (!S.get("admin_authed", false)) { toast("운영자 전용 화면입니다."); return; }
+  TVF.on = true; TVF.orient = orient;
+  var el0 = document.documentElement;
+  var req = el0.requestFullscreen || el0.webkitRequestFullscreen || el0.msRequestFullscreen;
+  if (req) { try { var fp = req.call(el0); if (fp && fp.catch) fp.catch(function () {}); } catch (e) {} }
+  applyTvFull();
+  App.render();
+  if (el("mtCv")) setTimeout(mtEnsure, 80);
+}
+function tvFullExit() {
+  TVF.on = false; TVF.orient = null;
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    var ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (ex) { try { ex.call(document); } catch (e) {} }
+  }
+  applyTvFull();
+  App.render();
+  if (el("mtCv")) setTimeout(mtEnsure, 80);
+}
+function tvBtns(only) {
+  var st = "background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap";
+  if (TVF.on) return '<button class="chip" style="background:var(--mint);color:var(--ink);border-color:var(--mint);white-space:nowrap" onclick="tvFullExit()">송출 종료 (Esc)</button>';
+  var h = '<button class="chip" style="' + st + '" onclick="tvFull(\'h\')">전체화면 가로</button>';
+  var v = '<button class="chip" style="' + st + '" onclick="tvFull(\'v\')">전체화면 세로</button>';
+  return only === "v" ? v : only === "h" ? h : h + v;
+}
+
 function mtDemoPaint() {
   var row = el("mtDemoRow");
   if (!row) return;
@@ -1935,6 +1998,7 @@ var App = {
     this.current = v;
     el("frame").classList.toggle("screen-mode", SIGNAGE.indexOf(v) >= 0);
     el("frame").classList.toggle("tv-mode", v === "wall_tv");   /* TV 전체화면 = 448px 프레임 해제 */
+    if (TVF.on && SIGNAGE.indexOf(v) < 0) { TVF.on = false; TVF.orient = null; applyTvFull(); }
     this.render();
     el("view").scrollTop = 0;
     window.scrollTo(0, 0);
@@ -1997,6 +2061,27 @@ window.addEventListener("axf-store", function () {
   updateLed();
   if (["game_word", "game_cho", "wall_wave", "wall_metowe"].indexOf(App.current) >= 0) return;
   App.render();
+});
+
+/* ── 뒤로가기 = 앱 안에서 위로 (v19) — 실수로 앱을 이탈하지 않게 히스토리 트랩 ── */
+var NAV = { lastBack: 0 };
+function navRepush() { try { history.pushState({ axf: 1 }, ""); } catch (e) {} }
+try { history.replaceState({ axf: 0 }, ""); navRepush(); } catch (e) {}
+window.addEventListener("popstate", function () {
+  var app = el("app");
+  if (!app || app.hidden) { navRepush(); return; }                       /* 입장 전 화면은 그대로 유지 */
+  if (el("modal")) { if (typeof qrScanClose === "function" && el("qrVideo")) qrScanClose(); else modalClose(); navRepush(); return; }
+  var fss = el("fsSheet"); if (fss && !fss.hidden) { fsSheet(false); navRepush(); return; }
+  if (App.current === "wall_tv") { tvClose(); navRepush(); return; }
+  if (TVF.on) { tvFullExit(); navRepush(); return; }
+  var p = App.PARENT[App.current];
+  if (!p && App.current !== "home") p = "home";
+  if (p) { App.go(p); navRepush(); return; }
+  var now = Date.now();
+  if (now - NAV.lastBack < 2000) { try { history.back(); } catch (e) {} return; }   /* 2초 안에 한 번 더 = 실제 종료 */
+  NAV.lastBack = now;
+  toast("한 번 더 뒤로 가면 앱을 나갑니다");
+  navRepush();
 });
 
 /* ── 라이브 퀴즈 ── */
@@ -2626,7 +2711,7 @@ var Views = {
     var rows = deptStats();
     return '<div class="sg"><div class="row" style="justify-content:space-between;padding-top:8px">' +
       '<div><p class="sg-title">SPECIAL WALL <span style="color:var(--mint)">LIVE</span></p><p class="sg-sub">부문별 평균 정답률 · 참여 현황</p></div>' +
-      '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3)" onclick="App.go(\'admin\')">← 콘솔</button></div>' +
+      '<div class="row" style="gap:6px">' + tvBtns() + '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap" onclick="App.go(\'admin\')">← 콘솔</button></div></div>' +
       rows.map(function (r, i) {
         return '<div class="dbar' + (i < 3 ? " t" + (i + 1) : "") + '"><div class="nm"><b><span class="rk">' + (i + 1) + "</span>" + esc(r.d) + '</b><span class="pct">' + r.avg + '<span style="font-size:calc(14.5px * var(--fs))">점</span></span></div>' +
           '<div class="track"><div class="fill2" style="width:' + r.avg + '%"></div></div>' +
@@ -2644,7 +2729,7 @@ var Views = {
     }).join("");
     return '<div class="sg"><div class="row" style="justify-content:space-between;padding-top:8px">' +
       '<div><p class="sg-title">AX <span style="color:#F5C97B">WAVE</span></p><p class="sg-sub">DAP 참여자들에게 보내는 무언의 박수 — 기둥 스크린</p></div>' +
-      '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3)" onclick="App.go(\'admin\')">← 콘솔</button></div>' +
+      '<div class="row" style="gap:6px">' + tvBtns() + '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap" onclick="App.go(\'admin\')">← 콘솔</button></div></div>' +
       '<div class="wave-stage" id="waveStage" style="margin-top:12px">' +
       '<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 100 100" preserveAspectRatio="none">' + lines + "</svg>" + dots +
       '<div class="wave-msg" id="waveMsg">' + esc(WAVE_MSGS[0]).split("\n").join("<br>") + "</div>" +
@@ -2661,7 +2746,7 @@ var Views = {
     var finishers = FESTIVAL.mockFinishers + (S.get("raffle_entered", false) ? 1 : 0) + Math.floor(tick / 9);
     return '<div class="sg"><div class="row" style="justify-content:space-between;padding-top:8px">' +
       '<div><p class="sg-title">AX FESTIVAL <span style="color:var(--mint)">LIVE</span></p><p class="sg-sub">1F 이벤트존 라이브 보드 — 세로 55&quot; 2대</p></div>' +
-      '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3)" onclick="App.go(\'admin\')">← 콘솔</button></div>' +
+      '<div class="row" style="gap:6px">' + tvBtns() + '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap" onclick="App.go(\'admin\')">← 콘솔</button></div></div>' +
       '<div style="margin-top:12px;height:150px;border-radius:16px;overflow:hidden;background:#001F5B;position:relative">' +
       (vsrc ? '<video autoplay muted loop playsinline src="' + vsrc + '" style="width:100%;height:100%;object-fit:cover;opacity:0.85"></video>' : "") +
       '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><b class="disp" style="font-size:24px;color:#fff;letter-spacing:0.06em;text-shadow:0 2px 14px rgba(0,0,0,0.5)">AX : ME to <span style="color:#FF9E1B">WE</span></b></div></div>' +
@@ -2682,7 +2767,7 @@ var Views = {
     return '<div class="sg"><div class="row" style="justify-content:space-between;padding-top:8px">' +
       '<div><p class="sg-title">ME to <span style="color:var(--mint)">WE</span> LIVE WALL</p><p class="sg-sub">유효 참여 1건 = 점 1개 · 2,026개 = WE 완성</p></div>' +
       '<div class="row" style="gap:6px">' +
-      '<button class="chip" style="background:var(--mint);color:var(--ink);border-color:var(--mint);white-space:nowrap" onclick="tvOpen()">전체 화면</button>' +
+      '<button class="chip" style="background:var(--mint);color:var(--ink);border-color:var(--mint);white-space:nowrap" onclick="tvOpen()">전체화면 가로</button>' + tvBtns("v") +
       '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap" onclick="App.go(\'admin\')">← 콘솔</button></div></div>' +
       '<div class="mt-stage" id="mtStage"><canvas id="mtCv"></canvas><div class="mt-flash" id="mtFlash"></div></div>' +
       '<div class="mt-count"><span class="disp" id="mtN">' + n.toLocaleString() + '</span><span class="tot">/ ' + MT_TOTAL.toLocaleString() + '</span><span class="pct" id="mtPct"></span></div>' +
@@ -2705,7 +2790,7 @@ var Views = {
     }).join("");
     return '<div class="sg"><div class="row" style="justify-content:space-between;padding-top:8px">' +
       '<div><p class="sg-title">AX PROMPT <span style="color:var(--mint)">CHAMPIONSHIP</span></p><p class="sg-sub">10F 챔피언십 현장 점수 — 실시간 리더보드</p></div>' +
-      '<div class="row" style="gap:6px"><span style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--mint)"><span style="width:9px;height:9px;border-radius:99px;background:#ff5a4e;animation:pulse 1.2s infinite"></span>LIVE</span>' +
+      '<div class="row" style="gap:6px"><span style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--mint)"><span style="width:9px;height:9px;border-radius:99px;background:#ff5a4e;animation:pulse 1.2s infinite"></span>LIVE</span>' + tvBtns() +
       '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap" onclick="App.go(\'admin\')">← 콘솔</button></div></div>' +
       rows +
       '<p style="text-align:center;font-size:calc(13px * var(--fs));opacity:0.5;margin-top:16px">운영진 실시간 갱신 · 30~60초 지연 집계 · 상위 3인 시상은 17:00 Outro</p></div>';
@@ -2753,7 +2838,7 @@ var Views = {
     var c = counters();
     var h = '<div class="screen-wrap"><div class="row" style="justify-content:space-between;padding-top:8px">' +
       '<b class="disp" style="font-size:24px;letter-spacing:0.03em">AX FESTIVAL <span style="color:var(--mint)">2026</span></b>' +
-      '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3)" onclick="App.go(\'admin\')">← 콘솔</button></div>' +
+      '<div class="row" style="gap:6px">' + tvBtns() + '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap" onclick="App.go(\'admin\')">← 콘솔</button></div></div>' +
       '<p style="font-size:calc(12.5px * var(--fs));font-weight:700;letter-spacing:0.12em;opacity:0.6;margin-top:2px">ME to WE — 나의 업무 혁신, 우리 회사의 AX</p>' +
       '<div class="counters">' +
       [["함께하는 사람", c.online], ["모인 아이디어", c.ideas], ["퀴즈 참여", c.quiz], ["마음펀드 나눔", c.heart]].map(function (x) {
@@ -2970,6 +3055,7 @@ function notifAsk() {
 function notifyUser(title, body, target) {
   try { if (navigator.vibrate) navigator.vibrate([80, 40, 80]); } catch (e) {}
   if (notifOK()) { try { new Notification(title, { body: body }); } catch (e) {} }
+  if (el("modal")) { toast(title); return; }        /* 팝업 위에 팝업 금지 — 뒤 알림은 토스트로 */
   if (App.current === "game_word" || App.current === "game_cho") { toast(title); return; }
   var askBtn = (!notifOK() && ("Notification" in window) && Notification.permission !== "denied")
     ? '<button class="btn line" style="margin-top:8px" onclick="notifAsk()">브라우저 알림 켜기</button>' : "";
@@ -2997,7 +3083,7 @@ function checkMyState() {
     notifyUser("커피챗 매칭 완료", "18F 라운지 · " + hhmm(c.round) + " · TABLE " + c.table, "ev_cchat");
   }
   var qs = S.get("quiz_state", INITIAL_QUIZ_STATE);
-  if (qs.phase === "open" && qs.activeId && seen.quiz !== qs.activeId + ":open") {
+  if (qs.phase === "open" && qs.activeId && seen.quiz !== qs.activeId + ":open" && Date.now() - (qs.openedAt || 0) < 600000) {
     seen.quiz = qs.activeId + ":open"; changed = true;
     var qz2 = QUIZZES.find(function (q) { return q.id === qs.activeId; });
     notifyUser("라이브 퀴즈 시작", (qz2 ? qz2.part + " — " : "") + "마감 전까지 홈에서 답할 수 있습니다.", "home");
@@ -3597,6 +3683,7 @@ function gcEnd() {
   // 데모/캡처 훅: #demo=화면명 으로 열면 로그인·데이터 세팅 후 해당 화면으로 바로 진입 (스크린샷·시연용)
   var dm = location.hash.match(/^#demo(?:=(\w+))?/i);
   if (dm) {
+    LS_OK = false;   /* 데모 시드가 실사용 저장소를 오염시키지 않게 */
     S.set("user", { empId: "1234", name: "김하이" });
     S.set("stamps", ["p1", "p4", "p5"]);
     S.set("coffee_issued", true);
@@ -3617,6 +3704,12 @@ function gcEnd() {
   }
 
   /* ── 재방문: 이 기기를 기억하고 있으면 영상 스플래시를 건너뛰고 PIN만 받는다 ── */
+  /* v19: 이 기기에서 입장한 적 있으면 스플래시·PIN 없이 바로 재입장 (로그아웃은 설정에서) */
+  var savedU = S.get("user", {});
+  if (savedU && savedU.empId) {
+    enterApp();
+    return;
+  }
   var known = BE.on ? knownGet() : null;
   function quickLogin() {
     var pin = el("quickPin").value.trim();
