@@ -219,6 +219,10 @@
   .quiz-wait { border: 1.5px dashed #3A3F46; border-radius: 18px; padding: 16px; text-align: center; background: var(--white); margin-bottom: 14px; }
   .timer { border-radius: 3px; background: var(--mint); color: var(--ink); padding: 4px 10px; font-size: calc(13.5px * var(--fs)); font-weight: 800; }
   .timer.hot { background: #ff5a4e; color: #fff; }
+  /* LED 전광판 공지 띠 — 검정 바탕에 민트 글자가 흐른다 */
+  #ledbar { display: none; background: #000; overflow: hidden; white-space: nowrap; padding: 8px 0; border-top: 1px solid rgba(95,235,169,0.25); border-bottom: 1px solid rgba(95,235,169,0.25); }
+  #ledbar .led-track { display: inline-block; padding-left: 100%; animation: ledflow 16s linear infinite; font-family: var(--disp); color: var(--mint); font-size: 15px; letter-spacing: 0.08em; will-change: transform; }
+  @keyframes ledflow { from { transform: translateX(0); } to { transform: translateX(-100%); } }
   .wall { background: var(--ink); border-radius: 10px; padding: 16px; color: #fff; margin-bottom: 14px; }
   .wall .dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-top: 12px; }
   .wall .dots span { aspect-ratio: 1; background: rgba(255,255,255,0.12); }
@@ -524,11 +528,6 @@
     <button id="skip" aria-label="인트로 건너뛰기">건너뛰기 →</button>
     <div id="panel">
       <div class="inner">
-        <div style="text-align:center;margin-bottom:10px;">
-          <span style="font-size:calc(12.5px * var(--fs));font-weight:700;color:#fdba74;background:rgba(255,158,27,0.12);border-radius:999px;padding:5px 12px;display:inline-block;">
-            TEST — 사번·이름은 아무 값이나 입력해도 돼요
-          </span>
-        </div>
         <p class="tagline">AX : <span class="me">ME</span> to <span class="we">WE</span></p>
         <p class="sub">나의 업무 혁신, 우리 회사의 AX가 되다</p>
         <form id="entryForm" novalidate>
@@ -538,7 +537,7 @@
           <p class="note" id="pinNote" style="text-align:left;margin:-4px 2px 0">※ 행사 전용 숫자 4자리입니다 — 사내 비밀번호는 사용하지 마세요</p>
           <p id="err"></p>
           <button type="submit">페스티벌 입장</button>
-          <p class="note">관리자·현장 QR 코드는 모두 <b>1111</b>이에요 · 입력 정보는 기기에 저장되지 않습니다</p>
+          <p class="note">입력 정보는 기기에 저장되지 않습니다</p>
         </form>
       </div>
     </div>
@@ -548,7 +547,7 @@
   <section id="quick" hidden>
     <div class="q-card">
       <p class="q-eyebrow">AX FESTIVAL 2026</p>
-      <p class="q-hello">다시 오셨네요</p>
+      <p class="q-hello">환영합니다</p>
       <p class="q-who"><b id="qName"></b><span id="qEmp"></span></p>
       <input id="quickPin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN 4자리" autocomplete="off">
       <p id="qErr"></p>
@@ -560,6 +559,7 @@
   <!-- ═══════ 앱 셸 ═══════ -->
   <div id="app" hidden>
     <header id="topbar"></header>
+    <div id="ledbar"><span class="led-track" id="ledTrack"></span></div>
     <div id="view"></div>
     <nav id="tabbar"></nav>
   </div>
@@ -768,7 +768,7 @@ function beCall(params, done, fail) {
   q.push("callback=" + cb);
   var sc = document.createElement("script"), settled = false;
   var cleanup = function () {
-    try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+    window[cb] = function () {};        /* 타임아웃 뒤 늦게 도착한 JSONP 응답이 에러 내지 않게 no-op으로 */
     if (sc.parentNode) sc.parentNode.removeChild(sc);
   };
   var timer = setTimeout(function () {
@@ -1135,10 +1135,16 @@ function resvAct(id, act) {
   if (act === "approve") { r.status = "approved"; toast("승인 완료 — 신청자 앱으로 알림이 갑니다."); }
   if (act === "checkin") r.status = "checked";
   if (act === "noshow") { r.status = "noshow"; toast("노쇼 처리 — 슬롯이 재오픈됐습니다 (대기자 알림 발송)"); }
+  if (act === "cancel") { r.status = "canceled"; toast("취소 완료 — 신청자 앱으로 알림이 가고, 슬롯이 재오픈됐습니다."); }
   S.set("resv", all);
-  if (BE.on && r.beId) {
-    var m = { approve: "승인", checkin: "체크인", noshow: "노쇼" };
-    if (m[act]) beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: r.beId, status: m[act] });
+  if (BE.on) {
+    var m = { approve: "승인", checkin: "체크인", noshow: "노쇼", cancel: "취소" };
+    if (r.beId) { if (m[act]) beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: r.beId, status: m[act] }); }
+    else if (act === "cancel" && r.mine) {
+      /* beId 저장 전에 취소된 경우 — 사번 기준으로 서버 신청을 취소 (부활 방지) */
+      var u2 = S.get("user", {});
+      if (u2.empId) beCall({ action: "resv_cancel", emp: u2.empId });
+    }
   }
 }
 function resvDoneOpen(id) {
@@ -1963,11 +1969,32 @@ var App = {
       return '<button class="' + (activeTab === t[0] ? "on" : "") + '" onclick="App.go(\'' + t[0] + '\')"><span class="ico">' + icons[t[0]] + "</span>" + t[1] + "</button>";
     }).join("");
     el("view").innerHTML = Views[v]();
+    updateLed();
     if (el("mtCv")) setTimeout(mtEnsure, 30); else if (MT.raf) mtStop();
   }
 };
+/* LED 공지 띠 — 최신 공지(30분 이내)를 전광판처럼 흘린다. 같은 공지면 애니메이션 유지 */
+var LED_TTL = 30 * 60000;
+function updateLed() {
+  var bar = el("ledbar"), tr = el("ledTrack");
+  if (!bar || !tr) return;
+  if (SIGNAGE.indexOf(App.current) >= 0 || App.current === "game_word" || App.current === "game_cho") { bar.style.display = "none"; return; }
+  var ns = S.get("notices", []);
+  var latest = null;
+  for (var i = 0; i < ns.length; i++) {
+    if (ns[i] && ns[i].ts > 0 && Date.now() - ns[i].ts < LED_TTL) { latest = ns[i]; break; }
+  }
+  if (!latest) { bar.style.display = "none"; tr.dataset.nid = ""; return; }
+  bar.style.display = "block";
+  if (tr.dataset.nid !== latest.id) {
+    tr.dataset.nid = latest.id;
+    tr.textContent = "\u25cf " + latest.title + " — " + latest.body + "   \u25cf " + latest.title + " — " + latest.body;
+  }
+}
+setInterval(updateLed, 30000);
 window.addEventListener("axf-store", function () {
   checkMyState();
+  updateLed();
   if (["game_word", "game_cho", "wall_wave", "wall_metowe"].indexOf(App.current) >= 0) return;
   App.render();
 });
@@ -1987,11 +2014,11 @@ function quizCardHtml() {
   }
   var answers = S.get("quiz_answers", {});
   var my = answers[quiz.id];
-  var remaining = Math.max(0, QUIZ_SECONDS - Math.floor((Date.now() - st.openedAt) / 1000));
-  var expired = st.phase !== "open" || remaining <= 0;
+  /* 일몰 없음(260826) — 관리자가 콘솔에서 마감할 때까지 응답 가능 */
+  var expired = st.phase !== "open";
   var h = '<div class="quiz-card"><div class="row" style="justify-content:space-between">' +
     '<span class="live-tag"><span class="dot-red"></span>LIVE QUIZ · ' + esc(quiz.part) + "</span>" +
-    (st.phase === "open" ? '<span class="timer' + (remaining <= 5 ? " hot" : "") + '">' + remaining + "초</span>" : "") +
+    (st.phase === "open" ? '<span class="timer">응답 접수 중</span>' : "") +
     '</div><p class="q">' + esc(quiz.question) + "</p>";
   if (st.phase === "open" && !expired && !my) {
     h += quiz.options.map(function (o, i) {
@@ -2227,7 +2254,7 @@ var Views = {
       '<div onclick="App.go(\'pp_reward\')"><p class="v">' + (issued && !used ? 1 : 0) + '<small>장</small></p><p class="l">커피 나눔권</p></div>' +
       "</div>" +
       '<div class="menu">' +
-      menuItem("pp_code", "01", "스탬프 적립하기", "8개 경로 안내 · 현장 QR 코드 입력", "") +
+      menuItem("pp_code", "01", "스탬프 적립하기", "QR 스캔 · 코드 입력 · 8개 경로 안내", "") +
       menuItem("pp_reward", "02", "나의 보상", "커피 나눔권 · 완주 스페셜권", rewardBadge) +
       menuItem("entries", "03", "즉석경품 응모권", en ? "1F 이벤트존 가챠에서 사용" : "QR 퀴즈 통과 시 발급", en ? '<span class="badge mint">' + en + "장</span>" : "") +
       menuItem("ideas_mine", "04", "내가 낸 아이디어", mineN ? mineN + "건 제출" : "아직 없음", "") +
@@ -2237,7 +2264,8 @@ var Views = {
 
   pp_code: function () {
     var st = S.get("stamps", []);
-    return '<div class="card soft mb8"><p class="muted" style="font-size:calc(14px * var(--fs))">8개 경로 중 <b style="color:var(--hi)">5개</b> 적립 = 완주 · 대형경품 자동 응모</p></div>' + STAMPS.map(function (s) {
+    return (qrScanSupported() ? '<button class="btn mint mb8" style="padding:14px" onclick="qrScanOpen()">카메라로 QR 스캔</button>' : "") +
+      '<div class="card soft mb8"><p class="muted" style="font-size:calc(14px * var(--fs))">8개 경로 중 <b style="color:var(--hi)">5개</b> 적립 = 완주 · 대형경품 자동 응모</p></div>' + STAMPS.map(function (s) {
         var got = st.indexOf(s.id) >= 0;
         return '<div class="card soft mb8" style="display:flex;align-items:center;gap:12px;padding:12px 14px">' +
           '<span class="disp" style="font-size:calc(18px * var(--fs));color:' + (got ? "var(--mint-deep)" : "var(--faint)") + '">' + s.no + "</span>" +
@@ -2245,7 +2273,7 @@ var Views = {
           (got ? '<span class="badge ink">적립 ✔</span>' : '<span class="badge gray">' + s.how + "</span>") + "</div>";
       }).join("") +
       '<div class="card mt16"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">QR을 못 찍었다면 코드로 입력</b>' +
-      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">현장 스탬프(01·02·03·06)는 부스 QR 아래 코드로도 적립됩니다. 테스트 코드 <b>1111</b> — 반복 입력하면 순서대로 적립돼요.</p>' +
+      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">현장 스탬프(01·02·03·06)는 부스 QR 아래 코드로도 적립됩니다.</p>' +
       '<div class="row" style="margin-top:10px"><input id="stampCode" class="input" placeholder="예: 1111" style="text-transform:uppercase">' +
       '<button class="btn mint" style="width:auto;padding:12px 18px" onclick="tryStampCode()">적립</button></div></div>';
   },
@@ -2461,7 +2489,8 @@ var Views = {
       return '<button class="slot' + (off ? " off" : DAPSEL === s ? " on" : "") + '"' + (off ? "" : ' onclick="dapPick(\'' + s + '\')"') + ">" + s + "</button>";
     };
     return '' +
-      (my && my.status === "noshow" ? '<div class="card soft mb12"><p style="font-size:calc(14px * var(--fs));color:#FF6B61;font-weight:700">이전 예약이 노쇼 처리됐어요 — 아래에서 다시 신청할 수 있습니다.</p></div>' : "") +
+      (my && my.status === "noshow" ? '<div class="card soft mb12"><p style="font-size:calc(14px * var(--fs));color:#FF6B61;font-weight:700">이전 예약이 노쇼 처리됐어요 — 아래에서 다시 신청할 수 있습니다.</p></div>' :
+       my && my.status === "canceled" ? '<div class="card soft mb12"><p style="font-size:calc(14px * var(--fs));color:#FF6B61;font-weight:700">이전 신청이 취소되었습니다 — 아래에서 다시 신청할 수 있습니다.</p></div>' : "") +
       hero('<p style="margin-top:10px;font-size:calc(19px * var(--fs));font-weight:800;line-height:1.45">내 업무에 AI를 어떻게 적용할지,<br><span style="color:var(--mint)">30분 1:1 과제상담</span></p>' +
         '<p class="muted" style="margin-top:6px;font-size:calc(14px * var(--fs))">데이터사이언스파트(DAP)와 마주 앉아 업무 설명 → 병목 → 개선방안까지. 상담을 완료하면 사은품을 드려요.</p>') +
       '<p class="sub-label" style="margin-top:18px">상담 시간 선택 <span style="font-weight:700;color:var(--faint)">(30분 단위 · 점심시간 제외)</span></p>' +
@@ -2488,7 +2517,7 @@ var Views = {
       '<p style="margin-top:8px;font-size:calc(14.5px * var(--fs));line-height:1.8;color:var(--tx)">STEP 1 · 부서 키트 + 질문 셋 수령 (1분)<br>STEP 2 · 업로드 → 질의응답 → 초안 생성 (5분)<br>STEP 3 · 2027 로드맵 확인 + Passport 발급</p>' +
       '<p style="margin-top:6px;font-size:calc(13px * var(--fs));color:var(--faint)">&ldquo;초안까지는 AI, 판단은 담당자&rdquo; · 세션 종료 시 자료 삭제</p></div>' +
       '<div class="card mb12" style="border-color:var(--mint-deep)"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">체험 완료 스탬프 (PASSPORT 02)</b>' +
-      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">체험을 마치면 스태프가 완료 QR을 보여드려요 — 스캔하면 적립. (테스트 코드 1111)</p>' +
+      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">체험을 마치면 스태프가 완료 QR을 보여드려요 — 스캔하면 적립됩니다.</p>' +
       '<button class="btn' + (got2 ? " gray" : " mint") + '" style="margin-top:10px" onclick="boothStamp()">' + (got2 ? "적립 완료 ✔" : "완료 QR 스캔 (시연)") + "</button></div>" +
       '<div class="card mb12"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">30초 피드백</b><p class="muted" style="margin-top:3px;font-size:calc(13.5px * var(--fs))">2문항 — 서비스 개선 우선순위에 바로 반영돼요.' + (fb.length ? " (제출 " + fb.length + "건)" : "") + "</p>" +
       '<div class="row" style="flex-wrap:wrap;margin-top:10px">' + ["최고예요", "좋아요", "보통", "아쉬워요"].map(function (t, i) {
@@ -2709,7 +2738,7 @@ var Views = {
         '<span class="disp" style="font-size:30px;color:var(--hi)">CC</span><p class="muted" style="font-size:calc(15.5px * var(--fs))">커맨드센터 운영자 코드를 입력하세요</p>' +
         '<input id="adminCode" class="input" inputmode="numeric" placeholder="운영자 코드" style="max-width:280px;text-align:center">' +
         '<button class="btn" style="max-width:280px" onclick="tryAdmin()">확인</button>' +
-        '<p style="font-size:calc(12.5px * var(--fs));color:var(--faint)">프로토타입 코드: ' + FESTIVAL.adminCode + "</p></div>";
+        "</div>";
     }
     var tab = S.get("admin_tab", "quiz");
     var seg = [["quiz", "퀴즈"], ["resv", "상담"], ["wq", "QR퀴즈"], ["notice", "공지"], ["ideas", "아이디어"], ["cchat", "커피챗"], ["dash", "현황"]].map(function (t) {
@@ -2761,12 +2790,12 @@ var AdminTabs = {
     var all = resvAll();
     var slots = resvSlots();
     var used2 = all.filter(function (r) { return r.room === 2 && RESV_HOLD.indexOf(r.status) >= 0; }).length;
-    var chip = { requested: '<span class="badge blue">신청</span>', booked: '<span class="badge blue">신청</span>', approved: '<span class="badge mint">승인</span>', checked: '<span class="badge mint">체크인</span>', done: '<span class="badge ink">완료</span>', noshow: '<span class="badge gray">노쇼</span>' };
+    var chip = { requested: '<span class="badge blue">신청</span>', booked: '<span class="badge blue">신청</span>', approved: '<span class="badge mint">승인</span>', checked: '<span class="badge mint">체크인</span>', done: '<span class="badge ink">완료</span>', noshow: '<span class="badge gray">노쇼</span>', canceled: '<span class="badge gray">취소</span>' };
     var row = function (r) {
       var act = (r.status === "requested" || r.status === "booked") ?
-        '<div class="row" style="margin-top:8px"><button class="btn mint" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'approve\')">승인</button><button class="btn gray" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'noshow\')">거절</button></div>' :
+        '<div class="row" style="margin-top:8px"><button class="btn mint" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'approve\')">승인</button><button class="btn gray" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'cancel\')">취소</button></div>' :
         r.status === "approved" ?
-        '<div class="row" style="margin-top:8px"><button class="btn" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'checkin\')">체크인</button><button class="btn gray" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'noshow\')">노쇼 (10분 경과)</button></div>' :
+        '<div class="row" style="margin-top:8px"><button class="btn" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'checkin\')">체크인</button><button class="btn gray" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'noshow\')">노쇼</button><button class="btn gray" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'cancel\')">취소</button></div>' :
         r.status === "checked" ?
         '<button class="btn mint" style="margin-top:8px;padding:10px" onclick="resvDoneOpen(\'' + r.id + '\')">상담록 작성 + 완료</button>' :
         r.status === "done" && r.gift ? '<p style="margin-top:6px;font-size:calc(12.5px * var(--fs));color:var(--mint);font-weight:700">사은품 지급 완료' + (r.log ? " · 상담록 저장됨 (과제화 " + esc(r.log.grade || "-") + ")" : "") + "</p>" :
@@ -2855,6 +2884,11 @@ var AdminTabs = {
       '<input id="ntTitle" class="input" placeholder="제목" style="margin-top:10px">' +
       '<textarea id="ntBody" class="input" rows="2" placeholder="내용" style="margin-top:8px;resize:none"></textarea>' +
       '<button class="btn" style="margin-top:10px" onclick="sendNotice()">전체 발송</button></div>' +
+      '<div class="card mb12"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">교육 종료 — 혼잡 안내 원터치</b>' +
+      '<p class="muted" style="margin-top:3px;font-size:calc(13px * var(--fs))">누르면 「○○ 교육 종료 — 엘리베이터 혼잡 안내」가 전 참여자 LED 띠·실시간 안내로 나갑니다.</p>' +
+      '<div class="grid2" style="margin-top:10px">' + SESSION_LIST.map(function (nm, i) {
+        return '<button class="btn" onclick="endSession(' + i + ')">' + nm + " 종료</button>";
+      }).join("") + "</div></div>" +
       '<p class="sub-label">사전 작성 템플릿 — 탭하면 바로 발송</p>' +
       NOTICE_TEMPLATES.map(function (t, i) {
         return '<div class="card soft mb8" style="cursor:pointer" onclick="sendTemplate(' + i + ')"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">' + esc(t[0]) + '</b><p class="muted" style="margin-top:2px;font-size:calc(14px * var(--fs))">' + esc(t[1]) + "</p></div>";
@@ -2953,6 +2987,10 @@ function checkMyState() {
     seen.resv = my.id + ":approved"; changed = true;
     notifyUser("과제상담 승인 완료", "1F Meeting Room 2", "dap");
   }
+  if (my && my.status === "canceled" && seen.resvX !== my.id + ":canceled") {
+    seen.resvX = my.id + ":canceled"; changed = true;
+    notifyUser("과제상담 신청 취소", "신청이 취소되었습니다 — 다른 시간으로 다시 신청할 수 있습니다.", "dap");
+  }
   var c = S.get("cchat", null);
   if (c && c.status === "matched" && seen.cchat !== "m:" + c.round + c.table) {
     seen.cchat = "m:" + c.round + c.table; changed = true;
@@ -2961,7 +2999,8 @@ function checkMyState() {
   var qs = S.get("quiz_state", INITIAL_QUIZ_STATE);
   if (qs.phase === "open" && qs.activeId && seen.quiz !== qs.activeId + ":open") {
     seen.quiz = qs.activeId + ":open"; changed = true;
-    if (App.current !== "home" && App.current !== "screen") notifyUser("라이브 퀴즈 시작", "지금 홈 화면에서 " + QUIZ_SECONDS + "초 안에 답할 수 있습니다.", "home");
+    var qz2 = QUIZZES.find(function (q) { return q.id === qs.activeId; });
+    notifyUser("라이브 퀴즈 시작", (qz2 ? qz2.part + " — " : "") + "마감 전까지 홈에서 답할 수 있습니다.", "home");
   }
   if (changed) S.set("noti_seen", seen);
 }
@@ -2986,11 +3025,18 @@ function beSync() {
         }
       }
     }
+    if (res.notice && res.notice.id) {
+      var nz = S.get("notices", []);
+      if (!nz.some(function (x) { return x.id === res.notice.id; })) {
+        nz.unshift({ id: res.notice.id, title: res.notice.title || "", body: res.notice.body || "", ts: res.notice.ts || Date.now() });
+        S.set("notices", nz);
+      }
+    }
     if (res.my) {
+      var all = resvAll();
       if (res.my.resv) {
-        var map = { "신청": "requested", "승인": "approved", "체크인": "checked", "완료": "done", "노쇼": "noshow" };
+        var map = { "신청": "requested", "승인": "approved", "체크인": "checked", "완료": "done", "노쇼": "noshow", "취소": "canceled" };
         var stt = map[res.my.resv.status];
-        var all = resvAll();
         var mine = all.find(function (r) { return r.mine && (r.beId === res.my.resv.id); });
         if (!mine && stt && RESV_LIVE.indexOf(stt) >= 0) {
           all.push({ id: uid(), beId: res.my.resv.id, room: 2, slot: hhmm(res.my.resv.slot), name: u.name || "", dept: S.get("dept", null) || "미지정", status: stt, mine: true, ts: Date.now() });
@@ -2998,6 +3044,14 @@ function beSync() {
         } else if (mine && stt && mine.status !== stt) {
           mine.status = stt; S.set("resv", all);
         }
+      } else {
+        /* 서버에 내 신청이 없다(=시트에서 취소·삭제됨) — 진행 중이던 로컬 신청을 취소로 */
+        var mine2 = all.find(function (r) { return r.mine && r.beId && RESV_LIVE.indexOf(r.status) >= 0; });
+        if (mine2 && Date.now() - mine2.ts > 30000) { mine2.status = "canceled"; S.set("resv", all); }
+      }
+      if (!res.my.cchat) {
+        var c0 = S.get("cchat", null);
+        if (c0 && Date.now() - (c0.ts || 0) > 30000) S.set("cchat", null);
       }
       if (res.my.cchat && res.my.cchat.status === "매칭") {
         var c = S.get("cchat", null);
@@ -3040,8 +3094,8 @@ function beResvPanel() {
   else if (!rows.length) h += '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">아직 서버에 신청이 없습니다.</p>';
   else h += rows.map(function (r) {
     var b = "";
-    if (r.status === "신청") b = '<button class="btn mint" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'승인\')">승인</button><button class="btn gray" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'노쇼\')">거절</button>';
-    else if (r.status === "승인") b = '<button class="btn" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'체크인\')">체크인</button><button class="btn gray" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'노쇼\')">노쇼</button>';
+    if (r.status === "신청") b = '<button class="btn mint" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'승인\')">승인</button><button class="btn gray" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'취소\')">취소</button>';
+    else if (r.status === "승인") b = '<button class="btn" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'체크인\')">체크인</button><button class="btn gray" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'노쇼\')">노쇼</button><button class="btn gray" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'취소\')">취소</button>';
     else if (r.status === "체크인") b = '<button class="btn mint" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'완료\')">상담 완료</button>';
     return '<div class="card soft" style="margin-top:8px;padding:11px 13px"><div class="row" style="justify-content:space-between">' +
       '<b class="disp" style="font-size:calc(15.5px * var(--fs));color:var(--hi)">' + esc(r.slot) + "</b>" +
@@ -3123,14 +3177,60 @@ function specialHtml() {
 }
 
 /* ════════════════ 액션 ════════════════ */
-function tryStampCode() {
-  var v = (el("stampCode").value || "").trim().toUpperCase();
+function stampByCode(v) {
+  v = String(v || "").trim().toUpperCase();
   var matches = STAMPS.filter(function (x) { return x.code === v; });
-  if (!matches.length) { toast("코드를 찾을 수 없어요. QR 아래 코드를 다시 확인해주세요."); return; }
+  if (!matches.length) { toast("코드를 찾을 수 없어요. QR 아래 코드를 다시 확인해주세요."); return false; }
   var got = S.get("stamps", []);
   var s = matches.find(function (x) { return got.indexOf(x.id) < 0; });
-  if (!s) { toast("이 코드로 받을 수 있는 스탬프는 모두 적립했어요."); return; }
+  if (!s) { toast("이 코드로 받을 수 있는 스탬프는 모두 적립했어요."); return false; }
   awardStamp(s.id);
+  return true;
+}
+function tryStampCode() { stampByCode(el("stampCode").value); }
+/* ── 인앱 QR 스캔 — BarcodeDetector(안드로이드 크롬). 미지원 기기는 기본 카메라로 QR을 찍는 기존 경로 ── */
+var QRS = { stream: null, timer: null, det: null };
+function qrScanSupported() { return "BarcodeDetector" in window && navigator.mediaDevices && navigator.mediaDevices.getUserMedia; }
+function qrScanOpen() {
+  if (!qrScanSupported()) { toast("이 브라우저는 인앱 스캔을 지원하지 않습니다 — 폰 기본 카메라로 QR을 찍어주세요."); return; }
+  modalOpen('<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">QR 스캔</b>' +
+    '<div style="margin-top:10px;border-radius:12px;overflow:hidden;background:#000"><video id="qrVideo" playsinline muted style="width:100%;max-height:56vh;display:block"></video></div>' +
+    '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">부스·전시의 QR을 화면 가운데에 맞춰주세요</p>' +
+    '<button class="btn line" style="margin-top:10px" onclick="qrScanClose()">닫기</button>');
+  try { QRS.det = new BarcodeDetector({ formats: ["qr_code"] }); } catch (e) { QRS.det = null; }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function (stream) {
+    QRS.stream = stream;
+    var v = el("qrVideo");
+    if (!v) { qrScanClose(); return; }
+    v.srcObject = stream;
+    var pp = v.play(); if (pp && pp.catch) pp.catch(function () {});
+    QRS.timer = setInterval(qrScanTick, 300);
+  }).catch(function () {
+    qrScanClose();
+    toast("카메라를 열 수 없습니다 — 브라우저의 카메라 권한을 확인해주세요.");
+  });
+}
+function qrScanTick() {
+  var v = el("qrVideo");
+  if (!v) { qrScanClose(); return; }          /* 모달이 다른 경로로 닫힌 경우 카메라 정리 */
+  if (!QRS.det || v.readyState < 2) return;
+  QRS.det.detect(v).then(function (codes) {
+    if (!codes || !codes.length) return;
+    var raw = String(codes[0].rawValue || "");
+    qrScanClose();
+    qrHandle(raw);
+  }).catch(function () {});
+}
+function qrScanClose() {
+  if (QRS.timer) { clearInterval(QRS.timer); QRS.timer = null; }
+  if (QRS.stream) { try { QRS.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} QRS.stream = null; }
+  if (el("qrVideo")) modalClose();
+}
+function qrHandle(raw) {
+  var m = raw.match(/#s=([A-Za-z0-9]+)/i);
+  if (m) { stampByCode(m[1]); return; }
+  if (/^[A-Za-z0-9]{3,12}$/.test(raw.trim())) { stampByCode(raw.trim()); return; }
+  toast("행사용 QR이 아닙니다 — 부스·전시의 QR을 스캔해주세요.");
 }
 var pickedTag = IDEA_TAGS[IDEA_TAGS.length - 1];
 function pickTag(btn) {
@@ -3161,16 +3261,38 @@ function setQuiz(phase) {
   S.set("quiz_state", st);
   if (BE.on) beCall({ action: "quiz_set", key: FESTIVAL.adminCode, id: st.activeId || "", phase: phase });
 }
+function adminNotice(title, body) {
+  var localId = uid();
+  var n = S.get("notices", []);
+  n.unshift({ id: localId, title: title, body: body, ts: Date.now() });
+  S.set("notices", n);
+  var seen = S.get("noti_seen", {}); seen.notice = localId; S.set("noti_seen", seen);   /* 발송자 기기엔 팝업 없음 */
+  if (BE.on) beCall({ action: "notice_set", key: FESTIVAL.adminCode, title: title, body: body }, function (res) {
+    if (res && res.ok && res.notice) {
+      var n2 = S.get("notices", []);
+      var it = n2.find(function (x) { return x.id === localId; });
+      if (it) { it.id = res.notice.id; S.set("notices", n2); }
+      var sn = S.get("noti_seen", {}); sn.notice = res.notice.id; S.set("noti_seen", sn);
+    }
+  });
+}
 function sendNotice() {
   var t = (el("ntTitle").value || "").trim();
   var b = (el("ntBody").value || "").trim();
   if (!t) { toast("제목을 입력해주세요."); return; }
-  var n = S.get("notices", []); n.unshift({ id: uid(), title: t, body: b, ts: Date.now() }); S.set("notices", n);
-  toast("발송 완료 — 실시간 안내에 게시됐습니다.");
+  adminNotice(t, b);
+  toast(BE.on ? "발송 완료 — 전 참여자 앱에 10초 안에 전달됩니다." : "발송 완료 — 실시간 안내에 게시됐습니다.");
 }
 function sendTemplate(i) {
-  var n = S.get("notices", []); n.unshift({ id: uid(), title: NOTICE_TEMPLATES[i][0], body: NOTICE_TEMPLATES[i][1], ts: Date.now() }); S.set("notices", n);
+  adminNotice(NOTICE_TEMPLATES[i][0], NOTICE_TEMPLATES[i][1]);
   toast("템플릿 발송 완료");
+}
+/* 교육 종료 원터치 — 혼잡 안내가 LED 띠·실시간 안내로 나간다 */
+var SESSION_LIST = ["17F Keynote", "17F 강연 1", "17F 강연 2", "10F 본사 프로그램", "10F 현장 프로그램", "10F 파트너사 교육"];
+function endSession(i) {
+  var name = SESSION_LIST[i];
+  adminNotice("엘리베이터 혼잡 안내", name + " 교육이 방금 종료되었습니다. 엘리베이터가 혼잡할 수 있으니 양해 바랍니다.");
+  toast("종료 안내 발송 — " + name);
 }
 function delNotice(id) { S.set("notices", S.get("notices", []).filter(function (n) { return n.id !== id; })); }
 function toggleIdea(id) { S.set("ideas", S.get("ideas", []).map(function (i) { return i.id === id ? Object.assign({}, i, { hidden: !i.hidden }) : i; })); }
