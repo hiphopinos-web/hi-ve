@@ -2921,6 +2921,11 @@ var AdminTabs = {
 /* ════════════════ v17 — 알림·승인·매칭·발사 (폴링 기반) ════════════════
  * 진짜 OS 푸시(앱을 닫은 상태)는 GAS 스택으론 불가 — 앱이 열려 있는 기기에
  * BE_POLL_MS 주기 sync 폴링으로 전달하고, 팝업 + (허용 시) 브라우저 알림을 띄운다. */
+/* 시트 자동 형변환으로 "Sat Dec 30 1899 14:00:00..." 이 와도 HH:MM만 추린다 */
+function hhmm(v) {
+  var m = String(v == null ? "" : v).match(/(\d{1,2}):(\d{2})/);
+  return m ? m[1] + ":" + m[2] : String(v == null ? "" : v);
+}
 function notifOK() { return ("Notification" in window) && Notification.permission === "granted"; }
 function notifAsk() {
   if (!("Notification" in window)) { toast("이 브라우저는 알림을 지원하지 않습니다."); return; }
@@ -2946,12 +2951,12 @@ function checkMyState() {
   var my = myResv();
   if (my && my.status === "approved" && seen.resv !== my.id + ":approved") {
     seen.resv = my.id + ":approved"; changed = true;
-    notifyUser("과제상담 승인 완료", my.slot + " · 1F Meeting Room 2 — 시작 5분 전까지 와주세요.", "dap");
+    notifyUser("과제상담 승인 완료", "1F Meeting Room 2", "dap");
   }
   var c = S.get("cchat", null);
   if (c && c.status === "matched" && seen.cchat !== "m:" + c.round + c.table) {
     seen.cchat = "m:" + c.round + c.table; changed = true;
-    notifyUser("커피챗 매칭 완료", c.round + " · TABLE " + c.table + " · 18F 라운지", "ev_cchat");
+    notifyUser("커피챗 매칭 완료", "18F 라운지 · " + hhmm(c.round) + " · TABLE " + c.table, "ev_cchat");
   }
   var qs = S.get("quiz_state", INITIAL_QUIZ_STATE);
   if (qs.phase === "open" && qs.activeId && seen.quiz !== qs.activeId + ":open") {
@@ -2988,7 +2993,7 @@ function beSync() {
         var all = resvAll();
         var mine = all.find(function (r) { return r.mine && (r.beId === res.my.resv.id); });
         if (!mine && stt && RESV_LIVE.indexOf(stt) >= 0) {
-          all.push({ id: uid(), beId: res.my.resv.id, room: 2, slot: res.my.resv.slot, name: u.name || "", dept: S.get("dept", null) || "미지정", status: stt, mine: true, ts: Date.now() });
+          all.push({ id: uid(), beId: res.my.resv.id, room: 2, slot: hhmm(res.my.resv.slot), name: u.name || "", dept: S.get("dept", null) || "미지정", status: stt, mine: true, ts: Date.now() });
           S.set("resv", all);
         } else if (mine && stt && mine.status !== stt) {
           mine.status = stt; S.set("resv", all);
@@ -2996,7 +3001,7 @@ function beSync() {
       }
       if (res.my.cchat && res.my.cchat.status === "매칭") {
         var c = S.get("cchat", null);
-        if (!c || c.status !== "matched") S.set("cchat", { status: "matched", round: res.my.cchat.round, table: String(res.my.cchat.table || ""), ts: Date.now() });
+        if (!c || c.status !== "matched") S.set("cchat", { status: "matched", round: hhmm(res.my.cchat.round), table: String(res.my.cchat.table || ""), ts: Date.now() });
       }
     }
     if (el("mtCv")) mtSync();
