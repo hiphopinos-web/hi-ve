@@ -755,7 +755,7 @@ var MOCK_FEED = [
  * URL을 넣는 순간 로그인·참여기록·월 집계가 서버로 연결된다.
  * 정적 호스팅(GitHub Pages)에서 CORS 제약 없이 통신하기 위해 JSONP(script 태그) 방식 사용. */
 var GAS_URL = "https://script.google.com/macros/s/AKfycbwjCaSSUnQ7W1lrM8T426Cn_LgKs_UhI0Qi5XRVk-_eF-oD55-Wwjsot0DkPJCX9JqMBA/exec";
-var BE_POLL_MS = 15000;        /* 월 집계 새로고침 주기 */
+var BE_POLL_MS = 10000;        /* sync 폴링 주기 — 월 집계 + 퀴즈 발사 + 내 상태(승인·매칭) */
 var BE = { on: false, stats: null, seq: 0 };
 
 function beCall(params, done, fail) {
@@ -1038,6 +1038,13 @@ function redeemCoffee() {
 function scheduleCoffeechat() {
   if (S.get("cchat", null)) return;
   S.set("cchat", { status: "pending", ts: Date.now() });
+  var u = S.get("user", {});
+  if (BE.on && u.empId) {
+    var ideas = S.get("ideas", []);
+    var last = ideas.length ? ideas[ideas.length - 1] : {};
+    beCall({ action: "cchat_req", emp: u.empId, name: u.name || "", dept: S.get("dept", null) || "", tag: last.tag || "" });
+    return;   /* 매칭은 운영자가 콘솔에서 — 완료되면 sync 폴링이 팝업을 띄운다 */
+  }
   setTimeout(function () {
     var c = S.get("cchat", null);
     if (c && c.status === "pending") matchCoffeechat();
@@ -1073,8 +1080,11 @@ function resvSlots() {
   return out;
 }
 function resvAll() { return S.get("resv", MOCK_RESV); }
+/* v17: 승인 플로우 — requested(신청) → approved(승인) → checked(체크인) → done. booked는 구버전 호환 */
+var RESV_LIVE = ["requested", "booked", "approved", "checked"];
+var RESV_HOLD = ["requested", "booked", "approved", "checked", "done"];
 function resvTaken(slot) {
-  return resvAll().some(function (r) { return r.room === 2 && r.slot === slot && ["booked", "checked", "done"].indexOf(r.status) >= 0; });
+  return resvAll().some(function (r) { return r.room === 2 && r.slot === slot && RESV_HOLD.indexOf(r.status) >= 0; });
 }
 function resvRemain() {
   var n = 0;
@@ -1090,27 +1100,46 @@ function dapPick(t) { if (resvTaken(t)) return; DAPSEL = DAPSEL === t ? null : t
 function bookResv() {
   if (!DAPSEL) { toast("상담 시간을 먼저 선택해주세요."); return; }
   var my = myResv();
-  if (my && ["booked", "checked"].indexOf(my.status) >= 0) { toast("이미 신청한 상담이 있어요 — 취소 후 다시 신청할 수 있습니다."); return; }
+  if (my && RESV_LIVE.indexOf(my.status) >= 0) { toast("이미 신청한 상담이 있어요 — 취소 후 다시 신청할 수 있습니다."); return; }
   if (resvTaken(DAPSEL)) { toast("방금 마감된 시간이에요. 다른 시간을 선택해주세요."); DAPSEL = null; App.render(); return; }
   var u = S.get("user", {});
   var all = resvAll();
-  all.push({ id: uid(), room: 2, slot: DAPSEL, name: u.name || "", dept: S.get("dept", null) || "미지정", status: "booked", mine: true, ts: Date.now() });
+  var rid = uid();
+  all.push({ id: rid, room: 2, slot: DAPSEL, name: u.name || "", dept: S.get("dept", null) || "미지정", status: "requested", mine: true, ts: Date.now() });
   var slot = DAPSEL; DAPSEL = null;
   S.set("resv", all);
   waveBump();
-  toast("상담 신청 완료 — " + slot + " · Meeting Room 2. 시작 5분 전에 알려드릴게요.");
+  if (BE.on && u.empId) {
+    beCall({ action: "resv_book", emp: u.empId, name: u.name || "", dept: S.get("dept", null) || "", slot: slot }, function (res) {
+      if (res && res.ok) {
+        var a2 = resvAll(), r2 = a2.find(function (x) { return x.id === rid; });
+        if (r2) { r2.beId = res.id; S.set("resv", a2); }
+      } else if (res && (res.reason === "taken" || res.reason === "dup")) {
+        S.set("resv", resvAll().filter(function (x) { return x.id !== rid; }));
+        toast(res.reason === "taken" ? "방금 다른 분이 먼저 신청한 시간입니다 — 다른 시간을 선택해주세요." : "이미 진행 중인 신청이 서버에 있습니다.");
+      }
+    });
+  }
+  toast("상담 신청 완료 — " + slot + " · Meeting Room 2. 운영자 승인 후 앱으로 알려드립니다.");
 }
 function cancelResv() {
-  S.set("resv", resvAll().filter(function (r) { return !(r.mine && ["booked", "checked"].indexOf(r.status) >= 0); }));
+  var u = S.get("user", {});
+  if (BE.on && u.empId) beCall({ action: "resv_cancel", emp: u.empId });
+  S.set("resv", resvAll().filter(function (r) { return !(r.mine && RESV_LIVE.indexOf(r.status) >= 0); }));
   toast("상담 신청을 취소했어요 — 슬롯이 다시 열렸습니다.");
 }
 function resvAct(id, act) {
   var all = resvAll();
   var r = all.find(function (x) { return x.id === id; });
   if (!r) return;
+  if (act === "approve") { r.status = "approved"; toast("승인 완료 — 신청자 앱으로 알림이 갑니다."); }
   if (act === "checkin") r.status = "checked";
   if (act === "noshow") { r.status = "noshow"; toast("노쇼 처리 — 슬롯이 재오픈됐습니다 (대기자 알림 발송)"); }
   S.set("resv", all);
+  if (BE.on && r.beId) {
+    var m = { approve: "승인", checkin: "체크인", noshow: "노쇼" };
+    if (m[act]) beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: r.beId, status: m[act] });
+  }
 }
 function resvDoneOpen(id) {
   var r = resvAll().find(function (x) { return x.id === id; });
@@ -1129,6 +1158,7 @@ function resvDoneSave(id) {
   var r = all.find(function (x) { return x.id === id; });
   if (!r) return;
   r.status = "done"; r.gift = true;
+  if (BE.on && r.beId) beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: r.beId, status: "완료" });
   r.log = { work: el("rlW").value, block: el("rlB").value, plan: el("rlP").value, grade: el("rlG").value, ts: Date.now() };
   S.set("resv", all);
   modalClose();
@@ -1818,7 +1848,7 @@ var tick = 0;
 setInterval(function () { tick++; if (["home", "screen", "wall_quiz", "wall_live", "wall_rank", "crowd"].indexOf(App.current) >= 0) App.render(); }, 4000);
 /* 백엔드 연결 — GAS_URL 이 채워져 있으면 서버 모드로 전환하고 월 집계를 주기적으로 받는다 */
 BE.on = !!GAS_URL;
-if (BE.on) { beStats(); setInterval(beStats, BE_POLL_MS); }
+if (BE.on) { beStats(); beSync(); setInterval(beSync, BE_POLL_MS); setInterval(beStats, 60000); }
 /* 서비스워커 — 안드로이드 홈 화면 설치창의 전제조건. 캐시는 전혀 하지 않는 무해 버전(sw.js) */
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   try { navigator.serviceWorker.register("sw.js"); } catch (e) {}
@@ -1903,6 +1933,7 @@ var App = {
     el("view").scrollTop = 0;
     window.scrollTo(0, 0);
     if (v === "wall_wave") wvStart();
+    if (typeof checkMyState === "function") setTimeout(checkMyState, 80);
   },
   render: function () {
     var v = this.current;
@@ -1936,6 +1967,7 @@ var App = {
   }
 };
 window.addEventListener("axf-store", function () {
+  checkMyState();
   if (["game_word", "game_cho", "wall_wave", "wall_metowe"].indexOf(App.current) >= 0) return;
   App.render();
 });
@@ -2025,7 +2057,7 @@ function nowCardHtml() {
 function myScheduleHtml() {
   var rows = [];
   var mr = myResv();
-  if (mr && ["booked", "checked"].indexOf(mr.status) >= 0)
+  if (mr && RESV_LIVE.indexOf(mr.status) >= 0)
     rows.push(["dap", mr.slot, "과제상담 — 1F DAP존 미팅룸 " + mr.room]);
   var cc = S.get("cchat", null);
   if (cc && cc.status === "matched")
@@ -2295,7 +2327,7 @@ var Views = {
     var u = S.get("user", {});
     var mineN = S.get("ideas", []).filter(function (i) { return i.empId === u.empId; }).length;
     var mr = myResv();
-    var dapBadge = mr && ["booked", "checked"].indexOf(mr.status) >= 0 ? '<span class="badge mint">내 예약 ' + mr.slot + "</span>" :
+    var dapBadge = mr && RESV_LIVE.indexOf(mr.status) >= 0 ? '<span class="badge mint">내 예약 ' + mr.slot + "</span>" :
       mr && mr.status === "done" ? '<span class="badge gray">상담 완료</span>' : '<span class="badge tint">잔여 ' + resvRemain() + "석</span>";
     var cchat = S.get("cchat", null);
     var cchatBadge = !cchat ? "" : cchat.status === "matched" ?
@@ -2399,17 +2431,20 @@ var Views = {
         '<div class="row" style="justify-content:space-between"><p style="font-size:calc(12.5px * var(--fs));font-weight:800;letter-spacing:0.1em;color:var(--mint)">DAP ZONE · 1F MEETING ROOM 2</p>' +
         '<button class="chip" onclick="dapModal()">진행 안내</button></div>' + body + "</div>";
     };
-    if (my && ["booked", "checked", "done"].indexOf(my.status) >= 0) {
-      var stepIdx = { booked: 0, checked: 1, done: 3 }[my.status];
-      var steps = ["신청 완료", "체크인", "상담 완료", "사은품"];
+    if (my && RESV_HOLD.indexOf(my.status) >= 0) {
+      var stepIdx = { requested: 0, booked: 0, approved: 1, checked: 2, done: 4 }[my.status];
+      var steps = ["신청", "승인", "체크인", "상담", "사은품"];
       return '' +
         hero('<p class="disp" style="margin-top:12px;font-size:36px">' + my.slot + "</p>" +
           '<p style="margin-top:4px;font-size:calc(14.5px * var(--fs));color:var(--muted)">내 과제상담 — 데이터사이언스파트(DAP) · 30분 1:1</p>' +
           '<div class="rstep">' + steps.map(function (s, i) {
             return '<span class="' + (i < stepIdx ? "done" : i === stepIdx ? "on" : "") + '">' + s + "</span>";
           }).join("") + "</div>") +
-        (my.status === "booked" ?
-          '<div class="card soft"><p class="muted">시작 5분 전에 알림을 드려요. 시작 10분 경과 시 노쇼 처리되어 슬롯이 다른 분께 열립니다.</p>' +
+        (my.status === "requested" || my.status === "booked" ?
+          '<div class="card soft"><p class="muted">운영자 확인 후 승인되면 앱 팝업으로 알려드립니다.</p>' +
+          '<button class="btn line" style="margin-top:10px" onclick="cancelResv()">신청 취소</button></div>' :
+          my.status === "approved" ?
+          '<div class="card soft"><p class="muted">승인 완료 — 시작 5분 전까지 1F Meeting Room 2 앞에서 체크인해주세요. 시작 10분 경과 시 노쇼 처리됩니다.</p>' +
           '<button class="btn line" style="margin-top:10px" onclick="cancelResv()">신청 취소</button></div>' :
           my.status === "checked" ?
           '<div class="card soft"><p class="muted">상담이 진행 중입니다 — 00–10분 업무 설명 → 10–20분 병목 → 20–30분 개선방안. 기록은 행사 후 정리해 공유돼요.</p></div>' :
@@ -2725,10 +2760,12 @@ var AdminTabs = {
     var conf = resvConf();
     var all = resvAll();
     var slots = resvSlots();
-    var used2 = all.filter(function (r) { return r.room === 2 && ["booked", "checked", "done"].indexOf(r.status) >= 0; }).length;
-    var chip = { booked: '<span class="badge blue">신청</span>', checked: '<span class="badge mint">체크인</span>', done: '<span class="badge ink">완료</span>', noshow: '<span class="badge gray">노쇼</span>' };
+    var used2 = all.filter(function (r) { return r.room === 2 && RESV_HOLD.indexOf(r.status) >= 0; }).length;
+    var chip = { requested: '<span class="badge blue">신청</span>', booked: '<span class="badge blue">신청</span>', approved: '<span class="badge mint">승인</span>', checked: '<span class="badge mint">체크인</span>', done: '<span class="badge ink">완료</span>', noshow: '<span class="badge gray">노쇼</span>' };
     var row = function (r) {
-      var act = r.status === "booked" ?
+      var act = (r.status === "requested" || r.status === "booked") ?
+        '<div class="row" style="margin-top:8px"><button class="btn mint" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'approve\')">승인</button><button class="btn gray" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'noshow\')">거절</button></div>' :
+        r.status === "approved" ?
         '<div class="row" style="margin-top:8px"><button class="btn" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'checkin\')">체크인</button><button class="btn gray" style="padding:9px" onclick="resvAct(\'' + r.id + '\',\'noshow\')">노쇼 (10분 경과)</button></div>' :
         r.status === "checked" ?
         '<button class="btn mint" style="margin-top:8px;padding:10px" onclick="resvDoneOpen(\'' + r.id + '\')">상담록 작성 + 완료</button>' :
@@ -2856,7 +2893,7 @@ var AdminTabs = {
     var st = S.get("stamps", []);
     var winner = S.get("draw_winner", null);
     var used = S.get("coffee_used", null);
-    var resv2 = resvAll().filter(function (r) { return r.room === 2 && ["booked", "checked", "done"].indexOf(r.status) >= 0; }).length;
+    var resv2 = resvAll().filter(function (r) { return r.room === 2 && RESV_HOLD.indexOf(r.status) >= 0; }).length;
     return '<div class="grid2 mb12">' +
       [["동시 접속", c.online.toLocaleString()], ["아이디어", c.ideas.toLocaleString()], ["퀴즈 참여", c.quiz.toLocaleString()], ["마음펀드 나눔", c.heart.toLocaleString() + "건"],
        ["커피 나눔 잔여", coffeeLeft() + "/" + FESTIVAL.coffeeTotal], ["패스포트(내 기기)", st.length + "/" + STAMP_GOAL],
@@ -2880,6 +2917,161 @@ var AdminTabs = {
       '<div class="card mt16 soft"><b style="font-size:calc(14.5px * var(--fs));color:var(--hi)">18F 커피 나눔 (무인)</b><p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">내 기기 나눔권: ' + (used ? "사용 완료 " + fmtTime(used) : S.get("coffee_issued", false) ? "발급됨 (미사용)" : "미발급") + "</p></div>";
   }
 };
+
+/* ════════════════ v17 — 알림·승인·매칭·발사 (폴링 기반) ════════════════
+ * 진짜 OS 푸시(앱을 닫은 상태)는 GAS 스택으론 불가 — 앱이 열려 있는 기기에
+ * BE_POLL_MS 주기 sync 폴링으로 전달하고, 팝업 + (허용 시) 브라우저 알림을 띄운다. */
+function notifOK() { return ("Notification" in window) && Notification.permission === "granted"; }
+function notifAsk() {
+  if (!("Notification" in window)) { toast("이 브라우저는 알림을 지원하지 않습니다."); return; }
+  Notification.requestPermission().then(function (r) {
+    toast(r === "granted" ? "브라우저 알림이 켜졌습니다." : "알림이 허용되지 않았습니다.");
+  });
+}
+function notifyUser(title, body, target) {
+  try { if (navigator.vibrate) navigator.vibrate([80, 40, 80]); } catch (e) {}
+  if (notifOK()) { try { new Notification(title, { body: body }); } catch (e) {} }
+  if (App.current === "game_word" || App.current === "game_cho") { toast(title); return; }
+  var askBtn = (!notifOK() && ("Notification" in window) && Notification.permission !== "denied")
+    ? '<button class="btn line" style="margin-top:8px" onclick="notifAsk()">브라우저 알림 켜기</button>' : "";
+  modalOpen('<b style="font-size:calc(17px * var(--fs));color:var(--hi)">' + esc(title) + '</b>' +
+    '<p class="muted" style="margin-top:8px;font-size:calc(14.5px * var(--fs));line-height:1.6">' + esc(body) + "</p>" +
+    (target ? '<button class="btn mint" style="margin-top:14px" onclick="modalClose();App.go(\'' + target + '\')">바로 가기</button>' : '<button class="btn" style="margin-top:14px" onclick="modalClose()">확인</button>') + askBtn);
+}
+/* 내 상태 전환 감지 — 서버 sync·로컬 storage 어느 쪽이 바꿔도 여기서 팝업 1회 */
+function checkMyState() {
+  if (App.current === "admin" || SIGNAGE.indexOf(App.current) >= 0) return;
+  var seen = S.get("noti_seen", {});
+  var changed = false;
+  var my = myResv();
+  if (my && my.status === "approved" && seen.resv !== my.id + ":approved") {
+    seen.resv = my.id + ":approved"; changed = true;
+    notifyUser("과제상담 승인 완료", my.slot + " · 1F Meeting Room 2 — 시작 5분 전까지 와주세요.", "dap");
+  }
+  var c = S.get("cchat", null);
+  if (c && c.status === "matched" && seen.cchat !== "m:" + c.round + c.table) {
+    seen.cchat = "m:" + c.round + c.table; changed = true;
+    notifyUser("커피챗 매칭 완료", c.round + " · TABLE " + c.table + " · 18F 라운지", "ev_cchat");
+  }
+  var qs = S.get("quiz_state", INITIAL_QUIZ_STATE);
+  if (qs.phase === "open" && qs.activeId && seen.quiz !== qs.activeId + ":open") {
+    seen.quiz = qs.activeId + ":open"; changed = true;
+    if (App.current !== "home" && App.current !== "screen") notifyUser("라이브 퀴즈 시작", "지금 홈 화면에서 " + QUIZ_SECONDS + "초 안에 답할 수 있습니다.", "home");
+  }
+  if (changed) S.set("noti_seen", seen);
+}
+/* 폴링 1회 = 월 + 퀴즈 발사 + 내 상담·커피챗 상태 */
+function beSync() {
+  if (!BE.on) return;
+  var u = S.get("user", {});
+  beCall({ action: "sync", emp: u.empId || "" }, function (res) {
+    if (!res || !res.ok) return;
+    if (!BE.stats) BE.stats = {};
+    BE.stats.wall = res.wall;
+    if (res.quiz && res.quiz.id) {
+      var qs = S.get("quiz_state", INITIAL_QUIZ_STATE);
+      if (qs.activeId !== res.quiz.id || qs.phase !== res.quiz.phase) {
+        var fin = qs.finishedIds || [];
+        if (res.quiz.phase === "idle") {
+          if (qs.activeId && fin.indexOf(qs.activeId) < 0) fin.push(qs.activeId);
+          S.set("quiz_state", { activeId: null, phase: "idle", openedAt: 0, finishedIds: fin });
+        } else {
+          if (res.quiz.phase === "revealed" && res.quiz.id && fin.indexOf(res.quiz.id) < 0) fin.push(res.quiz.id);
+          S.set("quiz_state", { activeId: res.quiz.id, phase: res.quiz.phase, openedAt: res.quiz.ts || Date.now(), finishedIds: fin });
+        }
+      }
+    }
+    if (res.my) {
+      if (res.my.resv) {
+        var map = { "신청": "requested", "승인": "approved", "체크인": "checked", "완료": "done", "노쇼": "noshow" };
+        var stt = map[res.my.resv.status];
+        var all = resvAll();
+        var mine = all.find(function (r) { return r.mine && (r.beId === res.my.resv.id); });
+        if (!mine && stt && RESV_LIVE.indexOf(stt) >= 0) {
+          all.push({ id: uid(), beId: res.my.resv.id, room: 2, slot: res.my.resv.slot, name: u.name || "", dept: S.get("dept", null) || "미지정", status: stt, mine: true, ts: Date.now() });
+          S.set("resv", all);
+        } else if (mine && stt && mine.status !== stt) {
+          mine.status = stt; S.set("resv", all);
+        }
+      }
+      if (res.my.cchat && res.my.cchat.status === "매칭") {
+        var c = S.get("cchat", null);
+        if (!c || c.status !== "matched") S.set("cchat", { status: "matched", round: res.my.cchat.round, table: String(res.my.cchat.table || ""), ts: Date.now() });
+      }
+    }
+    if (el("mtCv")) mtSync();
+    checkMyState();
+    if (App.current === "home") App.render();
+  });
+}
+/* ── BE 모드 관리자 패널 — 서버의 신청·대기 목록을 콘솔 탭 위에 얹는다 ── */
+var ADMIN_SRV = { resv: null, cchat: null };
+function beAdminLoad(kind) {
+  if (!BE.on) return;
+  beCall({ action: kind + "_list", key: FESTIVAL.adminCode }, function (res) {
+    if (res && res.ok) { ADMIN_SRV[kind] = res.rows; App.render(); }
+    else toast(res && res.reason === "auth" ? "관리코드 불일치 — 시트 설정 탭 확인" : "서버 목록을 불러오지 못했습니다.");
+  }, function () { toast("서버 연결 실패"); });
+}
+function beResvSet(id, status) {
+  beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: id, status: status }, function (res) {
+    if (res && res.ok) { toast(status + " 처리 — 신청자 앱에 " + Math.round(BE_POLL_MS / 1000) + "초 안에 전달됩니다."); beAdminLoad("resv"); }
+    else toast("처리 실패");
+  });
+}
+function beCchatSet(emp) {
+  var r = el("ccR_" + emp), t = el("ccT_" + emp);
+  beCall({ action: "cchat_set", key: FESTIVAL.adminCode, emp: emp, round: r ? r.value : "", table: t ? t.value : "" }, function (res) {
+    if (res && res.ok) { toast("매칭 완료 — 대상자 앱에 알림이 갑니다."); beAdminLoad("cchat"); }
+    else toast("처리 실패");
+  });
+}
+function beResvPanel() {
+  if (!BE.on) return "";
+  var rows = ADMIN_SRV.resv;
+  var h = '<div class="card mb12" style="border-color:var(--blue)"><div class="row" style="justify-content:space-between"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">서버 신청 목록 (전 기기)</b>' +
+    '<button class="chip" onclick="beAdminLoad(\'resv\')">새로고침</button></div>';
+  if (rows == null) h += '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">새로고침을 눌러 서버의 상담 신청을 불러오세요.</p>';
+  else if (!rows.length) h += '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">아직 서버에 신청이 없습니다.</p>';
+  else h += rows.map(function (r) {
+    var b = "";
+    if (r.status === "신청") b = '<button class="btn mint" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'승인\')">승인</button><button class="btn gray" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'노쇼\')">거절</button>';
+    else if (r.status === "승인") b = '<button class="btn" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'체크인\')">체크인</button><button class="btn gray" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'노쇼\')">노쇼</button>';
+    else if (r.status === "체크인") b = '<button class="btn mint" style="padding:8px" onclick="beResvSet(\'' + r.id + '\',\'완료\')">상담 완료</button>';
+    return '<div class="card soft" style="margin-top:8px;padding:11px 13px"><div class="row" style="justify-content:space-between">' +
+      '<b class="disp" style="font-size:calc(15.5px * var(--fs));color:var(--hi)">' + esc(r.slot) + "</b>" +
+      '<span style="flex:1;font-size:calc(14px * var(--fs));font-weight:700">' + esc(r.name || r.emp) + ' <span style="color:var(--faint);font-size:calc(12.5px * var(--fs))">' + esc(r.dept || "") + "</span></span>" +
+      '<span class="badge ' + (r.status === "승인" || r.status === "체크인" ? "mint" : r.status === "완료" ? "ink" : r.status === "신청" ? "blue" : "gray") + '">' + esc(r.status) + "</span></div>" +
+      (b ? '<div class="row" style="margin-top:8px">' + b + "</div>" : "") + "</div>";
+  }).join("");
+  return h + "</div>";
+}
+function beCchatPanel() {
+  if (!BE.on) return "";
+  var rows = ADMIN_SRV.cchat;
+  var ROUNDS = ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"];
+  var h = '<div class="card mb12" style="border-color:var(--blue)"><div class="row" style="justify-content:space-between"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">서버 매칭 대기열 (전 기기)</b>' +
+    '<button class="chip" onclick="beAdminLoad(\'cchat\')">새로고침</button></div>';
+  if (rows == null) h += '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">새로고침을 눌러 서버 대기열을 불러오세요.</p>';
+  else if (!rows.length) h += '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">아직 대기 인원이 없습니다.</p>';
+  else h += rows.map(function (r) {
+    var sel = r.status === "대기"
+      ? '<div class="row" style="margin-top:8px"><select id="ccR_' + esc(r.emp) + '" class="input" style="flex:1">' + ROUNDS.map(function (x) { return "<option>" + x + "</option>"; }).join("") + "</select>" +
+        '<select id="ccT_' + esc(r.emp) + '" class="input" style="width:84px"><option>A</option><option>B</option></select>' +
+        '<button class="btn mint" style="width:auto;padding:10px 14px" onclick="beCchatSet(\'' + esc(r.emp) + '\')">매칭</button></div>'
+      : "";
+    return '<div class="card soft" style="margin-top:8px;padding:11px 13px"><div class="row" style="justify-content:space-between">' +
+      '<span style="flex:1;font-size:calc(14px * var(--fs));font-weight:700">' + esc(r.name || r.emp) + ' <span style="color:var(--faint);font-size:calc(12.5px * var(--fs))">' + esc(r.dept || "") + (r.tag ? " · #" + esc(r.tag) : "") + "</span></span>" +
+      (r.status === "매칭" ? '<span class="badge mint">매칭 · ' + esc(r.round) + " " + esc(r.table) + "</span>" : '<span class="badge gray">대기</span>') + "</div>" + sel + "</div>";
+  }).join("");
+  return h + "</div>";
+}
+/* 콘솔 상담·커피챗 탭에 서버 패널을 얹는다 */
+(function () {
+  var _resv = AdminTabs.resv, _cchat = AdminTabs.cchat;
+  AdminTabs.resv = function () { return beResvPanel() + _resv(); };
+  AdminTabs.cchat = function () { return beCchatPanel() + _cchat(); };
+})();
 
 /* ════════════════ 쿠폰 HTML ════════════════ */
 function qrHtml() {
@@ -2953,7 +3145,8 @@ function tryAdmin() {
 }
 function fireQuiz(id) {
   S.set("quiz_state", { activeId: id, phase: "open", openedAt: Date.now(), finishedIds: S.get("quiz_state", INITIAL_QUIZ_STATE).finishedIds });
-  toast("퀴즈 발사! 참여자 홈 화면에 표시됩니다.");
+  if (BE.on) beCall({ action: "quiz_set", key: FESTIVAL.adminCode, id: id, phase: "open" });
+  toast("퀴즈 발사! 앱을 켠 참여자에게 " + Math.round(BE_POLL_MS / 1000) + "초 안에 전달됩니다.");
 }
 function setQuiz(phase) {
   var st = S.get("quiz_state", INITIAL_QUIZ_STATE);
@@ -2961,6 +3154,7 @@ function setQuiz(phase) {
   if (phase === "revealed" && st.activeId && st.finishedIds.indexOf(st.activeId) < 0) st.finishedIds.push(st.activeId);
   st.phase = phase;
   S.set("quiz_state", st);
+  if (BE.on) beCall({ action: "quiz_set", key: FESTIVAL.adminCode, id: st.activeId || "", phase: phase });
 }
 function sendNotice() {
   var t = (el("ntTitle").value || "").trim();
