@@ -229,7 +229,7 @@
   .tl li { position: relative; padding: 0 0 18px 20px; }
   .tl li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 999px; background: var(--paper); border: 2px solid #3A3F46; }
   .tl li.now::before { background: var(--mint); border-color: var(--mint); }
-  .stamp5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .stamp5 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .stamp5 .cell { aspect-ratio: 1; border: 1px solid var(--line); border-radius: 14px; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 4px; color: var(--tx); }
   .stamp5 .cell.got { background: var(--mint); color: var(--ink); border-color: var(--mint); }
   .stamp5 .cell .n { font-family: var(--disp); font-size: calc(16.5px * var(--fs)); }
@@ -602,7 +602,7 @@ var FESTIVAL = {
   adminCode: "1111",
   coffeeTotal: 500, coffeeClaimedMock: 287,
   mockOnline: 1842, mockIdeas: 214, mockQuizPlayers: 2087, mockHeart: 168,
-  mockFinishers: 61, mockWave: 1128, mockWe: 1214
+  mockFinishers: 61, mockWave: 1128, mockWe: 1013
 };
 /* short = 5칸 스탬프 그리드처럼 좁은 자리에 쓰는 짧은 이름 */
 var STAMPS = [
@@ -610,8 +610,13 @@ var STAMPS = [
   { id: "p2", no: "02", title: "AX Now! 체험", short: "부스 체험", desc: "HiDI-Q 또는 HI-Helper 부스 1곳 체험", how: "현장 QR", code: "1111" },
   { id: "p3", no: "03", title: "17F 강의", short: "17F 강의", desc: "17F 오후 강의 1회 참석 (10F 제외)", how: "현장 QR", code: "1111" },
   { id: "p4", no: "04", title: "라이브 퀴즈", short: "라이브 퀴즈", desc: "키노트 퀴즈 1회 이상 응답", how: "자동 적립" },
-  { id: "p5", no: "05", title: "아이디어 한 줄", short: "아이디어", desc: "아이디어 1건 제출", how: "자동 적립" }
+  { id: "p5", no: "05", title: "아이디어 한 줄", short: "아이디어", desc: "아이디어 1건 제출", how: "자동 적립" },
+  { id: "p6", no: "06", title: "AI 포토부스", short: "포토부스", desc: "1F AI 포토부스 촬영 완료", how: "현장 QR", code: "1111" },
+  { id: "p7", no: "07", title: "QR 퀴즈 통과", short: "QR 퀴즈", desc: "DAP Wall QR 퀴즈 1세트 통과 (60점 이상)", how: "자동 적립" },
+  { id: "p8", no: "08", title: "미니게임 클리어", short: "미니게임", desc: "AX 링크 또는 초성퀴즈 1종 클리어", how: "자동 적립" }
 ];
+/* 완주 = 8개 경로 중 5개 — 전부 돌 필요 없이 내 동선에 맞는 5개면 완주 (260828 사용자 확정) */
+var STAMP_GOAL = 5;
 var TIMELINE = [
   { time: "09:30", end: "11:30", title: "Keynote", short: "CSO·CTO 키노트 — 파트가 끝날 때마다 라이브 퀴즈가 열립니다", place: "17F 대강당", desc: "CSO·CTO — ⓪AX란 무엇인가 → ①사전설문 속 걱정에 답하기 → ②당사 AX 로드맵 → ③현업의 노력(DAP). 파트가 끝날 때마다 라이브 퀴즈!", tag: "전직원" },
   { time: "11:30", end: "13:10", title: "점심 · 네트워킹", short: "1F 전시로 패스포트를 채우고, 18F에서 커피 한 잔", place: "1F 전시 상시 · 18F 커피 나눔 오픈", desc: "1F 전시 3분 코스로 패스포트를 채우고, 18F에서 커피 한 잔 받아가세요.", tag: "휴식" },
@@ -671,7 +676,7 @@ var LINK_ROUNDS = [
     why: "우리 회사 AX 로드맵, 2028년의 목표입니다" }
 ];
 var DUEUM = { "라": "나", "락": "낙", "란": "난", "람": "남", "랑": "낭", "래": "내", "랭": "냉", "량": "양", "려": "여", "력": "역", "련": "연", "렬": "열", "렴": "염", "령": "영", "례": "예", "로": "노", "록": "녹", "론": "논", "롱": "농", "뢰": "뇌", "료": "요", "룡": "용", "루": "누", "류": "유", "륙": "육", "륜": "윤", "률": "율", "리": "이", "린": "인", "림": "임", "립": "입", "녀": "여", "뇨": "요", "뉴": "유", "니": "이" };
-var LINK_SEC = 60, LINK_PEN = 3, LINK_HINT_MS = 6000, LINK_PT = 10, LINK_PT_ROUND = 30, LINK_NEXT_DELAY = 1800;
+var LINK_SEC = 60, LINK_PEN = 3, LINK_HINT_MS = 6000, LINK_PT = 10, LINK_PT_ROUND = 30, LINK_NEXT_DELAY = 12000;
 var GAME_POINTS = 100;
 var CHOSEONG_QUIZ = [
   { cho: "ㅇㅇㅈㅌ", a: "에이전트", alts: [], hint: "사람 대신 업무를 알아서 수행하는 AI — 2026년 우리 회사가 도입을 확대합니다" },
@@ -1009,7 +1014,7 @@ function checkRewards() {
     S.set("coffee_issued", true);
     setTimeout(function () { toast("18F 커피 나눔권 발급 — 패스포트 › 나의 보상에서 확인 (선착순 " + FESTIVAL.coffeeTotal + "잔)"); }, 1200);
   }
-  if (st.length >= STAMPS.length && !S.get("raffle_entered", false)) {
+  if (st.length >= STAMP_GOAL && !S.get("raffle_entered", false)) {
     S.set("raffle_entered", true);
     setTimeout(function () { toast("★ 패스포트 완주! 대형경품 응모 완료 — 추첨은 17:00 Outro에서. 완주 스페셜권도 발급됐어요."); }, 1500);
   }
@@ -1019,7 +1024,7 @@ function awardStamp(id) {
   if (st.indexOf(id) >= 0) return;
   st.push(id); S.set("stamps", st);
   var sd = STAMPS.find(function (s) { return s.id === id; });
-  toast("PASSPORT " + (sd ? sd.no : "") + " 적립 — " + (sd ? sd.title : id) + " (" + st.length + "/" + STAMPS.length + ")");
+  toast("PASSPORT " + (sd ? sd.no : "") + " 적립 — " + (sd ? sd.title : id) + (st.length >= STAMP_GOAL ? " · 완주 달성!" : " (" + st.length + "/" + STAMP_GOAL + " 완주)"));
   bePush("stamp:" + id, sd ? sd.title : id, true);
   checkRewards();
 }
@@ -1215,6 +1220,7 @@ function wqSubmit() {
   WQ.result = { score: score, correct: correct, passed: passed };
   if (firstPass) {
     entryAdd("quiz", WQ.set);
+    awardStamp("p7");
     setTimeout(function () { toast("즉석경품 응모권 발급 — 이벤트 › 응모권에서 확인하세요."); }, 300);
     if (wqPassedCount() >= 3 && !S.get("wq_bonus", false)) {
       S.set("wq_bonus", true);
@@ -1378,7 +1384,8 @@ function mtRnd() { MT.seed = (MT.seed * 1103515245 + 12345) & 0x7fffffff; return
 function mtHash(i) { return ((i * 2654435761) >>> 0); }
 function mtPoints() {
   if (MT.demo != null) return Math.round(MT_TOTAL * MT.demo / 100);
-  if (BE.on && BE.stats && BE.stats.wall != null) return Math.min(MT_TOTAL, BE.stats.wall);
+  /* 시연 빌드: 50% 시드(mockWe) 위에 서버 라이브 증가분을 얹는다 — 본행사 전 mockWe=0으로 (260828) */
+  if (BE.on && BE.stats && BE.stats.wall != null) return Math.min(MT_TOTAL, FESTIVAL.mockWe + BE.stats.wall);
   return Math.min(MT_TOTAL, FESTIVAL.mockWe + S.get("wave_extra", 0) + MT.auto);
 }
 function mtBuild(cv) {
@@ -1702,31 +1709,14 @@ function mtDraw() {
 function mtTickMsg(k) {
   MT.tickI++;
   if (!el("mtTick") || MT.demo != null) return;
-  el("mtTick").textContent = k > 1
-    ? "방금 · " + k + "명의 별이 한꺼번에 켜졌습니다"
-    : "방금 · " + DEPTS[MT.tickI % DEPTS.length] + "의 별이 하나 켜졌습니다";
+  el("mtTick").textContent = "오늘 " + mtPoints().toLocaleString() + "개의 별이 켜졌습니다";
 }
 function mtSync() {
   var n = mtPoints(), pct = Math.min(100, Math.floor(n / MT_TOTAL * 100));
   if (el("mtN")) el("mtN").textContent = n.toLocaleString();
   if (el("mtPct")) el("mtPct").textContent = pct + "%";
   if (el("mtBar")) el("mtBar").style.width = Math.min(100, n / MT_TOTAL * 100) + "%";
-  var hit = 0;
-  for (var i = 0; i < MT_STEPS.length; i++) {
-    var e2 = el("mtStep" + i);
-    if (pct >= MT_STEPS[i][0]) { hit = i + 1; if (e2) e2.className = "hit"; }
-    else if (e2) e2.className = "";
-  }
-  if (MT.mil === -1) MT.mil = hit;
-  else if (hit > MT.mil) {
-    MT.mil = hit;
-    var fl = el("mtFlash");
-    if (fl) {
-      fl.innerHTML = MT_STEPS[hit - 1][0] + "% 달성<br>" + esc(MT_STEPS[hit - 1][1]) + (hit === 3 ? " — WE 완성" : " 열림");
-      fl.classList.add("on");
-      setTimeout(function () { fl.classList.remove("on"); }, 3200);
-    }
-  }
+  /* 언락 단계·달성 플래시 제거(260828) — 차오르는 현황 그 자체에 집중 */
   if (el("mtTick")) {
     if (MT.demo != null) el("mtTick").textContent = "관리자 미리보기 — " + MT.demo + "% 상태 고정 · 실시간을 누르면 라이브 집계로 복귀";
     else if (MT.T - MT.lastLand > 12) el("mtTick").textContent = "오늘 " + n.toLocaleString() + "개의 별이 켜졌습니다";
@@ -1776,10 +1766,8 @@ function mtEnsure() {
 /* 관리자 미리보기 — 월 상태를 0~100% 임의 고정 (null = 실시간 복귀). 하강은 즉시 스냅, 상승은 마지막 36점 유성 */
 function mtSet(p) {
   MT.demo = p;
-  var n = mtPoints(), pct = Math.min(100, Math.floor(n / MT_TOTAL * 100));
-  var hit = 0;
-  for (var i = 0; i < MT_STEPS.length; i++) if (pct >= MT_STEPS[i][0]) hit = i + 1;
-  if (hit < MT.mil) MT.mil = -1;
+  var n = mtPoints();
+  MT.mil = -1;
   if (MT.pts.length) {
     var target = Math.round(n / MT_TOTAL * MT.pts.length);
     if (target < MT.ptr) mtSnap(target);
@@ -1789,12 +1777,13 @@ function mtSet(p) {
   mtDemoPaint();
 }
 /* TV 전체화면 — 브라우저 전체화면 요청(실패해도 뷰 전환은 진행) + 복귀 지점 기억 */
-var TV_BACK = "wallv";
+var TV_BACK = "wall_metowe";
 function tvOpen() {
+  if (!S.get("admin_authed", false)) { toast("운영자 전용 화면입니다."); return; }
   TV_BACK = App.current === "wall_tv" ? TV_BACK : App.current;
   var el0 = document.documentElement;
   var req = el0.requestFullscreen || el0.webkitRequestFullscreen || el0.msRequestFullscreen;
-  if (req) { try { req.call(el0); } catch (e) {} }
+  if (req) { try { var fp = req.call(el0); if (fp && fp.catch) fp.catch(function () {}); } catch (e) {} }
   App.go("wall_tv");
 }
 function tvClose() {
@@ -1802,14 +1791,14 @@ function tvClose() {
     var ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
     if (ex) { try { ex.call(document); } catch (e) {} }
   }
-  App.go(TV_BACK || "wallv");
+  App.go(TV_BACK || "wall_metowe");
 }
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape" && App.current === "wall_tv") tvClose();
 });
 /* 브라우저 전체화면만 해제된 경우(F11·Esc) 뷰도 함께 복귀 — 화면 크기 변화 재계산 포함 */
 document.addEventListener("fullscreenchange", function () {
-  if (!document.fullscreenElement && App.current === "wall_tv") App.go(TV_BACK || "wallv");
+  if (!document.fullscreenElement && App.current === "wall_tv") App.go(TV_BACK || "wall_metowe");
 });
 window.addEventListener("resize", function () {
   if (App.current === "wall_tv" && el("mtCv")) mtEnsure();
@@ -1826,7 +1815,7 @@ function mtDemoPaint() {
 
 /* ════════════════ 카운터 ════════════════ */
 var tick = 0;
-setInterval(function () { tick++; if (["home", "screen", "wall_quiz", "wall_live", "crowd"].indexOf(App.current) >= 0) App.render(); }, 4000);
+setInterval(function () { tick++; if (["home", "screen", "wall_quiz", "wall_live", "wall_rank", "crowd"].indexOf(App.current) >= 0) App.render(); }, 4000);
 /* 백엔드 연결 — GAS_URL 이 채워져 있으면 서버 모드로 전환하고 월 집계를 주기적으로 받는다 */
 BE.on = !!GAS_URL;
 if (BE.on) { beStats(); setInterval(beStats, BE_POLL_MS); }
@@ -1852,7 +1841,7 @@ function counters() {
 }
 
 /* ════════════════ 라우터 (Lv1 탭 → Lv2 상세) ════════════════ */
-var SIGNAGE = ["screen", "wall_quiz", "wall_wave", "wall_live", "wall_metowe", "wall_tv"];
+var SIGNAGE = ["screen", "wall_quiz", "wall_wave", "wall_live", "wall_metowe", "wall_rank", "wall_tv"];
 /* 설정 톱니 — 글자 크기·관리자 모드를 한 곳에 모은 진입점 */
 var GEAR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' +
   '<circle cx="12" cy="12" r="3.1"/>' +
@@ -1885,7 +1874,7 @@ var App = {
     /* 일정·지도 — 어디로 갈지 */
     guide_time: "guide", guide_map: "guide", guide_slots: "guide", crowd: "guide",
     admin: "home", screen: "admin",
-    wall_quiz: "admin", wall_wave: "admin", wall_live: "admin", wall_metowe: "admin", wall_tv: "wallv"
+    wall_quiz: "admin", wall_wave: "admin", wall_live: "admin", wall_metowe: "admin", wall_rank: "admin", wall_tv: "wall_metowe"
   },
   TITLES: {
     home: "", join: "참여하기", passport: "AX 패스포트", guide: "일정 · 지도",
@@ -1896,7 +1885,7 @@ var App = {
     ev_cchat: "내 커피챗", ev_games: "미니게임", ev_replay: "퀴즈 다시 풀기", ev_rank: "챔피언십 리더보드", ev_draw: "당첨 발표",
     wq_list: "DAP Wall QR 퀴즈", wq_play: "문제 풀이", entries: "즉석경품 응모권",
     admin: "관리자 콘솔", screen: "송출용 화면", game_word: "AX 링크", game_cho: "로드맵 초성퀴즈",
-    wall_quiz: "", wall_wave: "", wall_live: "", wall_metowe: "", wall_tv: ""
+    wall_quiz: "", wall_wave: "", wall_live: "", wall_metowe: "", wall_rank: "", wall_tv: ""
   },
   tabOf: function (v) {
     var cur = v, hop = 0;
@@ -2068,12 +2057,7 @@ function noticeStripHtml() {
 function weCardHtml() {
   var n = mtPoints(), pct = Math.min(100, Math.floor(n / MT_TOTAL * 100));
   var c = counters();
-  var next = null;
-  for (var i = 0; i < MT_STEPS.length; i++) if (pct < MT_STEPS[i][0]) { next = MT_STEPS[i]; break; }
-  var needTxt = next
-    ? '다음 언락 <b style="color:var(--hi)">' + next[0] + "% " + esc(next[1]) + '</b>까지 <b style="color:var(--mint)">' +
-      Math.max(1, Math.ceil(MT_TOTAL * next[0] / 100) - n).toLocaleString() + "점</b>"
-    : '<b style="color:var(--mint)">WE 완성!</b> 완성 순간은 17:00 Outro에서 함께 봅니다';
+  var needTxt = '유효 참여 1건 = 별 1개 · 완성 순간은 <b style="color:var(--hi)">17:00 Outro</b>에서 함께 봅니다';
   return '<div class="card mb12" style="padding:0;overflow:hidden;cursor:pointer" onclick="App.go(\'wallv\')">' +
     '<div class="mt-stage" id="mtStage" style="margin-top:0;border:0;border-radius:0;height:175px;min-height:0">' +
     '<canvas id="mtCv"></canvas><div class="mt-flash" id="mtFlash"></div>' +
@@ -2149,9 +2133,7 @@ var Views = {
     return '<div class="mt-stage" id="mtStage" style="height:58vh;min-height:470px"><canvas id="mtCv"></canvas><div class="mt-flash" id="mtFlash"></div></div>' +
       '<div class="mt-count"><span class="disp" id="mtN" style="color:var(--mint)">' + n.toLocaleString() + '</span><span class="tot" style="color:var(--hi)">/ 2,026</span><span class="pct" id="mtPct" style="color:var(--hi)">' + pct + '%</span></div>' +
       '<div class="mt-bar"><i id="mtBar"></i></div>' +
-      '<div class="mt-steps" style="color:var(--hi)">' + MT_STEPS.map(function (s, i) { return '<span id="mtStep' + i + '">' + s[0] + "%<br>" + esc(s[1]) + "</span>"; }).join("") + "</div>" +
-      '<button class="btn line" style="margin-top:14px" onclick="tvOpen()">전체 화면 — 가로 TV 송출</button>' +
-      '<div class="card soft" style="margin-top:12px"><p class="muted">유효 참여 1건(스탬프·아이디어·퀴즈·상담·커피챗·커피 나눔권)마다 별이 하나 켜집니다. 2,026개가 모이면 WE가 완성 — 50% 오후 깜짝 간식 · 80% 추첨 수량 2배 · 100% 대형경품 업그레이드. 완성 순간은 17:00 Outro에서 함께 봅니다.</p></div>';
+      '<div class="card soft" style="margin-top:12px"><p class="muted">유효 참여 1건(스탬프·아이디어·퀴즈·상담·커피챗·커피 나눔권)마다 별이 하나 켜집니다. 2,026개가 모이면 WE가 완성 — 완성 순간은 17:00 Outro에서 함께 봅니다.</p></div>';
   },
 
   /* TV 전체화면 — 가로 대형 화면 송출용 (좌: 월 풀블리드 / 우: 카운터·언락) */
@@ -2166,9 +2148,6 @@ var Views = {
       '<div><p class="tv-n" id="mtN">' + n.toLocaleString() + '<small>/ ' + MT_TOTAL.toLocaleString() + '</small></p>' +
       '<p class="tv-pct" id="mtPct">' + pct + '%</p></div>' +
       '<div class="tv-bar"><i id="mtBar" style="width:' + Math.min(100, n / MT_TOTAL * 100) + '%"></i></div>' +
-      '<div class="tv-steps">' + MT_STEPS.map(function (s, i) {
-        return '<span id="mtStep' + i + '"><b>' + s[0] + "%</b>" + esc(s[1]) + "</span>";
-      }).join("") + "</div>" +
       '<p class="tv-tick" id="mtTick"></p></div></div>';
   },
 
@@ -2200,10 +2179,10 @@ var Views = {
     return "" +
       '<div class="skb" style="margin-bottom:14px">' +
       '<div class="r1" style="display:flex;justify-content:space-between;align-items:flex-end"><span class="big" style="font-size:26px">AX PASSPORT</span>' +
-      '<span class="disp" style="font-size:24px;color:var(--mint)">' + st.length + '<span style="font-size:calc(14.5px * var(--fs));color:#fff;opacity:0.6">/' + STAMPS.length + "</span></span></div>" +
+      '<span class="disp" style="font-size:24px;color:var(--mint)">' + st.length + '<span style="font-size:calc(14.5px * var(--fs));color:#fff;opacity:0.6">/' + STAMP_GOAL + ' 완주</span></span></div>' +
       '<div class="r3" style="margin-top:0;padding:13px 16px;display:block">' +
-      '<div class="progress5" style="margin-top:0">' + STAMPS.map(function (s) { return '<span class="' + (st.indexOf(s.id) >= 0 ? "on" : "") + '"></span>'; }).join("") + "</div>" +
-      '<p style="margin-top:11px;font-size:calc(13.5px * var(--fs));font-weight:700;opacity:0.85;line-height:1.55">5종을 모두 채우면<br>17:00 대형경품에 자동 응모됩니다</p>' +
+      '<div class="progress5" style="margin-top:0">' + [1, 2, 3, 4, 5].map(function (i) { return '<span class="' + (st.length >= i ? "on" : "") + '"></span>'; }).join("") + "</div>" +
+      '<p style="margin-top:11px;font-size:calc(13.5px * var(--fs));font-weight:700;opacity:0.85;line-height:1.55">8개 경로 중 5개만 채우면 완주 —<br>17:00 대형경품에 자동 응모됩니다</p>' +
       (entered ? '<p style="margin-top:9px;background:rgba(95,235,169,0.15);border:1px solid var(--mint);border-radius:8px;padding:9px 12px;font-size:calc(14px * var(--fs));font-weight:800;color:var(--mint)">완주! 대형경품 응모 완료</p>' : "") +
       "</div></div>" +
       '<div class="stamp5 mb12">' + STAMPS.map(function (s) {
@@ -2216,7 +2195,7 @@ var Views = {
       '<div onclick="App.go(\'pp_reward\')"><p class="v">' + (issued && !used ? 1 : 0) + '<small>장</small></p><p class="l">커피 나눔권</p></div>' +
       "</div>" +
       '<div class="menu">' +
-      menuItem("pp_code", "01", "스탬프 적립하기", "5종 안내 · 현장 QR 코드 입력", "") +
+      menuItem("pp_code", "01", "스탬프 적립하기", "8개 경로 안내 · 현장 QR 코드 입력", "") +
       menuItem("pp_reward", "02", "나의 보상", "커피 나눔권 · 완주 스페셜권", rewardBadge) +
       menuItem("entries", "03", "즉석경품 응모권", en ? "1F 이벤트존 가챠에서 사용" : "QR 퀴즈 통과 시 발급", en ? '<span class="badge mint">' + en + "장</span>" : "") +
       menuItem("ideas_mine", "04", "내가 낸 아이디어", mineN ? mineN + "건 제출" : "아직 없음", "") +
@@ -2226,7 +2205,7 @@ var Views = {
 
   pp_code: function () {
     var st = S.get("stamps", []);
-    return STAMPS.map(function (s) {
+    return '<div class="card soft mb8"><p class="muted" style="font-size:calc(14px * var(--fs))">8개 경로 중 <b style="color:var(--hi)">5개</b> 적립 = 완주 · 대형경품 자동 응모</p></div>' + STAMPS.map(function (s) {
         var got = st.indexOf(s.id) >= 0;
         return '<div class="card soft mb8" style="display:flex;align-items:center;gap:12px;padding:12px 14px">' +
           '<span class="disp" style="font-size:calc(18px * var(--fs));color:' + (got ? "var(--mint-deep)" : "var(--faint)") + '">' + s.no + "</span>" +
@@ -2234,14 +2213,14 @@ var Views = {
           (got ? '<span class="badge ink">적립 ✔</span>' : '<span class="badge gray">' + s.how + "</span>") + "</div>";
       }).join("") +
       '<div class="card mt16"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">QR을 못 찍었다면 코드로 입력</b>' +
-      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">현장 스탬프(01·02·03)는 부스 QR 아래 코드로도 적립됩니다. 테스트 코드 <b>1111</b> — 반복 입력하면 순서대로 적립돼요.</p>' +
+      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">현장 스탬프(01·02·03·06)는 부스 QR 아래 코드로도 적립됩니다. 테스트 코드 <b>1111</b> — 반복 입력하면 순서대로 적립돼요.</p>' +
       '<div class="row" style="margin-top:10px"><input id="stampCode" class="input" placeholder="예: 1111" style="text-transform:uppercase">' +
       '<button class="btn mint" style="width:auto;padding:12px 18px" onclick="tryStampCode()">적립</button></div></div>';
   },
 
   pp_reward: function () {
     return coffeeCouponHtml() + specialHtml() +
-      '<div class="card soft"><p class="muted">커피 나눔권 = 패스포트 1칸 또는 아이디어 1건이면 자동 발급 (선착순 ' + FESTIVAL.coffeeTotal + '잔). 완주 스페셜권 = 5종 완주자 전용 프리미엄 보상. 모두 18F 라운지에서 무인 QR로 교환합니다.</p></div>';
+      '<div class="card soft"><p class="muted">커피 나눔권 = 패스포트 1칸 또는 아이디어 1건이면 자동 발급 (선착순 ' + FESTIVAL.coffeeTotal + '잔). 완주 스페셜권 = 5개 경로 완주자 전용 프리미엄 보상. 모두 18F 라운지에서 무인 QR로 교환합니다.</p></div>';
   },
 
   ideas: function () {
@@ -2399,13 +2378,14 @@ var Views = {
       LEADERBOARD.map(function (r) {
         return '<div class="rank' + (r.rank <= 3 ? " top" : "") + '"><span class="no">' + r.rank + '</span><span style="flex:1;font-size:calc(15.5px * var(--fs));font-weight:700">' + r.name + '</span><b class="disp" style="color:var(--hi);font-size:calc(16.5px * var(--fs))">' + r.score + "</b></div>";
       }).join("") + "</div>" +
-      '<p style="margin-top:6px;font-size:calc(12.5px * var(--fs));color:var(--faint)">10F 챔피언십 현장 점수 · 운영진 실시간 갱신</p>';
+      '<p style="margin-top:6px;font-size:calc(12.5px * var(--fs));color:var(--faint)">10F 챔피언십 현장 점수 · 운영진 실시간 갱신</p>' +
+      (S.get("admin_authed", false) ? '<button class="btn line" style="margin-top:12px" onclick="App.go(\'wall_rank\')">TV 송출 화면 열기 (운영자)</button>' : "");
   },
 
   ev_draw: function () {
     return '<div class="skb" style="margin-bottom:12px"><div class="r1"><span class="big" style="font-size:22px">17:00 OUTRO</span></div>' +
       '<div class="r2"><span class="s" style="padding:10px 14px"><span class="t" style="font-size:calc(14.5px * var(--fs))">대형경품 추첨 · DAP 시상 · 오늘의 숫자</span></span></div></div>' +
-      '<div class="card soft"><p class="muted">응모 경로는 2개예요. ① <b>패스포트 5종 완주</b> = 대형경품 자동 응모 — 퀴즈·게임 포인트만큼 당첨 확률이 올라가고, 결과는 17:00 대강당과 앱에서 동시 공개. ② <b>QR 퀴즈 응모권</b> = 1F 이벤트존에서 바로 즉석 추첨(가챠).</p></div>';
+      '<div class="card soft"><p class="muted">응모 경로는 2개예요. ① <b>패스포트 완주 — 8개 경로 중 5개</b> = 대형경품 자동 응모 — 퀴즈·게임 포인트만큼 당첨 확률이 올라가고, 결과는 17:00 대강당과 앱에서 동시 공개. ② <b>QR 퀴즈 응모권</b> = 1F 이벤트존에서 바로 즉석 추첨(가챠).</p></div>';
   },
 
   /* ── v10 【신규 A】 과제상담 신청 — 구성은 v5 p25 목업, 룩은 앱 공통 다크·민트 ── */
@@ -2574,7 +2554,7 @@ var Views = {
         '<div class="body"><p style="text-align:center;font-family:var(--disp);font-size:26px;letter-spacing:0.1em;color:var(--hi)">' + esc(x.code) + "</p>" +
         '<p class="muted" style="margin-top:6px;text-align:center;font-size:calc(13.5px * var(--fs))">1F 이벤트존 부스에 보여주면 즉석 추첨(가챠) 1회 — ' + fmtTime(x.ts) + "</p></div></div>";
     }).join("") +
-      '<div class="card soft mt16"><p class="muted" style="font-size:calc(13.5px * var(--fs))">응모 경로는 2개 — <b>패스포트 5종 완주</b>는 17:00 대형경품 추첨, <b>QR 퀴즈 응모권</b>은 현장 즉석 추첨이에요.</p></div>';
+      '<div class="card soft mt16"><p class="muted" style="font-size:calc(13.5px * var(--fs))">응모 경로는 2개 — <b>패스포트 완주(경로 5개)</b>는 17:00 대형경품 추첨, <b>QR 퀴즈 응모권</b>은 현장 즉석 추첨이에요.</p></div>';
   },
 
   /* ── v10 【신규 D】 사이니지 3종 — 프로토타입 (정식판: 무인 10시간·오프라인 캐시·키오스크) ── */
@@ -2643,12 +2623,28 @@ var Views = {
       '<div class="mt-stage" id="mtStage"><canvas id="mtCv"></canvas><div class="mt-flash" id="mtFlash"></div></div>' +
       '<div class="mt-count"><span class="disp" id="mtN">' + n.toLocaleString() + '</span><span class="tot">/ ' + MT_TOTAL.toLocaleString() + '</span><span class="pct" id="mtPct"></span></div>' +
       '<div class="mt-bar"><i id="mtBar"></i></div>' +
-      '<div class="mt-steps">' + MT_STEPS.map(function (s, i) { return '<span id="mtStep' + i + '">' + s[0] + "%<br>" + esc(s[1]) + "</span>"; }).join("") + "</div>" +
       '<p class="mt-tick" id="mtTick"></p>' +
       '<p style="text-align:center;font-size:calc(13px * var(--fs));opacity:0.5;margin-top:10px">사전 공모 제출분은 개막 전 미리 점등 · 100% 완성은 17:00 Outro에서 함께 봅니다 · 30~60초 지연 집계 · 세로 55&quot; / 대강당 겸용</p>' +
       '<div class="mt-demo" id="mtDemoRow"><span class="lb">관리자 미리보기 — 상태 바로 확인</span>' +
       [0, 25, 50, 80, 100].map(function (p) { return '<button data-p="' + p + '" onclick="mtSet(' + p + ')">' + p + "%</button>"; }).join("") +
       '<button data-p="live" onclick="mtSet(null)">실시간</button></div></div>';
+  },
+
+  /* 챔피언십 리더보드 — 10F 부스 옆 TV 송출용 (55" 가로) */
+  wall_rank: function () {
+    var rows = LEADERBOARD.map(function (r) {
+      var live = r.score + ((tick * 3 + r.rank * 7) % 5);
+      return '<div style="display:flex;align-items:center;gap:18px;padding:16px 20px;border-radius:14px;margin-top:10px;background:' + (r.rank <= 3 ? "rgba(95,235,169,0.10)" : "rgba(255,255,255,0.05)") + ';border:1px solid ' + (r.rank <= 3 ? "rgba(95,235,169,0.45)" : "rgba(255,255,255,0.12)") + '">' +
+        '<span class="disp" style="font-size:34px;width:52px;text-align:center;color:' + (r.rank <= 3 ? "var(--mint)" : "rgba(255,255,255,0.5)") + '">' + r.rank + "</span>" +
+        '<span style="flex:1;font-size:24px;font-weight:800">' + esc(r.name) + "</span>" +
+        '<b class="disp" style="font-size:34px">' + live.toLocaleString() + "</b></div>";
+    }).join("");
+    return '<div class="sg"><div class="row" style="justify-content:space-between;padding-top:8px">' +
+      '<div><p class="sg-title">AX PROMPT <span style="color:var(--mint)">CHAMPIONSHIP</span></p><p class="sg-sub">10F 챔피언십 현장 점수 — 실시간 리더보드</p></div>' +
+      '<div class="row" style="gap:6px"><span style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800;letter-spacing:0.08em;color:var(--mint)"><span style="width:9px;height:9px;border-radius:99px;background:#ff5a4e;animation:pulse 1.2s infinite"></span>LIVE</span>' +
+      '<button class="chip" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.3);white-space:nowrap" onclick="App.go(\'admin\')">← 콘솔</button></div></div>' +
+      rows +
+      '<p style="text-align:center;font-size:calc(13px * var(--fs));opacity:0.5;margin-top:16px">운영진 실시간 갱신 · 30~60초 지연 집계 · 상위 3인 시상은 17:00 Outro</p></div>';
   },
 
   game_word: function () {
@@ -2716,7 +2712,6 @@ var Views = {
       h += '<div class="mt-stage" id="mtStage" style="height:42vh;min-height:280px"><canvas id="mtCv"></canvas><div class="mt-flash" id="mtFlash"></div></div>' +
         '<div class="mt-count"><span class="disp" id="mtN">' + mtPoints().toLocaleString() + '</span><span class="tot">/ 2,026</span><span class="pct" id="mtPct"></span></div>' +
         '<div class="mt-bar"><i id="mtBar"></i></div>' +
-        '<div class="mt-steps">' + MT_STEPS.map(function (s2, i2) { return '<span id="mtStep' + i2 + '">' + s2[0] + "%<br>" + esc(s2[1]) + "</span>"; }).join("") + "</div>" +
         '<p style="text-align:center;font-size:calc(14px * var(--fs));opacity:0.55;margin-top:12px">휴대폰 카메라로 QR을 스캔하거나 포털 배너로 접속하세요 — 30초면 함께할 수 있습니다</p>';
     }
     return h + "</div>";
@@ -2864,7 +2859,7 @@ var AdminTabs = {
     var resv2 = resvAll().filter(function (r) { return r.room === 2 && ["booked", "checked", "done"].indexOf(r.status) >= 0; }).length;
     return '<div class="grid2 mb12">' +
       [["동시 접속", c.online.toLocaleString()], ["아이디어", c.ideas.toLocaleString()], ["퀴즈 참여", c.quiz.toLocaleString()], ["마음펀드 나눔", c.heart.toLocaleString() + "건"],
-       ["커피 나눔 잔여", coffeeLeft() + "/" + FESTIVAL.coffeeTotal], ["패스포트(내 기기)", st.length + "/" + STAMPS.length],
+       ["커피 나눔 잔여", coffeeLeft() + "/" + FESTIVAL.coffeeTotal], ["패스포트(내 기기)", st.length + "/" + STAMP_GOAL],
        ["상담 예약 (룸②)", resv2 + "/" + resvSlots().length], ["QR퀴즈 통과(내 기기)", wqPassedCount() + "/3 · 응모권 " + S.get("entries", []).length]].map(function (x) {
         return '<div class="card soft"><p class="muted" style="font-size:calc(13px * var(--fs))">' + x[0] + '</p><p class="disp" style="margin-top:4px;font-size:20px;color:var(--hi)">' + x[1] + "</p></div>";
       }).join("") + "</div>" +
@@ -2875,10 +2870,11 @@ var AdminTabs = {
       '<button class="btn" onclick="App.go(\'wall_wave\')">AX Wave /wall/wave</button>' +
       '<button class="btn" onclick="App.go(\'wall_live\')">라이브 보드 /wall/live</button>' +
       '<button class="btn" onclick="App.go(\'wall_metowe\')">ME to WE 월 /wall/metowe</button>' +
+      '<button class="btn" onclick="App.go(\'wall_rank\')">챔피언십 랭킹 /wall/rank</button>' +
       '<button class="btn" onclick="App.go(\'screen\')">17F 송출뷰 /screen</button></div>' +
       '<p style="margin-top:8px;font-size:calc(12px * var(--fs));color:var(--faint);line-height:1.6">정식판 공통 요건: 무인 10시간 · 1시간 자가 새로고침 · 네트워크 끊김 시 캐시 표시(에러 화면 금지) · 키오스크 자동 재실행 · 집계는 캐시 API만 — 배포 단계에서 적용 (기획서 v2 §5-3)</p></div>' +
       '<p style="font-size:calc(12.5px * var(--fs));color:var(--faint);line-height:1.6">※ 프로토타입 v10 (260822 · 기획서 v2 반영): 전사 수치는 시뮬레이션. KPI 목표(v16): 200명 멈춤 · 120명 아이디어 · 60명 완주 · 20건 과제화 검토. 부스 피드백 ' + S.get("booth_fb", []).length + "건 · 시연 신청 " + S.get("demo_reqs", []).length + "건.</p>" +
-      '<div class="card mt16"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">대형경품 추첨</b><p class="muted" style="margin-top:3px;font-size:calc(14px * var(--fs))">조건: 패스포트 5종 완주 (자동 응모) · 포인트 가중치</p>' +
+      '<div class="card mt16"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">대형경품 추첨</b><p class="muted" style="margin-top:3px;font-size:calc(14px * var(--fs))">조건: 패스포트 완주 — 8개 경로 중 5개 (자동 응모) · 포인트 가중치</p>' +
       '<button class="btn mint" style="margin-top:10px" onclick="drawWinner()">추첨 실행</button>' +
       (winner ? '<p style="margin-top:10px;background:var(--tint);border-radius:6px;padding:12px;text-align:center;font-weight:800;color:var(--mint)">당첨: ' + esc(winner) + "</p>" : "") + "</div>" +
       '<div class="card mt16 soft"><b style="font-size:calc(14.5px * var(--fs));color:var(--hi)">18F 커피 나눔 (무인)</b><p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">내 기기 나눔권: ' + (used ? "사용 완료 " + fmtTime(used) : S.get("coffee_issued", false) ? "발급됨 (미사용)" : "미발급") + "</p></div>";
@@ -2921,11 +2917,11 @@ function coffeeCouponHtml() {
 }
 function specialHtml() {
   var st = S.get("stamps", []);
-  if (st.length < STAMPS.length) {
+  if (st.length < STAMP_GOAL) {
     return '<div class="coupon locked"><div class="head"><b>★ 완주 스페셜권</b><span class="badge gray">' + st.length + "/5</span></div>" +
-      '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">패스포트 5종을 모두 채우면 열리는 프리미엄 보상 — 18F 프리미엄 디저트 세트 + 대형경품 자동 응모.</p></div></div>';
+      '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">8개 경로 중 5개를 채우면 열리는 프리미엄 보상 — 18F 프리미엄 디저트 세트 + 대형경품 자동 응모.</p></div></div>';
   }
-  return '<div class="coupon" style="border-color:var(--blue)"><div class="head" style="background:var(--blue);color:#fff"><b>★ 완주 스페셜권</b><span class="badge mint">5/5</span></div>' +
+  return '<div class="coupon" style="border-color:var(--blue)"><div class="head" style="background:var(--blue);color:#fff"><b>★ 완주 스페셜권</b><span class="badge mint">완주</span></div>' +
     '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">패스포트 완주자 전용 — 18F에서 프리미엄 디저트 세트로 교환 + 대형경품 응모 완료. &ldquo;손에 쥐는&rdquo; 특별한 보상이에요.</p></div></div>';
 }
 
@@ -3000,6 +2996,7 @@ function gameClear(flagKey) {
   if (!S.get(flagKey, false)) {
     S.set(flagKey, true);
     bePush("game:" + flagKey, "", true);
+    awardStamp("p8");
     setTimeout(function () { toast("게임 클리어! 추첨 가중치 +" + GAME_POINTS + "P"); }, 300);
   }
 }
@@ -3103,11 +3100,13 @@ function gwRoundClear() {
   GW.score += LINK_PT_ROUND;
   GW.done.push(GW.r);
   gwPaintClear();
-  GW.nextT = setTimeout(function () {
-    GW.nextT = null;
-    if (GW.r >= LINK_ROUNDS.length - 1) gwFinish();
-    else { GW.r++; gwRound(); GW.paused = false; gwPaint(); }
-  }, LINK_NEXT_DELAY);
+  GW.nextT = setTimeout(gwNext, LINK_NEXT_DELAY);   /* 방치 대비 자동 진행 — 기본은 버튼으로 넘어간다 */
+}
+function gwNext() {
+  if (GW.nextT) { clearTimeout(GW.nextT); GW.nextT = null; }
+  if (!GW.on || GW.over) return;
+  if (GW.r >= LINK_ROUNDS.length - 1) gwFinish();
+  else { GW.r++; gwRound(); GW.paused = false; gwPaint(); }
 }
 function gwPaintClear() {
   var root = el("gwRoot"); if (!root) return;
@@ -3119,8 +3118,8 @@ function gwPaintClear() {
     '<p class="disp" style="font-size:30px;margin-top:6px;color:var(--mint)">+' + LINK_PT_ROUND + '</p>' +
     '<div class="sline" style="background:none;border:0;margin:12px 0 0;padding:0">' + full + "</div>" +
     '<p class="next" style="margin-top:12px">' + esc(R.why) + "</p>" +
-    '<p style="margin-top:14px;font-size:calc(13px * var(--fs));opacity:0.55;font-weight:700">' +
-    (GW.r >= LINK_ROUNDS.length - 1 ? "결과 집계 중 · · ·" : "다음 문장 준비 중 · · ·") + "</p></div>";
+    '<button class="btn mint" style="margin-top:18px;padding:14px" onclick="gwNext()">' +
+    (GW.r >= LINK_ROUNDS.length - 1 ? "결과 보기 →" : "다음 문장 →") + "</button></div>";
 }
 function gwFinish() {
   if (!GW.on || GW.over) return;
@@ -3288,7 +3287,7 @@ function gcEnd() {
     S.set("wq_attempts", [{ set: "wall1", score: 80, passed: true, attemptNo: 1, dept: "보상부문", ts: Date.now() }]);
     S.set("entries", [{ id: "e1", code: "E-4821", source: "quiz", set: "wall1", ts: Date.now() }]);
     var target = dm[1] || "home";
-    if (["admin", "screen", "wall_quiz", "wall_wave", "wall_live", "wall_metowe"].indexOf(target) >= 0) S.set("admin_authed", true);
+    if (["admin", "screen", "wall_quiz", "wall_wave", "wall_live", "wall_metowe", "wall_rank", "wall_tv"].indexOf(target) >= 0) S.set("admin_authed", true);
     splash.classList.add("gone");
     el("frame").classList.remove("splash-mode");
     el("app").hidden = false;
