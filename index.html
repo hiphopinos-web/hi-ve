@@ -253,12 +253,15 @@
   .tl li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 999px; background: var(--paper); border: 2px solid #B2BCCD; }
   .tl li.now::before { background: var(--mint); border-color: var(--mint); }
   .stamp5 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .stamp5 .cell { aspect-ratio: 1; border: 1px solid var(--line); border-radius: 14px; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 4px; color: var(--tx); }
+  .stamp5 .cell { position: relative; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 14px; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 4px; color: var(--tx); cursor: pointer; }
+  .stamp5 .cell:active { background: var(--surface2); }
   .stamp5 .cell.got { background: var(--tint); color: var(--acc2); border-color: var(--tint2); }
-  .stamp5 .cell .n { font-family: var(--disp); font-size: calc(16.5px * var(--fs)); }
+  .stamp5 .cell .ic { width: 24px; height: 24px; color: var(--faint); }
+  .stamp5 .cell .ic svg { width: 24px; height: 24px; display: block; }
+  .stamp5 .cell.got .ic { color: var(--acc2); }
+  .stamp5 .cell .ck { position: absolute; top: 5px; right: 7px; font-size: calc(11px * var(--fs)); font-weight: 900; color: var(--acc2); }
   .stamp5 .cell .t { font-size: calc(10px * var(--fs)); font-weight: 700; text-align: center; line-height: 1.25; color: var(--muted); }
   .stamp5 .cell.got .t { color: var(--acc2); }
-  .stamp5 .cell.got .n { color: var(--acc2); }
   .coupon { border-radius: 20px; overflow: hidden; margin-bottom: 12px; border: 1px solid var(--line); }
   .coupon .head { background: var(--tint); color: var(--hi); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
   .coupon .head b { font-size: calc(15.5px * var(--fs)); }
@@ -301,7 +304,8 @@
   .flcard .no small { font-size: calc(11px * var(--fs)); color: var(--faint); letter-spacing: 0.1em; margin-left: 5px; }
   .flcard b { display: block; margin-top: 3px; font-size: calc(15.5px * var(--fs)); color: var(--hi); }
   .flcard p { margin-top: 3px; font-size: calc(12.5px * var(--fs)); color: var(--muted); line-height: 1.45; }
-  .fl-chips { display: flex; gap: 6px; margin-bottom: 12px; }
+  /* 층 칩 = 프로그램 탭의 기준선. 스크롤해도 헤더 바로 아래에 붙어 있게 한다(--stick = 헤더 실측 높이) */
+  .fl-chips { display: flex; gap: 6px; position: sticky; top: var(--stick, 96px); z-index: 20; background: var(--bg); margin: -16px -16px 12px; padding: 12px 16px 10px; }
   .fl-chips button { flex: 1; border: 1px solid var(--line); background: var(--white); color: var(--muted); font-family: inherit; font-weight: 800; font-size: calc(14.5px * var(--fs)); padding: 8px 0 7px; border-radius: 11px; cursor: pointer; line-height: 1.2; }
   .fl-chips button small { display: block; margin-top: 1px; font-size: calc(10px * var(--fs)); font-weight: 700; opacity: 0.65; letter-spacing: -0.03em; }
   .fl-chips button.on { background: var(--mint); border-color: var(--mint); color: #fff; }
@@ -428,10 +432,6 @@
   .hero2 .eb { font-size: calc(12px * var(--fs)); font-weight: 800; letter-spacing: 0.09em; opacity: 0.85; }
   .hero2 .ttl { margin-top: 7px; font-size: calc(23px * var(--fs)); font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; }
   .hero2 .sub { margin-top: 8px; text-align: left; font-size: calc(13.5px * var(--fs)); font-weight: 700; line-height: 1.6; color: #fff; opacity: 0.9; }
-  .hero2 .rws { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
-  .hero2 .rws .rw { display: flex; align-items: center; gap: 8px; align-self: flex-start; background: rgba(255,255,255,0.18); border-radius: 999px; padding: 6px 13px; }
-  .hero2 .rws .rw b { font-family: var(--disp); font-size: 14px; letter-spacing: 0.02em; }
-  .hero2 .rws .rw span { font-size: calc(12.5px * var(--fs)); font-weight: 700; opacity: 0.92; }
   .hero2 .p5 { display: flex; gap: 4px; margin-top: 14px; }
   .hero2 .p5 span { flex: 1; height: 9px; border-radius: 2px; background: rgba(255,255,255,0.32); }
   .hero2 .p5 span.on { background: #fff; }
@@ -732,15 +732,27 @@ var FESTIVAL = {
 };
 /* short = 5칸 스탬프 그리드처럼 좁은 자리에 쓰는 짧은 이름 */
 var STAMPS = [
-  { id: "p1", no: "01", title: "1F 전시", short: "1F 전시", desc: "1F 전시존 QR 스캔", how: "현장 QR", code: "AXP1", go: "guide" },
-  { id: "p2", no: "02", title: "AX Now! 체험", short: "부스 체험", desc: "HiDI-Q 또는 HI-Helper 부스 1곳 체험", how: "현장 QR", code: "AXP2", go: "booth" },
-  { id: "p3", no: "03", title: "17F 강의", short: "17F 강의", desc: "17F 오후 강의 1회 참석 (10F 제외)", how: "현장 QR", code: "AXP3", go: "guide_time" },
-  { id: "p4", no: "04", title: "라이브 퀴즈", short: "라이브 퀴즈", desc: "키노트 퀴즈 1회 이상 응답", how: "자동 적립", go: "home" },
-  { id: "p5", no: "05", title: "아이디어 한 줄", short: "아이디어", desc: "아이디어 1건 제출", how: "자동 적립", go: "ideas" },
-  { id: "p6", no: "06", title: "AI 포토부스", short: "포토부스", desc: "1F AI 포토부스 촬영 완료", how: "현장 QR", code: "AXP6", go: "guide" },
-  { id: "p7", no: "07", title: "QR 퀴즈 통과", short: "QR 퀴즈", desc: "DAP Wall QR 퀴즈 1세트 통과 (60점 이상)", how: "자동 적립", go: "wq_list" },
-  { id: "p8", no: "08", title: "미니게임 클리어", short: "미니게임", desc: "AX 링크 또는 초성퀴즈 1종 클리어", how: "자동 적립", go: "ev_games" }
+  { id: "p1", no: "01", title: "1F 전시", short: "1F 전시", desc: "1F 전시존 QR 스캔", how: "현장 QR", code: "AXP1", tap: "progOpenFl(1,'wall')" },
+  { id: "p2", no: "02", title: "AX Now! 체험", short: "부스 체험", desc: "HiDI-Q 또는 HI-Helper 부스 1곳 체험", how: "현장 QR", code: "AXP2", tap: "App.go('booth')" },
+  { id: "p3", no: "03", title: "17F 강의", short: "17F 강의", desc: "17F 오후 강의 1회 참석 (10F 제외)", how: "현장 QR", code: "AXP3", tap: "progOpenFl(17,'hall')" },
+  { id: "p4", no: "04", title: "라이브 퀴즈", short: "라이브 퀴즈", desc: "키노트 퀴즈 1회 이상 응답", how: "자동 적립", tap: "App.go('home')" },
+  { id: "p5", no: "05", title: "아이디어 한 줄", short: "아이디어", desc: "아이디어 1건 제출", how: "자동 적립", tap: "App.go('ideas')" },
+  { id: "p6", no: "06", title: "AI 포토부스", short: "포토부스", desc: "1F AI 포토부스 촬영 완료", how: "현장 QR", code: "AXP6", tap: "sessOpen('photo')" },
+  { id: "p7", no: "07", title: "QR 퀴즈 통과", short: "QR 퀴즈", desc: "DAP Wall QR 퀴즈 1세트 통과 (60점 이상)", how: "자동 적립", tap: "App.go('wq_list')" },
+  { id: "p8", no: "08", title: "미니게임 클리어", short: "미니게임", desc: "AX 링크 또는 초성퀴즈 1종 클리어", how: "자동 적립", tap: "App.go('ev_games')" }
 ];
+/* 스탬프 픽토그램 · 탭 아이콘과 같은 기하 라인(stroke=currentColor) · 이모지 금지 원칙 유지 */
+var SICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">';
+var STAMP_ICONS = {
+  p1: SICO + '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15.6l4.6-4.2 3.4 3 4-4.6L21 15"/><circle cx="8.6" cy="9.2" r="1.3"/></svg>',
+  p2: SICO + '<path d="M7.5 4.5l11 6.4-4.8 1.3-1.3 4.8z"/><path d="M4 4l1.6 1.6M4 9.5h2.2M9.5 4v2.2"/></svg>',
+  p3: SICO + '<rect x="3" y="4" width="18" height="11.5" rx="2"/><path d="M12 15.5v4"/><path d="M8 19.5h8"/><path d="M7.5 11.8l3.2-3.3 2.6 2.6 3.2-3.8"/></svg>',
+  p4: SICO + '<path d="M4 5h16v10.5h-7.2L8.6 19.6V15.5H4z"/><path d="M9.9 8.6a2.2 2.2 0 0 1 4.3.7c0 1.5-2.1 1.6-2.1 2.9"/><path d="M12.1 13.4h.01"/></svg>',
+  p5: SICO + '<path d="M12 3a6 6 0 0 1 6 6c0 2.3-1.3 3.6-2.3 4.7-.6.7-.9 1.3-1 2.3h-5.4c-.1-1-.4-1.6-1-2.3C7.3 12.6 6 11.3 6 9a6 6 0 0 1 6-6z"/><path d="M9.8 19.5h4.4"/><path d="M10.6 22h2.8"/></svg>',
+  p6: SICO + '<path d="M3.5 7.8h3.9l1.5-2.3h6.2l1.5 2.3h3.9v11.4h-17z"/><circle cx="12" cy="13.4" r="3.3"/></svg>',
+  p7: SICO + '<rect x="3.2" y="3.2" width="7" height="7" rx="1.4"/><rect x="13.8" y="3.2" width="7" height="7" rx="1.4"/><rect x="3.2" y="13.8" width="7" height="7" rx="1.4"/><path d="M13.8 13.8h3.1v3.1h-3.1z"/><path d="M20.8 13.8v1.8M17.9 20.8h2.9M13.8 20.8h1.4"/></svg>',
+  p8: SICO + '<rect x="2.5" y="7.2" width="19" height="9.6" rx="4.3"/><path d="M6.6 10.6v3.2M5 12.2h3.2"/><path d="M15.6 11.4h.01M18 13.4h.01"/></svg>'
+};
 /* 스탬프 단계별 보상 사다리 (260829 사용자 확정) · 1개부터 매 칸 보상, 5개에서 극적 보상 + 대형경품 응모권
    2~4단계 품목은 미정. 확정되면 nm/d만 바꾸면 전 화면에 반영된다 */
 var REWARD_LADDER = [
@@ -757,17 +769,17 @@ var TIMELINE = [
   { time: "09:40", end: "11:20", title: "Keynote", short: "CTO 키노트 · 파트가 끝날 때마다 라이브 퀴즈가 열립니다", place: "17F 대강당", desc: "CTO · 「데이터 비즈니스 컴퍼니로서의 현대해상과 AX」. ⓪AX란 무엇인가 → ①걱정에 먼저 답하기 → ②당사 AX 로드맵 → ③현업의 노력(DAP). 파트가 끝날 때마다 라이브 퀴즈!", tag: "전직원" },
   { time: "11:20", end: "13:10", title: "점심 · 자유 관람", short: "1F 전시로 패스포트를 채우고, 18F에서 커피 한 잔", place: "1F 전시 상시 · 18F 커피 나눔 오픈", desc: "1F 전시 3분 코스로 패스포트를 채우고, 18F에서 커피 한 잔 받아가세요.", tag: "휴식" },
   { time: "13:00", end: "16:30", title: "AX 커피챗", short: "아이디어를 낸 분들을 30분 간격으로 매칭합니다", place: "18F 라운지", desc: "아이디어 제출자 매칭 · 30분 간격 × 2테이블. 매칭되면 앱 알림으로 자리·시간을 알려드려요.", tag: "매칭제" },
-  { time: "13:10", end: "14:40", title: "강연1 · AI Agentic 시대의 일하는 방식 변화", short: "구태훈 박사(AWS) · 오후 메인 강연", place: "17F 대강당", desc: "구태훈 박사(AWS) · AI Agent가 바꾸는 일하는 방식. 소극참여자도 부담 없이 듣는 오후 메인 강연.", tag: "전직원" },
+  { time: "13:10", end: "14:40", title: "강연1 · AI Agentic 시대의 일하는 방식 변화", short: "구태훈 박사(AWS) · 오후 메인 강연", place: "17F 대강당", desc: "구태훈 박사(AWS) · AI Agent가 바꾸는 일하는 방식. 사전 지식 없이 편하게 들을 수 있는 오후 메인 강연.", tag: "전직원" },
   { time: "13:10", end: "16:30", title: "10F 오후 세션", short: "Track A·B 실습 · 바이브코딩 · 현장 프로그램 · 신청제", place: "10F Heart · 컨퍼런스룸", desc: "통계·리서치 자동화 실습(Track A·B) · 바이브코딩 실습(AWS) · 현장 프로그램(사내강사 세션+실습). 프로그램 탭에서 잔여석 확인 후 신청하세요.", tag: "신청제" },
-  { time: "15:00", end: "16:30", title: "강연2 · 확정 시 공지", short: "체험형 vs 강의형 · 확정되는 대로 공지됩니다", place: "17F 대강당", desc: "A안 체험형 · B안 강의형 중 확정되는 대로 이 자리에서 공지합니다.", tag: "전직원" },
+  { time: "15:00", end: "16:30", title: "강연2 · 확정 시 공지", short: "내용이 확정되면 앱으로 안내드립니다", place: "17F 대강당", desc: "강연 내용이 확정되는 대로 이 자리에서 안내드립니다.", tag: "전직원" },
   { time: "16:50", end: "17:30", title: "Outro · DAP 시상", short: "Wrap up · DAP 시상 · 대형경품 추첨", place: "17F 대강당", desc: "CSO · Wrap up, DAP 우수 성과자 시상, 패스포트 완주 대형경품 추첨 발표!", tag: "피날레" }
 ];
 var NOW_INDEX = 1;
 var FLOORS = [
   { no: "18", nm: "커피챗 · 라운지", cls: "f-mint", items: ["커피 나눔 바 · 선착순 500잔 (11:30~16:30, 키노트 중 미운영)", "AX 커피챗 · 매칭제 14세션", "키링 DIY 스테이션 (H.E.A.R.T 참)", "폴라로이드 포토스팟 (옥외 정원)", "마음펀드 나눔 태그 (옵트인 1,000원 기부)"] },
   { no: "17", nm: "키노트 · 강연", cls: "f-ink", items: ["대강당(235석) · Keynote · 오후 루프 강의 · Outro/DAP 시상", "로비 · 강의 연계 부스"] },
-  { no: "10", nm: "실습 강의", cls: "f-blue", items: ["본사 심화 세션 Lv1 「AX 첫 성공부터」 · Lv2 「내 업무에 어떻게 쓸까」", "현장 직군별 세션 (영업·보상·마케팅)", "VIP 라운지"] },
-  { no: "01", nm: "전시 · 체험 · 상담", cls: "f-wh", items: ["이벤트존 4스테이션 · INFO · 「내 3시간을 돌려줘」 보드 · 라이브 스크린 · 참가상(1F 한정 200개)", "DAP존 (미니 강의 · 과제 상담)", "기술지원부문 부스 · AX 헬프데스크", "체크인 (외부 주차장) · 웰컴키트"] }
+  { no: "10", nm: "실습 강의", cls: "f-blue", items: ["Track A · 통계·현황 리포팅 자동화 실습 (26석)", "Track B · 외부 자료 리서치 자동화 실습 (26석)", "바이브코딩 실습 · AWS (40석)", "현장 프로그램 · 사내강사 세션 (155석)"] },
+  { no: "01", nm: "전시 · 체험 · 상담", cls: "f-wh", items: ["이벤트존 · INFO 데스크 · 「내 3시간을 돌려줘」 보드 · 라이브 스크린 · 참가상(1F 한정 200개)", "DAP존 (미니 강의 · 과제 상담)", "기술지원부문 부스 · AX 헬프데스크", "체크인 (외부 주차장) · 웰컴키트"] }
 ];
 var SLOTS = [
   { time: "13:00–13:30", dept: "5F 보상부문" },
@@ -780,9 +792,9 @@ var SESSIONS = [
   { id: "key", fl: 17, zone: "hall", kind: "seat", ttl: "Keynote", sub: "데이터 비즈니스 컴퍼니로서의 현대해상과 AX", who: "CTO", tm: "09:40~11:20", cap: 235, seed: 187, video: 1,
     desc: "현대해상 AX의 큰 그림을 전 구성원이 함께 공유하는 핵심 프로그램. 파트가 끝날 때마다 라이브 퀴즈가 열립니다." },
   { id: "l1", fl: 17, zone: "hall", kind: "seat", ttl: "강연1", sub: "AI Agentic 시대의 일하는 방식 변화", who: "구태훈 박사 (AWS)", tm: "13:10~14:40", cap: 235, seed: 141, video: 1,
-    desc: "AI Agent가 바꾸는 일하는 방식 · 소극참여자도 부담 없이 듣는 오후 메인 강연." },
-  { id: "l2", fl: 17, zone: "hall", kind: "seat", ttl: "강연2", sub: "체험형 vs 강의형 (확정 시 공지)", who: "미정 · 협의 중", tm: "15:00~16:30", cap: 235, seed: 96, video: 0,
-    desc: "A안 체험형 · B안 강의형 중 확정되는 대로 이 카드에서 내용을 공지합니다. 지금 신청해두면 확정 알림을 드려요." },
+    desc: "AI Agent가 바꾸는 일하는 방식 · 사전 지식 없이 편하게 들을 수 있는 오후 메인 강연." },
+  { id: "l2", fl: 17, zone: "hall", kind: "seat", ttl: "강연2", sub: "내용 확정 시 안내", who: "확정 시 안내", tm: "15:00~16:30", cap: 235, seed: 96, video: 0,
+    desc: "강연 내용이 확정되면 이 카드에서 바로 안내드립니다. 지금 신청해두면 확정 알림을 드려요." },
   { id: "ta", fl: 10, zone: "heart18", kind: "seat", ttl: "Track A", sub: "통계·현황 리포팅 자동화 실습", who: "본사 프로그램 · 외부 강사 2명", tm: "13:10~16:30", cap: 26, seed: 22, video: 1,
     desc: "매월 손으로 만들던 통계 리포트를 자동 파이프라인으로. 내 업무와 같은 재료로 실습하고, 마지막 15분에 과제를 제출하면 세션이 종료됩니다(200분)." },
   { id: "tb", fl: 10, zone: "heart18", kind: "seat", ttl: "Track B", sub: "외부 자료 리서치 자동화 실습", who: "본사 프로그램 · 외부 강사 2명", tm: "13:10~16:30", cap: 26, seed: 19, video: 1,
@@ -791,7 +803,7 @@ var SESSIONS = [
     steps: [["개념 이해 · 오프닝 강의", "30분"], ["환경 준비 & 두 가지 개발 방식", "30분"], ["5개 현장 실습 (Lab 1~5)", "90분"], ["Wrap-up & 우리 업무 적용 토론", "30분"]],
     desc: "코드 한 줄 직접 쓰지 않고, 아이디어를 손에 잡히는 결과물로. 테트리스 게임에서 시작해 실적 분석 · 약관 챗봇 · 보험료 시뮬레이터까지." },
   { id: "fld", fl: 10, zone: "conf", kind: "seat", ttl: "현장 프로그램", sub: "사내강사 세션 + 실습", who: "현장 우수사례 사내강사", tm: "13:00~16:40", cap: 155, seed: 150, video: 1,
-    desc: "인터뷰 시청 → 사내강사 세션 → 내 직무 사례 실습. 사업부별 T/O를 배분해 초청합니다." },
+    desc: "인터뷰 시청 → 사내강사 세션 → 내 직무 사례 실습." },
   { id: "photo", fl: 1, zone: "promo", kind: "slot", ttl: "AI 포토부스", sub: "ME to WE 프레임", who: "1F 홍보존", tm: "10:00~17:00", per: 60, cap: 20, video: 0,
     desc: "촬영 2~3분, 결과물은 ME to WE 프레임으로 출력. 촬영 완료 = 「1F 전시 방문」 스탬프." },
   { id: "kring", fl: 18, zone: "lounge", kind: "slot", ttl: "키링 DIY 스테이션", who: "18F 라운지", tm: "11:30~16:30", per: 30, cap: 8, video: 0,
@@ -825,10 +837,10 @@ var PROG_FL = {
     zones: [
       { id: "heart56", nm: "바이브코딩 실습 (Heart 5·6)", d: "AWS · 코드 없이 만드는 3시간 · 40석" },
       { id: "heart18", nm: "본사 프로그램 (Heart 1 · 7~8)", d: "Track A 통계 리포팅 · Track B 외부 리서치 · 각 26석" },
-      { id: "conf", nm: "현장 프로그램 (컨퍼런스룸)", d: "사내강사 세션 + 실습 · 155석 (사업부별 T/O)" },
+      { id: "conf", nm: "현장 프로그램 (컨퍼런스룸)", d: "사내강사 세션 + 실습 · 155석" },
       { id: "rest", nm: "참가자 휴식 공간", d: "세션 사이 쉬어 가는 곳" },
-      { id: "staff", nm: "지휘통제실 (STAFF)", d: "행사 운영 모니터링 · 참가자 출입 없음", mute: 1 },
-      { id: "vip", nm: "VIP 라운지", d: "CEO · CSO · CTO 우수 참가자 티타임", mute: 1 }] },
+      { id: "staff", nm: "운영 사무실", d: "행사 운영 공간 · 참가자 출입 없음", mute: 1 },
+      { id: "vip", nm: "VIP 라운지", d: "초청 티타임 · 참가자 출입 없음", mute: 1 }] },
   17: {
     course: ["대강당 입장 · 좌석 자유", "Keynote · 강연 참석 (강의 스탬프)", "쉬는 시간엔 로비 연계 부스"],
     zones: [
@@ -2149,7 +2161,7 @@ var App = {
     pp_reward: "passport", pp_code: "passport", entries: "passport",
     ideas_mine: "passport", ev_draw: "passport",
     /* 일정·지도 · 어디로 갈지 */
-    guide_time: "guide", sess_d: "guide", guide_slots: "guide", crowd: "guide",
+    guide_time: "guide", sess_d: "guide", guide_slots: "guide", crowd: "home",
     admin: "home", screen: "admin",
     wall_quiz: "admin", wall_wave: "admin", wall_live: "admin", wall_metowe: "admin", wall_rank: "admin", wall_tv: "wall_metowe"
   },
@@ -2210,6 +2222,8 @@ var App = {
         '<button class="gear" onclick="fsSheet(true)" aria-label="설정">' + GEAR_SVG + "</button></div>";
     }
     tb.style.display = SIGNAGE.indexOf(v) >= 0 ? "none" : "";
+    /* 헤더 높이를 실측해 sticky 기준선으로 넘긴다 (홈/탭루트/서브 화면마다 높이가 다르다) */
+    el("frame").style.setProperty("--stick", tb.offsetHeight + "px");
     var nav = el("tabbar");
     nav.style.display = (SIGNAGE.indexOf(v) >= 0 || v === "game_word" || v === "game_cho") ? "none" : "flex";
     var activeTab = this.tabOf(v);
@@ -2469,7 +2483,7 @@ function progMapSvg(fl) {
     pmn(1, 342, 130) + pmn(2, 240, 130) + pmn(3, 102, 130) + pmn(4, 102, 66) + pmn(5, 102, 188) +
     '<text x="180" y="248" text-anchor="middle" font-size="10" font-weight="800" fill="#A39C96">▲ 정문 입구</text></svg>';
   if (fl === 10) return '<svg viewBox="0 0 360 246">' +
-    pmz("staff", 12, 12, 82, 82, "지휘통제실", "STAFF", "mute") +
+    pmz("staff", 12, 12, 82, 82, "운영 사무실", "STAFF", "mute") +
     pmz("heart56", 100, 12, 116, 66, "바이브코딩 실습", "Heart 5·6 · AWS", "book") +
     pmz("heart18", 222, 12, 126, 82, "Track A·B 실습", "Heart 1·7~8", "book") +
     pmz("rest", 100, 84, 116, 34, "참가자 휴게 공간", "", "open") +
@@ -2542,18 +2556,12 @@ function myScheduleHtml() {
 /* 히어로 · 스탬프 완주 챌린지 (풀컬러 카드 + 흰 CTA 내장) */
 function heroChalHtml() {
   var n = S.get("stamps", []).length;
-  var entered = S.get("raffle_entered", false);
   var dots = [1, 2, 3, 4, 5].map(function (i) { return '<span class="' + (n >= i ? "on" : "") + '"></span>'; }).join("");
   return '<div class="hero2">' +
     '<span class="deco"></span><span class="deco2"><span class="tri"></span><span class="tri"></span></span>' +
     '<p class="eb">STAMP CHALLENGE</p>' +
     '<p class="ttl">스탬프 5개 완주 챌린지</p>' +
     '<p class="sub">1개만 적립해도 보상이 열리고,<br>5개를 채우면 대형경품 추첨까지 자동 응모</p>' +
-    '<div class="rws">' +
-    '<span class="rw"><b>' + n + " / " + STAMP_GOAL + '</b><span>지금까지 적립</span></span>' +
-    (entered ? '<span class="rw"><b>응모 완료</b><span>대형경품 추첨</span></span>' :
-      '<span class="rw"><b>' + Math.max(0, STAMP_GOAL - n) + '개</b><span>완주까지 남음</span></span>') +
-    "</div>" +
     '<div class="p5">' + dots + "</div>" +
     '<button class="cta" onclick="App.go(\'pp_code\')">' + (n >= STAMP_GOAL ? "내 스탬프 확인하기" : "스탬프 적립하기") + "</button></div>";
 }
@@ -2700,8 +2708,13 @@ var Views = {
       "</div></div>" +
       '<div class="stamp5 mb12">' + STAMPS.map(function (s) {
         var got = st.indexOf(s.id) >= 0;
-        return '<div class="cell' + (got ? " got" : "") + '"><span class="n">' + s.no + '</span><span class="t">' + (s.short || s.title) + "</span></div>";
+        /* 칸 자체가 해당 활동으로 가는 입구 · 적립된 칸도 눌러 다시 확인할 수 있게 둔다 */
+        return '<div class="cell' + (got ? " got" : "") + '" onclick="' + s.tap + '">' +
+          (got ? '<span class="ck">✔</span>' : "") +
+          '<span class="ic">' + STAMP_ICONS[s.id] + '</span>' +
+          '<span class="t">' + (s.short || s.title) + "</span></div>";
       }).join("") + "</div>" +
+      '<p style="margin:-6px 2px 14px;font-size:calc(12.5px * var(--fs));color:var(--faint)">칸을 누르면 해당 활동으로 이동합니다</p>' +
       '<div class="menu">' +
       menuItem("pp_code", "01", "스탬프 적립하기", "QR 스캔 · 8개 경로 · 담당자 적립", "") +
       menuItem("pp_reward", "02", "나의 보상", "커피 나눔권 · 완주 스페셜권", rewardBadge) +
@@ -2716,8 +2729,8 @@ var Views = {
     return '<button class="btn mint mb8" style="padding:15px" onclick="qrScanOpen()">부스 QR 스캔하기</button>' +
       '<div class="card soft mb8"><p class="muted" style="font-size:calc(14.5px * var(--fs))">현장 스탬프는 부스 QR을 찍으면 바로 적립됩니다. 8개 경로 중 <b style="color:var(--hi)">5개</b>면 완주.</p></div>' + STAMPS.map(function (s) {
         var got = st.indexOf(s.id) >= 0;
-        var tap = !got && s.go;   /* 미적립 경로는 카드 탭 = 해당 기능으로 진입 */
-        return '<div class="card soft mb8" style="display:flex;align-items:center;gap:12px;padding:12px 14px' + (tap ? ";cursor:pointer\" onclick=\"App.go('" + s.go + "')" : "") + '">' +
+        var tap = !got && s.tap;   /* 미적립 경로는 카드 탭 = 해당 기능으로 진입 */
+        return '<div class="card soft mb8" style="display:flex;align-items:center;gap:12px;padding:12px 14px' + (tap ? ";cursor:pointer\" onclick=\"" + s.tap : "") + '">' +
           '<span class="disp" style="font-size:calc(19px * var(--fs));color:' + (got ? "var(--mint-deep)" : "var(--faint)") + '">' + s.no + "</span>" +
           '<div style="flex:1"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">' + s.title + '</b><p class="muted" style="font-size:calc(13.5px * var(--fs));margin-top:1px">' + s.desc + "</p></div>" +
           (got ? '<span class="badge ink">적립 ✔</span>' :
@@ -2788,13 +2801,12 @@ var Views = {
         (z.id === "now" ? '<button class="btn" style="margin-top:10px;background:var(--white);border:1px solid var(--line)" onclick="App.go(\'booth\')">부스 안내 · 체험 스탬프</button>' : "") + "</div>" +
         zs.map(function (s) { return sessCard(s); }).join("");
     }).join("");
-    return myHtml + chips + head + map + course + zones +
-      '<div class="sect"><b>안내</b></div>' +
-      '<div class="menu mb12">' +
-      menuItem("guide_time", "01", "전체 타임라인", "지금 · " + esc(TIMELINE[NOW_INDEX].title) + " (" + TIMELINE[NOW_INDEX].time + "~" + TIMELINE[NOW_INDEX].end + ")", '<span class="badge mint">NOW</span>') +
-      menuItem("crowd", "02", "층별 혼잡도", "지금 가장 붐비는 곳을 확인하세요", "") +
-      menuItem("guide_slots", "03", "부문별 우선 관람", "우리 부문 슬롯 10분 전 알림", "") +
-      "</div>";
+    /* 부문별 우선 관람은 1F 이벤트존 전용 안내라 1F를 볼 때만 노출 (구 하단 「안내」 묶음은 폐기) */
+    var slotLink = fl !== 1 ? "" :
+      '<div class="card soft mb12" style="display:flex;align-items:center;gap:10px;padding:13px 15px;cursor:pointer" onclick="App.go(\'guide_slots\')">' +
+      '<span style="flex:1;font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--hi)">우리 부문 우선 관람 시간</span>' +
+      '<span style="color:var(--faint);font-weight:800">›</span></div>';
+    return myHtml + chips + head + map + course + slotLink + zones;
   },
 
   guide_time: function () {
@@ -2857,7 +2869,7 @@ var Views = {
     return '<div class="card soft mb12"><p class="muted">우리 부문 슬롯 10분 전에 앱 알림을 드려요. 슬롯마다 1F 이벤트존의 질문·한정 혜택이 바뀝니다.</p>' +
       SLOTS.map(function (s) {
         return '<div class="row" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)"><b class="disp" style="font-size:calc(15.5px * var(--fs));color:var(--hi)">' + s.time + '</b><span style="font-size:calc(15.5px * var(--fs));font-weight:700;color:var(--muted)">' + s.dept + "</span></div>";
-      }).join("") + '<p style="margin-top:8px;font-size:calc(12.5px * var(--fs));color:var(--faint)">※ 매핑은 예시 · 확정 시 갱신</p></div>';
+      }).join("") + '<p style="margin-top:8px;font-size:calc(12.5px * var(--fs));color:var(--faint)">※ 부문별 시간은 확정되면 앱에서 갱신됩니다</p></div>';
   },
 
   /* ═══ 참여 · 지금 할 수 있는 행동을 성격별로 두 묶음 ═══ */
@@ -3010,7 +3022,7 @@ var Views = {
       '<p style="margin-top:6px;font-size:calc(19px * var(--fs));font-weight:800;color:#fff;line-height:1.4">설명이 아닌,<br>체험으로 증명합니다</p>' +
       '<p class="muted" style="margin-top:6px;font-size:calc(14.5px * var(--fs))">부스 1곳만 체험해도 패스포트 02가 채워져요.</p></div>' +
       '<div class="card mb8"><div class="row" style="justify-content:space-between"><b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">① HI-Helper</b><span class="badge blue">10.1 OPEN</span></div>' +
-      '<p class="muted" style="margin-top:4px;font-size:calc(14.5px * var(--fs))">보험 설계를 돕는 LLM 비서 · ㄷ자 부스 일방통행</p>' +
+      '<p class="muted" style="margin-top:4px;font-size:calc(14.5px * var(--fs))">보험 설계를 돕는 LLM 비서</p>' +
       '<p style="margin-top:8px;font-size:calc(14.5px * var(--fs));line-height:1.8;color:var(--tx)">STEP 1 · 내 보험 설계해보기 (상품 증정)<br>STEP 2 · HiDI-Helper 시연·체험<br>STEP 3 · 피드백 + 체험 완료 스탬프</p></div>' +
       '<div class="card mb12"><div class="row" style="justify-content:space-between"><b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">② HIDI-Q</b><span class="badge blue">11.1 OPEN</span></div>' +
       '<p class="muted" style="margin-top:4px;font-size:calc(14.5px * var(--fs))">업무 문서 AI 비서 · 5분 3-STEP · 문서 3개, 질문 3개로 확인</p>' +
@@ -3782,19 +3794,22 @@ function staffStampGive(id) {
   awardStamp(id);
 }
 /* ── 인앱 QR 스캔 · BarcodeDetector(안드로이드 크롬). 미지원 기기는 기본 카메라로 QR을 찍는 기존 경로 ── */
-var QRS = { stream: null, timer: null, det: null };
+var QRS = { stream: null, timer: null, det: null, busy: false, hint: null };
 function qrScanSupported() { return "BarcodeDetector" in window && navigator.mediaDevices && navigator.mediaDevices.getUserMedia; }
 function qrScanOpen() {
   if (!qrScanSupported()) {
     /* 아이폰 사파리 등 인앱 디코더가 없는 기기 · 기본 카메라로 찍으면 같은 결과가 된다 */
     modalOpen('<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">폰 기본 카메라로 찍어주세요</b>' +
-      '<p class="muted" style="margin-top:8px;font-size:calc(14.5px * var(--fs));line-height:1.7">이 기기는 앱 안에서 QR을 읽을 수 없습니다. 폰의 <b style="color:var(--hi)">기본 카메라</b>를 켜고 부스 QR을 비추면 알림이 뜨고, 누르면 이 앱이 열리면서 스탬프가 바로 적립됩니다.</p>' +
+      '<p class="muted" style="margin-top:8px;font-size:calc(14.5px * var(--fs));line-height:1.7">이 기기는 앱 안에서 QR을 읽을 수 없습니다. 폰의 <b style="color:var(--hi)">기본 카메라</b>를 켜고 부스 QR을 비추기만 하면(촬영 버튼 누를 필요 없이) 상단에 링크 알림이 뜹니다. 누르면 이 앱이 열리면서 스탬프가 바로 적립돼요.</p>' +
       '<button class="btn line" style="margin-top:12px" onclick="modalClose()">알겠습니다</button>');
     return;
   }
   modalOpen('<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">QR 스캔</b>' +
     '<div style="margin-top:10px;border-radius:12px;overflow:hidden;background:#000"><video id="qrVideo" playsinline muted style="width:100%;max-height:56vh;display:block"></video></div>' +
-    '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">부스·전시의 QR을 화면 가운데에 맞춰주세요</p>' +
+    '<p class="muted" style="margin-top:8px;font-size:calc(13.5px * var(--fs))">촬영 버튼은 없습니다. QR을 화면 가운데에 비추면 자동으로 적립돼요</p>' +
+    '<div id="qrHint" style="display:none;margin-top:10px;background:var(--surface2);border-radius:12px;padding:12px 14px">' +
+    '<p class="muted" style="font-size:calc(13.5px * var(--fs));line-height:1.65">잘 안 잡히나요? QR에서 <b style="color:var(--hi)">20~30cm</b> 떨어뜨리고, 화면 밝기를 올려보세요.</p>' +
+    '<button class="btn line" style="margin-top:9px" onclick="qrScanClose(); staffStampOpen()">담당자에게 적립 요청</button></div>' +
     '<button class="btn line" style="margin-top:10px" onclick="qrScanClose()">닫기</button>');
   try { QRS.det = new BarcodeDetector({ formats: ["qr_code"] }); } catch (e) { QRS.det = null; }
   navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function (stream) {
@@ -3803,7 +3818,9 @@ function qrScanOpen() {
     if (!v) { qrScanClose(); return; }
     v.srcObject = stream;
     var pp = v.play(); if (pp && pp.catch) pp.catch(function () {});
-    QRS.timer = setInterval(qrScanTick, 300);
+    /* 촬영 버튼 없이 프레임을 계속 훑는다. 300ms(초당 3회)는 대보다가 놓치는 구간이 생겨 120ms로 (260830 실측 검증) */
+    QRS.timer = setInterval(qrScanTick, 120);
+    QRS.hint = setTimeout(function () { var h = el("qrHint"); if (h) h.style.display = "block"; }, 8000);
   }).catch(function () {
     qrScanClose();
     toast("카메라를 열 수 없습니다. 브라우저의 카메라 권한을 확인해주세요.");
@@ -3812,16 +3829,20 @@ function qrScanOpen() {
 function qrScanTick() {
   var v = el("qrVideo");
   if (!v) { qrScanClose(); return; }          /* 모달이 다른 경로로 닫힌 경우 카메라 정리 */
-  if (!QRS.det || v.readyState < 2) return;
+  if (!QRS.det || QRS.busy || v.readyState < 2) return;
+  QRS.busy = true;                            /* detect가 느린 기기에서 호출이 겹쳐 쌓이지 않게 */
   QRS.det.detect(v).then(function (codes) {
+    QRS.busy = false;
     if (!codes || !codes.length) return;
     var raw = String(codes[0].rawValue || "");
     qrScanClose();
     qrHandle(raw);
-  }).catch(function () {});
+  }).catch(function () { QRS.busy = false; });
 }
 function qrScanClose() {
   if (QRS.timer) { clearInterval(QRS.timer); QRS.timer = null; }
+  if (QRS.hint) { clearTimeout(QRS.hint); QRS.hint = null; }
+  QRS.busy = false;
   if (QRS.stream) { try { QRS.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} QRS.stream = null; }
   if (el("qrVideo")) modalClose();
 }
