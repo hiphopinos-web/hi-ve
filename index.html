@@ -113,25 +113,28 @@
   /* ───────── 앱 셸 ─────────
      헤더 v16 · 아이덴티티(네이비칩 + 톱니)는 전 화면 고정, 그 아래 줄만 화면에 따라 바뀐다.
      홈 = 슬로건 + 행사 정보줄 / 그 밖 = 제목줄(상세는 뒤로가기). 헤더 끝은 오렌지 2px 엣지로 본문과 분리 */
-  #topbar { position: sticky; top: 0; z-index: 30; background: var(--paper); border-bottom: 1px solid var(--line); display: block; padding: 8px 12px 9px; }
-  #topbar .h1 { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  #topbar .tag { display: inline-block; background: var(--mint); color: #fff; font-family: var(--disp); font-size: 15px; letter-spacing: 0.045em; padding: 5px 11px 4px; border-radius: 9px; }
-  #topbar .gear { flex: none; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 11px; background: var(--white); color: var(--muted); cursor: pointer; padding: 0; }
+  #topbar { position: sticky; top: 0; z-index: 30; background: var(--paper); border-bottom: 1px solid var(--line); display: block; padding: 10px 14px 12px; }
+  /* 유틸 행 · 아바타(패스포트) + 알림 + 설정 (홈·탭 루트 공통) */
+  #topbar .hu { display: flex; align-items: center; gap: 6px; }
+  #topbar .hu .sp { flex: 1; }
+  #topbar .avatar { flex: none; width: 37px; height: 37px; border-radius: 999px; background: var(--tint); border: 1px solid var(--tint2); color: var(--acc2); font-weight: 800; font-size: 15px; font-family: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  #topbar .gear { position: relative; flex: none; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 11px; background: none; color: var(--muted); cursor: pointer; padding: 0; }
   #topbar .gear:active { background: var(--surface2); }
-  #topbar .gear svg { width: 20px; height: 20px; display: block; }
-  #topbar .hsub { margin-top: 7px; text-align: left; font-size: calc(11.5px * var(--fs)); font-weight: 800; color: var(--muted); line-height: 1.4; }
-  /* 홈 · 행사명 · 일시 · 장소 + 지오 모티프 */
-  #topbar .h2 { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
-  #topbar .h2 .nm { font-family: var(--disp); font-size: 13px; letter-spacing: 0.03em; color: var(--hi); }
-  #topbar .h2 .dt { flex: 1; min-width: 96px; font-size: calc(12.5px * var(--fs)); font-weight: 800; color: var(--muted); line-height: 1.35; }
-  #topbar .h2 .geo { flex: none; display: flex; align-items: center; gap: 5px; }
-  #topbar .h2 .geo .disc { position: relative; width: 17px; height: 17px; border-radius: 999px; background: var(--mint-deep); }
-  #topbar .h2 .geo .disc::after { content: ""; position: absolute; inset: 5px; border-radius: 999px; background: var(--paper); }
-  #topbar .h2 .geo .tri { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 11px solid var(--mint); }
-  #topbar .h2 .geo .tri + .tri { margin-left: -4px; border-left-color: var(--mint-deep); }
-  /* 홈 외 · 제목줄 (탭을 옮겨도 위쪽 아이덴티티는 그대로, 이 줄만 바뀐다) */
-  #topbar .httl { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
-  #topbar .httl .back { flex: none; border: 0; background: none; color: var(--hi); cursor: pointer; width: 30px; height: 30px; margin-left: -6px; padding: 0; display: flex; align-items: center; justify-content: center; }
+  #topbar .gear svg { width: 21px; height: 21px; display: block; }
+  #topbar .gear .bdg { position: absolute; top: 0; right: -1px; min-width: 16px; height: 16px; border-radius: 999px; background: var(--mint); color: #fff; font-size: 10.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+  /* 홈 · 큰 인사말 + 포인트 필 */
+  #topbar .hgr { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 9px; }
+  #topbar .hgr .ov { font-size: calc(11.5px * var(--fs)); font-weight: 800; letter-spacing: 0.04em; color: var(--faint); }
+  #topbar .hgr .big { margin-top: 4px; font-size: calc(22px * var(--fs)); font-weight: 700; color: var(--muted); line-height: 1.25; letter-spacing: -0.01em; }
+  #topbar .hgr .big b { color: var(--hi); font-weight: 800; }
+  #topbar .pillp { flex: none; display: flex; align-items: baseline; gap: 3px; background: var(--tint); border-radius: 999px; padding: 8px 13px; cursor: pointer; margin-bottom: 3px; }
+  #topbar .pillp b { font-family: var(--disp); font-size: 15px; color: var(--acc2); line-height: 1; }
+  #topbar .pillp small { font-size: 11.5px; font-weight: 800; color: var(--acc2); }
+  /* 탭 루트 · 큰 제목 */
+  #topbar .hbig { margin-top: 7px; font-size: calc(22px * var(--fs)); font-weight: 800; color: var(--hi); letter-spacing: -0.01em; line-height: 1.25; }
+  /* 서브 화면 · 뒤로가기 타이틀 행 */
+  #topbar .httl { display: flex; align-items: center; gap: 6px; }
+  #topbar .httl .back { flex: none; border: 0; background: none; color: var(--hi); cursor: pointer; width: 32px; height: 32px; margin-left: -6px; padding: 0; display: flex; align-items: center; justify-content: center; }
   #topbar .httl .back svg { width: 22px; height: 22px; display: block; }
   #topbar .httl .title { flex: 1; min-width: 0; font-size: calc(16.5px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.35; }
   #topbar .httl .chip { flex: none; padding: 5px 10px; font-size: calc(12.5px * var(--fs)); }
@@ -143,6 +146,10 @@
   #tabbar button .ico svg { width: 23px; height: 23px; display: block; }
   #tabbar button.on { color: var(--mint); }
   #tabbar button.on .ico { color: var(--mint); }
+  /* 중앙 FAB · 스탬프 적립 (행사장 실물 동작 = QR) */
+  #tabbar .fab { flex: none; width: 56px; height: 56px; margin: -20px 2px 0; border-radius: 999px; background: var(--mint); color: #fff; border: 4px solid var(--paper); box-shadow: 0 6px 16px rgba(214,69,36,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  #tabbar .fab svg { width: 24px; height: 24px; display: block; }
+  #tabbar .fab:active { transform: scale(0.95); }
 
   /* ───────── 브랜드 배너 (패스포트·응모권 히어로) ───────── */
   .skb { margin-bottom: 16px; }
@@ -407,9 +414,58 @@
   /* 홈 LIVE 섹션 · 미니 월 · 이벤트 현황 · 랭킹 · 혼잡도 */
   .mw-live { position: absolute; top: 12px; left: 14px; display: flex; align-items: center; gap: 7px; font-size: calc(12.5px * var(--fs)); font-weight: 800; letter-spacing: 0.08em; color: var(--mint-deep); background: rgba(11,13,17,0.55); border-radius: 999px; padding: 5px 11px; }
   .mw-live i { width: 8px; height: 8px; border-radius: 50%; background: #ff5a4e; animation: pulse 1.2s infinite; }
-  /* ═══════ 홈 · 상시 블록은 6개까지 (조건부 블록은 나에게 해당될 때만) ═══════ */
-  .hgreet { margin-bottom: 12px; font-size: calc(15.5px * var(--fs)); font-weight: 700; color: var(--muted); line-height: 1.5; }
-  .hgreet b { color: var(--hi); font-weight: 800; }
+  /* ═══════ 홈 · 히어로 챌린지 + 벤토 그리드 (구획 문법은 design.md §4) ═══════ */
+  .hero2 { position: relative; overflow: hidden; background: var(--mint); border-radius: 24px; padding: 20px 18px 14px; margin-bottom: 12px; color: #fff; }
+  .hero2 .eb { font-size: calc(12px * var(--fs)); font-weight: 800; letter-spacing: 0.09em; opacity: 0.85; }
+  .hero2 .ttl { margin-top: 7px; font-size: calc(23px * var(--fs)); font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; }
+  .hero2 .sub { margin-top: 8px; text-align: left; font-size: calc(13.5px * var(--fs)); font-weight: 700; line-height: 1.6; color: #fff; opacity: 0.9; }
+  .hero2 .rws { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .hero2 .rws .rw { display: flex; align-items: center; gap: 8px; align-self: flex-start; background: rgba(255,255,255,0.18); border-radius: 999px; padding: 6px 13px; }
+  .hero2 .rws .rw b { font-family: var(--disp); font-size: 14px; letter-spacing: 0.02em; }
+  .hero2 .rws .rw span { font-size: calc(12.5px * var(--fs)); font-weight: 700; opacity: 0.92; }
+  .hero2 .p5 { display: flex; gap: 4px; margin-top: 14px; }
+  .hero2 .p5 span { flex: 1; height: 9px; border-radius: 2px; background: rgba(255,255,255,0.32); }
+  .hero2 .p5 span.on { background: #fff; }
+  .hero2 .cta { display: block; width: 100%; margin-top: 13px; border: 0; cursor: pointer; background: #fff; color: var(--acc2); border-radius: 14px; padding: 13px; font-family: inherit; font-size: calc(15.5px * var(--fs)); font-weight: 800; position: relative; }
+  .hero2 .cta:active { transform: scale(0.99); }
+  .hero2 .deco { position: absolute; top: -38px; right: -38px; width: 136px; height: 136px; border-radius: 999px; background: rgba(255,255,255,0.13); pointer-events: none; }
+  .hero2 .deco2 { position: absolute; top: 24px; right: 16px; display: flex; align-items: center; pointer-events: none; }
+  .hero2 .deco2 .tri { width: 0; height: 0; border-top: 11px solid transparent; border-bottom: 11px solid transparent; border-left: 15px solid rgba(255,255,255,0.6); }
+  .hero2 .deco2 .tri + .tri { margin-left: -5px; border-left-color: var(--mint-deep); }
+  /* 벤토 그리드 · 2열 + 톨 카드(ME to WE 월 라이브) */
+  .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .bcard { position: relative; background: var(--white); border: 1px solid var(--line); border-radius: 20px; padding: 15px 15px 14px; cursor: pointer; }
+  .bcard:active { background: var(--surface2); }
+  .bcard .bh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .bcard .bh b { font-size: calc(15.5px * var(--fs)); font-weight: 800; color: var(--hi); }
+  .bcard .cir { flex: none; width: 25px; height: 25px; border-radius: 999px; background: var(--tint); color: var(--acc2); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .bcard .bd { margin-top: 7px; font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--muted); line-height: 1.55; }
+  .bcard.tall { grid-row: span 2; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .bcard.tall .bstage { flex: none; }
+  .bcard.tall .bbody { flex: 1; padding: 13px 15px 14px; display: flex; flex-direction: column; }
+  .bcard.tall .bnum { margin-top: auto; padding-top: 10px; }
+  .bcard.tall .bnum b { font-family: var(--disp); font-size: 21px; color: var(--mint); }
+  .bcard.tall .bnum span { font-size: calc(12px * var(--fs)); font-weight: 800; color: var(--muted); }
+  .bcard.tall .bbar { margin-top: 8px; height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; }
+  .bcard.tall .bbar i { display: block; height: 100%; background: var(--mint); }
+  /* 프로모 밴드 · 전폭 틴트 */
+  .band2 { display: flex; align-items: center; gap: 12px; background: var(--tint); border-radius: 18px; padding: 14px 16px; margin-bottom: 12px; cursor: pointer; }
+  .band2 .tx { flex: 1; min-width: 0; }
+  .band2 .tx p { font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--acc2); }
+  .band2 .tx b { display: block; margin-top: 2px; font-size: calc(14.5px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.45; }
+  .band2 .arw { flex: none; color: var(--acc2); font-weight: 800; }
+  /* 잔여석 가로 스크롤 · 넘버 뱃지 카드 */
+  .hsc { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
+  .hsc::-webkit-scrollbar { display: none; }
+  .hsc .hc { flex: none; width: 156px; background: var(--white); border: 1px solid var(--line); border-radius: 18px; padding: 13px 13px 12px; cursor: pointer; }
+  .hsc .hc:active { background: var(--surface2); }
+  .hsc .hc .hcap { display: flex; align-items: center; gap: 7px; }
+  .hsc .hc .no { flex: none; display: flex; align-items: center; justify-content: center; width: 23px; height: 23px; border-radius: 999px; border: 1.5px solid var(--tint2); color: var(--acc2); font-family: var(--disp); font-size: 12.5px; }
+  .hsc .hc .k { font-size: calc(12px * var(--fs)); font-weight: 800; color: var(--faint); letter-spacing: 0.02em; }
+  .hsc .hc .t { margin-top: 9px; font-size: calc(13.5px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.4; min-height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hsc .hc .m { margin-top: 6px; font-size: calc(12px * var(--fs)); font-weight: 700; color: var(--faint); }
+  .hsc .hc .r { margin-top: 5px; font-size: calc(13px * var(--fs)); font-weight: 800; color: var(--acc2); }
+  .hsc .hc .r.full { color: var(--faint); }
   /* 지금 진행 중 */
   .nowcard { background: var(--white); border: 1px solid var(--line); border-radius: 20px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
   .nowcard .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -436,11 +492,6 @@
   .ntstrip .lb { flex: none; font-size: calc(11.5px * var(--fs)); font-weight: 800; color: #fff; background: var(--hi); border-radius: 6px; padding: 4px 8px; }
   .ntstrip .tx { flex: 1; font-size: calc(14.5px * var(--fs)); font-weight: 700; color: var(--tx); line-height: 1.5; }
   .ntstrip .arw { flex: none; font-size: calc(12.5px * var(--fs)); font-weight: 800; color: var(--faint); }
-  /* 우리의 오늘 · 월 카드 하단 3지표 */
-  .wefig { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--line); }
-  .wefig > div { text-align: center; }
-  .wefig .v { font-family: var(--disp); font-size: calc(19px * var(--fs)); color: var(--hi); line-height: 1.1; }
-  .wefig .l { margin-top: 4px; font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--faint); line-height: 1.35; }
   /* 내 참여 현황 */
   .myprog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .myprog > div { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px; text-align: center; cursor: pointer; }
@@ -2054,6 +2105,8 @@ var GEAR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
   '<circle cx="12" cy="12" r="3.1"/>' +
   '<path d="M19.1 14.4a1.6 1.6 0 0 0 .32 1.77l.06.06a1.9 1.9 0 1 1-2.69 2.69l-.06-.06a1.6 1.6 0 0 0-1.77-.32 1.6 1.6 0 0 0-.97 1.47v.17a1.9 1.9 0 1 1-3.8 0v-.09a1.6 1.6 0 0 0-1.05-1.47 1.6 1.6 0 0 0-1.77.32l-.06.06a1.9 1.9 0 1 1-2.69-2.69l.06-.06a1.6 1.6 0 0 0 .32-1.77 1.6 1.6 0 0 0-1.47-.97H3.9a1.9 1.9 0 1 1 0-3.8h.09a1.6 1.6 0 0 0 1.47-1.05 1.6 1.6 0 0 0-.32-1.77l-.06-.06a1.9 1.9 0 1 1 2.69-2.69l.06.06a1.6 1.6 0 0 0 1.77.32h.08a1.6 1.6 0 0 0 .97-1.47V3.9a1.9 1.9 0 1 1 3.8 0v.09a1.6 1.6 0 0 0 .97 1.47 1.6 1.6 0 0 0 1.77-.32l.06-.06a1.9 1.9 0 1 1 2.69 2.69l-.06.06a1.6 1.6 0 0 0-.32 1.77v.08a1.6 1.6 0 0 0 1.47.97h.17a1.9 1.9 0 1 1 0 3.8h-.09a1.6 1.6 0 0 0-1.47.97z"/></svg>';
 var BACK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>';
+var BELL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10a6 6 0 0 0-12 0c0 4.4-1.7 5.9-2.4 6.6h16.8c-.7-.7-2.4-2.2-2.4-6.6z"/><path d="M10.2 20a2 2 0 0 0 3.6 0"/></svg>';
+var QR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.2"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.2"/><path d="M13.5 13.5h3.2v3.2h-3.2z"/><path d="M20.5 13.5v3.2"/><path d="M13.5 20.5h3.2"/><path d="M18.6 17.4v3.1h1.9"/></svg>';
 var App = {
   current: "home",
   /* 4탭 · 홈(지금 무슨 일이) / 참여(지금 할 수 있는 것) / 패스포트(내가 모은 것) / 일정·지도(어디로 갈지) */
@@ -2117,30 +2170,39 @@ var App = {
   render: function () {
     var v = this.current;
     var tb = el("topbar");
-    /* 아이덴티티(민트칩 + 톱니)는 전 화면 공통 · 탭을 옮겨도 상단은 고정, 아래 줄만 바뀐다 */
-    var head = '<div class="h1"><span class="tag">2026 AX : ME to WE</span>' +
+    /* 유틸 행(아바타·알림·설정)은 홈·탭 루트 공통, 서브 화면은 뒤로가기 타이틀 행 */
+    var hu = S.get("user", {});
+    var liveN = S.get("notices", []).length;
+    var util = '<div class="hu">' +
+      '<button class="avatar" onclick="App.go(\'passport\')" aria-label="내 패스포트">' + esc((hu.name || "").charAt(0) || "AX") + "</button>" +
+      '<span class="sp"></span>' +
+      '<button class="gear" onclick="App.go(\'notices\')" aria-label="실시간 안내">' + BELL_SVG + (liveN ? '<span class="bdg">' + liveN + "</span>" : "") + "</button>" +
       '<button class="gear" onclick="fsSheet(true)" aria-label="설정">' + GEAR_SVG + "</button></div>";
     if (v === "home") {
-      tb.innerHTML = head +
-        '<p class="hsub">나의 업무 혁신, 우리 회사의 AX가 되다</p>' +
-        '<div class="h2"><span class="nm">AX FESTIVAL</span>' +
-        '<span class="dt">' + FESTIVAL.date.replace(/^2026\.\s*/, "") + " · " + FESTIVAL.place + "</span>" +
-        '<span class="geo"><span class="disc"></span><span class="tri"></span><span class="tri"></span></span></div>';
+      tb.innerHTML = util +
+        '<div class="hgr"><div><p class="ov">AX FESTIVAL · ' + FESTIVAL.date.replace(/^2026\.\s*/, "") + " · " + FESTIVAL.place + '</p>' +
+        '<p class="big">' + (hu.name ? esc(hu.name) + "님의 " : "나의 ") + "<b>ME to WE</b></p></div>" +
+        '<span class="pillp" onclick="App.go(\'pp_reward\')"><b>' + myPoints() + "</b><small>P</small></span></div>";
+    } else if (!this.PARENT[v]) {
+      tb.innerHTML = util + '<p class="hbig">' + (this.TITLES[v] || "") + "</p>";
     } else {
-      tb.innerHTML = head + '<div class="httl">' +
-        (this.PARENT[v] ? '<button class="back" onclick="App.go(\'' + this.PARENT[v] + '\')">' + BACK_SVG + '</button>' : "") +
+      tb.innerHTML = '<div class="httl">' +
+        '<button class="back" onclick="App.go(\'' + this.PARENT[v] + '\')">' + BACK_SVG + "</button>" +
         '<span class="title">' + (this.TITLES[v] || "") + "</span>" +
         (v === "admin" && S.get("admin_authed", false) ? '<button class="chip" onclick="S.set(\'admin_authed\', false); App.render()">잠금</button>' : "") +
-        "</div>";
+        '<button class="gear" onclick="fsSheet(true)" aria-label="설정">' + GEAR_SVG + "</button></div>";
     }
     tb.style.display = SIGNAGE.indexOf(v) >= 0 ? "none" : "";
     var nav = el("tabbar");
     nav.style.display = (SIGNAGE.indexOf(v) >= 0 || v === "game_word" || v === "game_cho") ? "none" : "flex";
     var activeTab = this.tabOf(v);
     var icons = this.ICONS;
-    nav.innerHTML = this.TABS.map(function (t) {
+    var tabBtns = this.TABS.map(function (t) {
       return '<button class="' + (activeTab === t[0] ? "on" : "") + '" onclick="App.go(\'' + t[0] + '\')"><span class="ico">' + icons[t[0]] + "</span>" + t[1] + "</button>";
-    }).join("");
+    });
+    /* 중앙 FAB = 스탬프 적립 · 행사장에서 가장 자주 쓰는 실물 동작(QR) */
+    tabBtns.splice(2, 0, '<button class="fab" onclick="App.go(\'pp_code\')" aria-label="스탬프 적립">' + QR_SVG + "</button>");
+    nav.innerHTML = tabBtns.join("");
     el("view").innerHTML = Views[v]();
     updateLed();
     if (el("mtCv")) setTimeout(mtEnsure, 30); else if (MT.raf) mtStop();
@@ -2464,38 +2526,63 @@ function noticeStripHtml() {
     '<span class="arw">' + all.length + "건 ›</span></div>";
 }
 
-/* 우리의 오늘 · ME to WE 월 + 전사 지표 3개를 한 카드로 */
-function weCardHtml() {
-  var n = mtPoints(), pct = Math.min(100, Math.floor(n / MT_TOTAL * 100));
-  var c = counters();
-  var needTxt = '유효 참여 1건 = 별 1개 · 완성 순간은 <b style="color:var(--hi)">17:00 Outro</b>에서 함께 봅니다';
-  return '<div class="card mb12" style="padding:0;overflow:hidden;cursor:pointer" onclick="App.go(\'wallv\')">' +
-    '<div class="mt-stage" id="mtStage" style="margin-top:0;border:0;border-radius:0;height:175px;min-height:0">' +
-    '<canvas id="mtCv"></canvas><div class="mt-flash" id="mtFlash"></div>' +
-    '<span class="mw-live"><i></i>LIVE · 1F 사이니지와 동시</span></div>' +
-    '<div style="padding:14px 16px 16px">' +
-    '<div class="row" style="justify-content:space-between;align-items:baseline">' +
-    '<span><b class="disp" id="mtN" style="font-size:24px;color:var(--mint)">' + n.toLocaleString() + "</b>" +
-    '<span style="font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--muted)"> / 2,026</span></span>' +
-    '<b class="disp" id="mtPct" style="font-size:20px;color:var(--hi)">' + pct + "%</b></div>" +
-    '<div class="mt-bar" style="margin-top:8px;height:9px;background:var(--tint)"><i id="mtBar" style="background:var(--mint);width:' + Math.min(100, n / MT_TOTAL * 100) + '%"></i></div>' +
-    '<p style="margin-top:9px;font-size:calc(13.5px * var(--fs));font-weight:700;color:var(--muted);line-height:1.55">' + needTxt + "</p>" +
-    '<div class="wefig">' +
-    '<div><p class="v">' + c.online.toLocaleString() + '</p><p class="l">함께하는 사람</p></div>' +
-    '<div><p class="v">' + c.ideas.toLocaleString() + '</p><p class="l">모인 아이디어</p></div>' +
-    '<div><p class="v">' + c.heart.toLocaleString() + '</p><p class="l">마음펀드 나눔</p></div>' +
-    "</div></div></div>";
+/* 히어로 · 스탬프 완주 챌린지 (풀컬러 카드 + 흰 CTA 내장) */
+function heroChalHtml() {
+  var n = S.get("stamps", []).length;
+  var entered = S.get("raffle_entered", false);
+  var dots = [1, 2, 3, 4, 5].map(function (i) { return '<span class="' + (n >= i ? "on" : "") + '"></span>'; }).join("");
+  return '<div class="hero2">' +
+    '<span class="deco"></span><span class="deco2"><span class="tri"></span><span class="tri"></span></span>' +
+    '<p class="eb">STAMP CHALLENGE</p>' +
+    '<p class="ttl">스탬프 5개 완주 챌린지</p>' +
+    '<p class="sub">8개 경로 중 5개만 적립하면 완주,<br>17:00 대형경품 추첨에 자동 응모됩니다</p>' +
+    '<div class="rws">' +
+    '<span class="rw"><b>' + n + " / " + STAMP_GOAL + '</b><span>지금까지 적립</span></span>' +
+    (entered ? '<span class="rw"><b>응모 완료</b><span>대형경품 추첨</span></span>' :
+      '<span class="rw"><b>' + Math.max(0, STAMP_GOAL - n) + '개</b><span>완주까지 남음</span></span>') +
+    "</div>" +
+    '<div class="p5">' + dots + "</div>" +
+    '<button class="cta" onclick="App.go(\'pp_code\')">' + (n >= STAMP_GOAL ? "내 스탬프 확인하기" : "스탬프 적립하기") + "</button></div>";
 }
 
-/* 내 참여 현황 · 숫자 3개면 충분, 자세한 건 패스포트에서 */
-function myProgressHtml() {
-  var stN = S.get("stamps", []).length;
-  var en = S.get("entries", []).length;
-  return '<div class="myprog">' +
-    '<div onclick="App.go(\'passport\')"><p class="v">' + stN + '<small>/5</small></p><p class="l">스탬프</p></div>' +
-    '<div onclick="App.go(\'passport\')"><p class="v">' + myPoints() + '<small>P</small></p><p class="l">추첨 포인트</p></div>' +
-    '<div onclick="App.go(\'entries\')"><p class="v">' + en + '<small>장</small></p><p class="l">응모권</p></div>' +
+/* 벤토 그리드 · 프로그램 신청 + ME to WE 월(라이브 캔버스 톨 카드) + 미니게임 */
+function bentoHtml() {
+  var n = mtPoints(), pct = Math.min(100, Math.floor(n / MT_TOTAL * 100));
+  var seatLeft = 0;
+  SESSIONS.forEach(function (s) { if (s.kind === "seat") seatLeft += sessRemain(s); });
+  return '<div class="bento">' +
+    '<div class="bcard" onclick="App.go(\'guide\')"><div class="bh"><b>프로그램 신청</b><span class="cir">›</span></div>' +
+    '<p class="bd">강의 · 실습 · 상담<br>잔여 ' + seatLeft + '석</p></div>' +
+    '<div class="bcard tall" onclick="App.go(\'wallv\')">' +
+    '<div class="mt-stage bstage" id="mtStage" style="margin:0;border:0;border-radius:0;height:118px;min-height:0"><canvas id="mtCv"></canvas><div class="mt-flash" id="mtFlash"></div></div>' +
+    '<div class="bbody"><div class="bh"><b>ME to WE 월</b><span class="cir">›</span></div>' +
+    '<p class="bd">참여 1건 = 별 1개<br>17:00 Outro에서 WE 완성</p>' +
+    '<p class="bnum"><b id="mtN">' + n.toLocaleString() + '</b><span> / 2,026 · <span id="mtPct">' + pct + '%</span></span></p>' +
+    '<div class="bbar"><i id="mtBar" style="width:' + Math.min(100, n / MT_TOTAL * 100) + '%"></i></div></div></div>' +
+    '<div class="bcard" onclick="App.go(\'ev_games\')"><div class="bh"><b>미니게임</b><span class="cir">›</span></div>' +
+    '<p class="bd">AX 링크 · 초성퀴즈<br>클리어 = 스탬프 적립</p></div>' +
     "</div>";
+}
+
+/* 프로모 밴드 · 아이디어 한 줄 */
+function ideaBandHtml() {
+  return '<div class="band2" onclick="App.go(\'ideas\')">' +
+    '<div class="tx"><p>아이디어 한 줄 남기면</p><b>스탬프 1개 + ME to WE 별 1개 적립</b></div>' +
+    '<span class="arw">›</span></div>';
+}
+
+/* 지금 신청 가능 · 잔여석 가로 스크롤 (넘버 뱃지 카드) */
+function hotSessHtml() {
+  var list = SESSIONS.filter(function (s) { return s.kind === "seat"; })
+    .map(function (s) { return { s: s, rem: sessRemain(s) }; })
+    .sort(function (a, b) { return (a.rem > 0 ? 0 : 1) - (b.rem > 0 ? 0 : 1) || sessStartMin(a.s.tm) - sessStartMin(b.s.tm); });
+  return '<div class="hsc">' + list.map(function (x, i) {
+    return '<div class="hc" onclick="sessOpen(\'' + x.s.id + '\')">' +
+      '<div class="hcap"><span class="no">' + (i + 1) + '</span><span class="k">' + esc(x.s.ttl) + "</span></div>" +
+      '<p class="t">' + esc(x.s.sub || x.s.desc) + "</p>" +
+      '<p class="m">' + x.s.fl + "F · " + esc(x.s.tm) + "</p>" +
+      '<p class="r' + (x.rem > 0 ? "" : " full") + '">' + (x.rem > 0 ? "잔여 " + x.rem + "석" : "마감") + "</p></div>";
+  }).join("") + "</div>";
 }
 
 function crowdStripHtml() {
@@ -2511,21 +2598,20 @@ function crowdStripHtml() {
 var Views = {
   /* ═══ 홈 · 상시 6블록(지금·내일정·안내·월·내현황·혼잡도). 나머지는 해당될 때만 ═══ */
   home: function () {
-    var u = S.get("user", {});
     var st = S.get("quiz_state", INITIAL_QUIZ_STATE);
     var liveOpen = !!st.activeId && st.phase !== "idle";
-    /* 히어로 배너는 헤더가 대신한다 · 첫 화면이 곧바로 정보로 시작하도록 */
+    /* 구획: 라이브퀴즈 → 히어로 챌린지 → 내 일정 → 지금 → 안내 → 벤토 → 밴드 → 잔여석 → 혼잡도 */
     return "" +
-      '<p class="hgreet"><b>' + esc(u.name || "") + "</b>님, 오늘 함께해 주셔서 고맙습니다</p>" +
-      a2hsCard() +
       (liveOpen ? quizCardHtml() : "") +
-      nowCardHtml() +
+      a2hsCard() +
+      heroChalHtml() +
       myScheduleHtml() +
+      nowCardHtml() +
       noticeStripHtml() +
-      '<div class="sect"><b>우리의 오늘</b><span onclick="App.go(\'wallv\')">ME to WE 월 ›</span></div>' +
-      weCardHtml() +
-      '<div class="sect"><b>내 참여 현황</b><span onclick="App.go(\'passport\')">패스포트 열기 ›</span></div>' +
-      myProgressHtml() +
+      bentoHtml() +
+      ideaBandHtml() +
+      '<div class="sect"><b>지금 신청 가능</b><span onclick="App.go(\'guide\')">프로그램 전체 ›</span></div>' +
+      hotSessHtml() +
       '<div class="sect"><b>층별 혼잡도</b><span onclick="App.go(\'crowd\')">자세히 ›</span></div>' +
       crowdStripHtml();
   },
