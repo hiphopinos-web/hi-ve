@@ -23,7 +23,8 @@
      사이니지·TV 송출은 네이비 다크 스테이지(--ink) 유지. */
   :root {
     --ink: #1E2124;                     /* 잉크 블랙 · 앱 안 다크 카드(라이브 퀴즈·게임·히어로) */
-    --paper: #FFFFFF;                   /* 페이지 배경 (흰색) */
+    --paper: #FFFFFF;                   /* 흰 면 · 헤더·바텀시트·탭바 (카드와 같은 값) */
+    --bg: #F4F2F0;                      /* 스크롤 바탕 · 흰 카드를 띄우는 옅은 웜 그레이 */
     --white: #FFFFFF;                   /* 카드 서피스 */
     --surface2: #FFF6F0;                /* O5 보조 면 (design.md 오렌지 사다리) */
     --line: #FFE3D5;                    /* 오렌지 헤어라인 = 기본 선 */
@@ -37,9 +38,9 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   /* word-break:keep-all = 한글을 어절 단위로 끊는다 · 단어 중간에서 잘리지 않고 통째로 다음 줄로 */
-  body { background: #F2F3F5; font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif; display: flex; justify-content: center; color: var(--tx); word-break: keep-all; overflow-wrap: break-word; }
+  body { background: var(--bg); font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif; display: flex; justify-content: center; color: var(--tx); word-break: keep-all; overflow-wrap: break-word; }
   button, input, textarea { font-family: inherit; }
-  #frame { position: relative; width: 100%; max-width: 448px; min-height: 100dvh; background: var(--paper); box-shadow: 0 0 32px rgba(20,30,40,0.08); }
+  #frame { position: relative; width: 100%; max-width: 448px; min-height: 100dvh; background: var(--bg); box-shadow: 0 0 32px rgba(20,30,40,0.08); }
   #frame.splash-mode { height: 100dvh; overflow: hidden; }
 
   /* ───────── 스플래시 (네이비+오렌지 브랜드 월드 · 유지) ───────── */
