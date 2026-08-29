@@ -747,11 +747,11 @@ var STAMPS = [
 /* 스탬프 단계별 보상 사다리 (260829 사용자 확정) · 1개부터 매 칸 보상, 5개에서 극적 보상 + 대형경품 응모권
    2~4단계 품목은 미정. 확정되면 nm/d만 바꾸면 전 화면에 반영된다 */
 var REWARD_LADDER = [
-  { n: 1, nm: "18F 커피 나눔권", d: "커피 + 쿠키 교환 · 선착순 500잔", go: "pp_reward" },
-  { n: 2, nm: "마우스패드", d: "AX 페스티벌 굿즈" },
-  { n: 3, nm: "CU 상품권", d: "편의점 모바일 상품권" },
-  { n: 4, nm: "키캡", d: "AX 페스티벌 굿즈" },
-  { n: 5, nm: "완주 스페셜권 + 대형경품 응모권", d: "프리미엄 보상 교환 + 17:00 Outro 추첨 응모", go: "pp_reward" }
+  { n: 1, nm: "커피 나눔권", d: "18F 라운지 수령 · 커피 + 쿠키, 선착순 500잔", go: "pp_reward" },
+  { n: 2, nm: "마우스패드", d: "1F 수령" },
+  { n: 3, nm: "CU 상품권", d: "1F 수령" },
+  { n: 4, nm: "키캡", d: "1F 수령" },
+  { n: 5, nm: "완주 스페셜권 + 대형경품 응모권", d: "스페셜권은 1F 수령 · 추첨 결과는 행사 종료 후 개별 안내", go: "pp_reward" }
 ];
 /* 완주 = 8개 경로 중 5개 · 전부 돌 필요 없이 내 동선에 맞는 5개면 완주 (260828 사용자 확정) */
 var STAMP_GOAL = 5;
@@ -1220,7 +1220,7 @@ function checkRewards() {
   }
   if (st.length >= STAMP_GOAL && !S.get("raffle_entered", false)) {
     S.set("raffle_entered", true);
-    setTimeout(function () { toast("★ 패스포트 완주! 대형경품 응모 완료. 추첨은 17:00 Outro에서. 완주 스페셜권도 발급됐어요."); }, 1500);
+    setTimeout(function () { toast("★ 패스포트 완주! 완주 스페셜권 발급 + 대형경품 응모 완료. 추첨 결과는 행사 종료 후 개별 안내드립니다."); }, 1500);
   }
 }
 function awardStamp(id) {
@@ -2711,7 +2711,7 @@ var Views = {
       '<span class="disp" style="font-size:24px;color:var(--mint)">' + st.length + '<span style="font-size:calc(14.5px * var(--fs));color:#fff;opacity:0.6">/' + STAMP_GOAL + ' 완주</span></span></div>' +
       '<div class="r3" style="margin-top:0;padding:13px 16px;display:block">' +
       '<div class="progress5" style="margin-top:0">' + [1, 2, 3, 4, 5].map(function (i) { return '<span class="' + (st.length >= i ? "on" : "") + '"></span>'; }).join("") + "</div>" +
-      '<p style="margin-top:11px;font-size:calc(13.5px * var(--fs));font-weight:700;opacity:0.85;line-height:1.55">8개 경로 중 5개만 채우면 완주,<br>17:00 대형경품에 자동 응모됩니다</p>' +
+      '<p style="margin-top:11px;font-size:calc(13.5px * var(--fs));font-weight:700;opacity:0.85;line-height:1.55">8개 경로 중 5개만 채우면 완주,<br>대형경품 추첨에 자동 응모됩니다</p>' +
       (entered ? '<p style="margin-top:9px;background:rgba(255,158,27,0.15);border:1px solid var(--mint);border-radius:8px;padding:9px 12px;font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--mint)">완주! 대형경품 응모 완료</p>' : "") +
       "</div></div>" +
       '<div class="stamp5 mb12">' + STAMPS.map(function (s) {
@@ -2723,7 +2723,7 @@ var Views = {
       menuItem("pp_reward", "02", "나의 보상", "커피 나눔권 · 완주 스페셜권", rewardBadge) +
       menuItem("entries", "03", "즉석경품 응모권", en ? "1F 이벤트존 가챠에서 사용" : "QR 퀴즈 통과 시 발급", en ? '<span class="badge mint">' + en + "장</span>" : "") +
       menuItem("ideas_mine", "04", "내가 낸 아이디어", mineN ? mineN + "건 제출" : "아직 없음", "") +
-      menuItem("ev_draw", "05", "당첨 발표", "17:00 Outro 공개", "") +
+      menuItem("ev_draw", "05", "당첨 발표", "행사 종료 후 개별 안내", "") +
       "</div>";
   },
 
@@ -2746,7 +2746,10 @@ var Views = {
 
   pp_reward: function () {
     return ladderHtml() + coffeeCouponHtml() + specialHtml() +
-      '<div class="card soft"><p class="muted">커피 나눔권 = 패스포트 1칸 또는 아이디어 1건이면 자동 발급 (선착순 ' + FESTIVAL.coffeeTotal + '잔), 18F 라운지에서 무인 QR로 교환합니다. 마우스패드 · CU 상품권 · 키캡은 스탬프 칸이 열리면 이 화면에 수령 방법이 표시됩니다.</p></div>';
+      '<div class="card soft"><b style="font-size:calc(14.5px * var(--fs));color:var(--hi)">수령 장소</b>' +
+      '<p class="muted" style="margin-top:5px;line-height:1.75">커피 나눔권은 <b style="color:var(--hi)">18F 라운지</b>에서 무인 QR로 교환합니다 (선착순 ' + FESTIVAL.coffeeTotal + '잔).<br>' +
+      '마우스패드 · CU 상품권 · 키캡 · 완주 스페셜권은 <b style="color:var(--hi)">1F</b>에서 이 화면을 보여주고 받으시면 됩니다.<br>' +
+      '대형경품 추첨 결과는 <b style="color:var(--hi)">17F 행사가 끝난 뒤 개별 안내</b>드립니다.</p></div>';
   },
 
   ideas: function () {
@@ -2970,7 +2973,7 @@ var Views = {
   ev_draw: function () {
     return '<div class="skb" style="margin-bottom:12px"><div class="r1"><span class="big" style="font-size:22px">17:00 OUTRO</span></div>' +
       '<div class="r2"><span class="s" style="padding:10px 14px"><span class="t" style="font-size:calc(14.5px * var(--fs))">대형경품 추첨 · DAP 시상 · 오늘의 숫자</span></span></div></div>' +
-      '<div class="card soft"><p class="muted">응모 경로는 2개예요. ① <b>패스포트 완주 · 8개 경로 중 5개</b> = 대형경품 자동 응모, 결과는 17:00 대강당과 앱에서 동시 공개. ② <b>QR 퀴즈 응모권</b> = 1F 이벤트존에서 바로 즉석 추첨(가챠).</p></div>';
+      '<div class="card soft"><p class="muted">응모 경로는 2개예요. ① <b>패스포트 완주 · 8개 경로 중 5개</b> = 대형경품 자동 응모, <b style="color:var(--hi)">추첨 결과와 수령 방법은 17F 행사가 끝난 뒤 개별 안내</b>드립니다. ② <b>QR 퀴즈 응모권</b> = 1F 이벤트존에서 바로 즉석 추첨(가챠).</p></div>';
   },
 
   /* ── v10 【신규 A】 과제상담 신청 · 구성은 v5 p25 목업, 룩은 앱 공통 다크·민트 ── */
@@ -3143,7 +3146,7 @@ var Views = {
         '<div class="body"><p style="text-align:center;font-family:var(--disp);font-size:26px;letter-spacing:0.1em;color:var(--hi)">' + esc(x.code) + "</p>" +
         '<p class="muted" style="margin-top:6px;text-align:center;font-size:calc(13.5px * var(--fs))">1F 이벤트존 부스에 보여주면 즉석 추첨(가챠) 1회 · ' + fmtTime(x.ts) + "</p></div></div>";
     }).join("") +
-      '<div class="card soft mt16"><p class="muted" style="font-size:calc(13.5px * var(--fs))">응모 경로는 2개 · <b>패스포트 완주(경로 5개)</b>는 17:00 대형경품 추첨, <b>QR 퀴즈 응모권</b>은 현장 즉석 추첨이에요.</p></div>';
+      '<div class="card soft mt16"><p class="muted" style="font-size:calc(13.5px * var(--fs))">응모 경로는 2개 · <b>패스포트 완주(경로 5개)</b>는 대형경품 추첨(결과는 행사 종료 후 개별 안내), <b>QR 퀴즈 응모권</b>은 현장 즉석 추첨이에요.</p></div>';
   },
 
   /* ── v10 【신규 D】 사이니지 3종 · 프로토타입 (정식판: 무인 10시간·오프라인 캐시·키오스크) ── */
@@ -3728,7 +3731,7 @@ function ladderHtml() {
   return '<div class="card ldr mb12" style="padding:16px">' +
     '<p style="font-size:calc(15.5px * var(--fs));font-weight:700;color:var(--tx);line-height:1.5">' + head + "</p>" +
     '<div class="lg"><i style="width:' + Math.min(100, n / STAMP_GOAL * 100) + '%"></i></div>' +
-    '<div class="lgl"><span>스탬프 1개부터 보상</span><span>5개 완주 · 17:00 추첨</span></div>' +
+    '<div class="lgl"><span>스탬프 1개부터 보상</span><span>5개 완주 · 대형경품 응모</span></div>' +
     REWARD_LADDER.map(function (r) {
       var got = n >= r.n;
       return '<div class="lrow ' + (got ? "got" : "lock") + '">' +
@@ -3742,10 +3745,10 @@ function specialHtml() {
   var st = S.get("stamps", []);
   if (st.length < STAMP_GOAL) {
     return '<div class="coupon locked"><div class="head"><b>★ 완주 스페셜권</b><span class="badge gray">' + st.length + "/5</span></div>" +
-      '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">사다리의 마지막 칸 · 5개를 채우면 열리는 프리미엄 보상 + 대형경품 자동 응모.</p></div></div>';
+      '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">사다리의 마지막 칸 · 5개를 채우면 열리는 프리미엄 보상(1F 수령) + 대형경품 자동 응모.</p></div></div>';
   }
   return '<div class="coupon" style="border-color:var(--tint2)"><div class="head" style="background:var(--ink);color:var(--mint-deep)"><b>★ 완주 스페셜권</b><span class="badge mint">완주</span></div>' +
-    '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">패스포트 완주자 전용 · 18F에서 프리미엄 디저트 세트로 교환 + 대형경품 응모 완료. &ldquo;손에 쥐는&rdquo; 특별한 보상이에요.</p></div></div>';
+    '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">패스포트 완주자 전용 · <b style="color:var(--hi)">1F</b>에서 이 화면을 보여주고 수령하세요. 대형경품 응모도 완료됐고, 추첨 결과는 17F 행사가 끝난 뒤 개별 안내드립니다.</p></div></div>';
 }
 
 /* ════════════════ 액션 ════════════════ */
