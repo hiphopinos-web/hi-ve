@@ -6,6 +6,9 @@
 <title>AX FESTIVAL 2026 · ME to WE</title>
 <!-- 홈 화면에 추가 = 아이콘 한 번으로 실행 (설치·스토어 없음) -->
 <link rel="manifest" href="manifest.json">
+<!-- 본문 서체 · 로컬 미설치 기기에서도 Pretendard로 렌더 (오프라인이면 시스템 고딕으로 자동 폴백) -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -117,7 +120,9 @@
   /* 유틸 행 · 아바타(패스포트) + 알림 + 설정 (홈·탭 루트 공통) */
   #topbar .hu { display: flex; align-items: center; gap: 6px; }
   #topbar .hu .sp { flex: 1; }
-  #topbar .avatar { flex: none; width: 37px; height: 37px; border-radius: 999px; background: var(--tint); border: 1px solid var(--tint2); color: var(--acc2); font-weight: 800; font-size: 15px; font-family: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  #topbar .wm { flex: none; display: flex; align-items: baseline; gap: 5px; background: none; border: 0; padding: 2px 0; cursor: pointer; font-family: inherit; }
+  #topbar .wm b { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; color: var(--mint); }
+  #topbar .wm span { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--hi); }
   #topbar .gear { position: relative; flex: none; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 11px; background: none; color: var(--muted); cursor: pointer; padding: 0; }
   #topbar .gear:active { background: var(--surface2); }
   #topbar .gear svg { width: 21px; height: 21px; display: block; }
@@ -127,9 +132,6 @@
   #topbar .hgr .ov { font-size: calc(11.5px * var(--fs)); font-weight: 800; letter-spacing: 0.04em; color: var(--faint); }
   #topbar .hgr .big { margin-top: 4px; font-size: calc(22px * var(--fs)); font-weight: 700; color: var(--muted); line-height: 1.25; letter-spacing: -0.01em; }
   #topbar .hgr .big b { color: var(--hi); font-weight: 800; }
-  #topbar .pillp { flex: none; display: flex; align-items: baseline; gap: 3px; background: var(--tint); border-radius: 999px; padding: 8px 13px; cursor: pointer; margin-bottom: 3px; }
-  #topbar .pillp b { font-family: var(--disp); font-size: 15px; color: var(--acc2); line-height: 1; }
-  #topbar .pillp small { font-size: 11.5px; font-weight: 800; color: var(--acc2); }
   /* 탭 루트 · 큰 제목 */
   #topbar .hbig { margin-top: 7px; font-size: calc(22px * var(--fs)); font-weight: 800; color: var(--hi); letter-spacing: -0.01em; line-height: 1.25; }
   /* 서브 화면 · 뒤로가기 타이틀 행 */
@@ -141,7 +143,8 @@
   #view { padding: 16px 16px 112px; min-height: calc(100dvh - 58px); }
 
   #tabbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 448px; z-index: 40; display: flex; background: rgba(255,255,255,0.97); backdrop-filter: blur(8px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
-  #tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 0 8px; border: 0; background: none; cursor: pointer; font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--faint); }
+  #tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 8px; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: calc(11.5px * var(--fs)); font-weight: 600; letter-spacing: -0.02em; color: var(--faint); }
+  #tabbar button.on { font-weight: 700; }
   #tabbar button .ico { width: 23px; height: 23px; display: flex; align-items: center; justify-content: center; color: var(--faint); }
   #tabbar button .ico svg { width: 23px; height: 23px; display: block; }
   #tabbar button.on { color: var(--mint); }
@@ -454,17 +457,16 @@
   .band2 .tx p { font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--acc2); }
   .band2 .tx b { display: block; margin-top: 2px; font-size: calc(14.5px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.45; }
   .band2 .arw { flex: none; color: var(--acc2); font-weight: 800; }
-  /* 잔여석 가로 스크롤 · 넘버 뱃지 카드 */
-  .hsc { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
-  .hsc::-webkit-scrollbar { display: none; }
-  .hsc .hc { flex: none; width: 156px; background: var(--white); border: 1px solid var(--line); border-radius: 18px; padding: 13px 13px 12px; cursor: pointer; }
+  /* 잔여석 · 전폭 리스트 (가로 스크롤은 카드가 잘려 보여 폐기) */
+  .hsc { background: var(--white); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+  .hsc .hc { display: flex; align-items: center; gap: 12px; padding: 14px 15px; cursor: pointer; border-bottom: 1px solid var(--line); }
+  .hsc .hc:last-child { border-bottom: 0; }
   .hsc .hc:active { background: var(--surface2); }
-  .hsc .hc .hcap { display: flex; align-items: center; gap: 7px; }
-  .hsc .hc .no { flex: none; display: flex; align-items: center; justify-content: center; width: 23px; height: 23px; border-radius: 999px; border: 1.5px solid var(--tint2); color: var(--acc2); font-family: var(--disp); font-size: 12.5px; }
-  .hsc .hc .k { font-size: calc(12px * var(--fs)); font-weight: 800; color: var(--faint); letter-spacing: 0.02em; }
-  .hsc .hc .t { margin-top: 9px; font-size: calc(13.5px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.4; min-height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .hsc .hc .m { margin-top: 6px; font-size: calc(12px * var(--fs)); font-weight: 700; color: var(--faint); }
-  .hsc .hc .r { margin-top: 5px; font-size: calc(13px * var(--fs)); font-weight: 800; color: var(--acc2); }
+  .hsc .hc .no { flex: none; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 999px; border: 1.5px solid var(--tint2); color: var(--acc2); font-family: var(--disp); font-size: 13.5px; }
+  .hsc .hc .bd { flex: 1; min-width: 0; }
+  .hsc .hc .t { font-size: calc(14.5px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.4; }
+  .hsc .hc .m { margin-top: 3px; font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--muted); }
+  .hsc .hc .r { flex: none; text-align: right; font-size: calc(13.5px * var(--fs)); font-weight: 800; color: var(--acc2); }
   .hsc .hc .r.full { color: var(--faint); }
   /* 지금 진행 중 */
   .nowcard { background: var(--white); border: 1px solid var(--line); border-radius: 20px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
@@ -684,6 +686,8 @@
       <p class="fs-lb">글자 크기</p>
       <p class="fs-s">고르면 앱 전체 글자가 바로 바뀝니다. 이 기기에 저장돼요.</p>
       <div id="fsOpts"></div>
+      <p class="fs-lb">앱</p>
+      <button class="fs-admin" onclick="fsSheet(false); a2hsSheet(true)">홈 화면에 바로가기 추가<span>&rsaquo;</span></button>
       <p class="fs-lb">운영</p>
       <button class="fs-admin" onclick="fsSheet(false); App.go('admin')">관리자 모드<span>&rsaquo;</span></button>
       <button class="fs-admin" onclick="axfLogout()">로그아웃 · 다른 사번으로 입장<span>&rsaquo;</span></button>
@@ -1054,22 +1058,9 @@ function a2hsCopy() {
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(done, function () {});
   else done();
 }
-/* 로그인 직후 전용 단계로 노출 · 기기당 1회만 (axf_a2hs = "보여준 적 있음" 마커) */
-function a2hsAuto() {
-  if (isStandalone() || a2hsDismissed()) return;
-  a2hsMarkDismissed();
-  setTimeout(function () { a2hsSheet(true); }, 350);
-}
+/* 260829 사용자 지시 · 입장 직후 자동 노출과 홈 카드는 폐기, 설정 시트에서만 진입한다 */
+function a2hsAuto() { return; }
 
-/* 홈 상단 상시 카드 · 항상 남는 재진입점 (아이콘으로 열면 자동 소멸) */
-function a2hsCard() {
-  if (isStandalone()) return "";
-  /* 로그인 직후 전용 화면에서 이미 안내했으므로, 홈에서는 한 줄짜리 재진입점으로만 */
-  return '<div class="ntstrip" style="background:var(--tint);border-color:var(--tint2)" onclick="a2hsSheet(true)">' +
-    '<span class="lb">추가</span>' +
-    '<span class="tx" style="color:var(--hi)">홈 화면에 추가 · QR 없이 아이콘으로 열기</span>' +
-    '<span class="arw" style="color:var(--hi)">›</span></div>';
-}
 
 var LS_KNOWN = "axf_known";
 function knownGet() {
@@ -2174,15 +2165,14 @@ var App = {
     var hu = S.get("user", {});
     var liveN = S.get("notices", []).length;
     var util = '<div class="hu">' +
-      '<button class="avatar" onclick="App.go(\'passport\')" aria-label="내 패스포트">' + esc((hu.name || "").charAt(0) || "AX") + "</button>" +
+      '<button class="wm" onclick="App.go(\'home\')" aria-label="AX FESTIVAL 홈"><b>AX</b><span>: ME to WE</span></button>' +
       '<span class="sp"></span>' +
       '<button class="gear" onclick="App.go(\'notices\')" aria-label="실시간 안내">' + BELL_SVG + (liveN ? '<span class="bdg">' + liveN + "</span>" : "") + "</button>" +
       '<button class="gear" onclick="fsSheet(true)" aria-label="설정">' + GEAR_SVG + "</button></div>";
     if (v === "home") {
       tb.innerHTML = util +
-        '<div class="hgr"><div><p class="ov">AX FESTIVAL · ' + FESTIVAL.date.replace(/^2026\.\s*/, "") + " · " + FESTIVAL.place + '</p>' +
-        '<p class="big">' + (hu.name ? esc(hu.name) + "님의 " : "나의 ") + "<b>ME to WE</b></p></div>" +
-        '<span class="pillp" onclick="App.go(\'pp_reward\')"><b>' + myPoints() + "</b><small>P</small></span></div>";
+        '<div class="hgr"><div><p class="ov">' + FESTIVAL.date.replace(/^2026\.\s*/, "") + " · " + FESTIVAL.place + " · " + FESTIVAL.timeRange + '</p>' +
+        '<p class="big">' + (hu.name ? esc(hu.name) + "님, " : "") + "오늘 <b>하루의 코스</b></p></div></div>";
     } else if (!this.PARENT[v]) {
       tb.innerHTML = util + '<p class="hbig">' + (this.TITLES[v] || "") + "</p>";
     } else {
@@ -2575,13 +2565,14 @@ function ideaBandHtml() {
 function hotSessHtml() {
   var list = SESSIONS.filter(function (s) { return s.kind === "seat"; })
     .map(function (s) { return { s: s, rem: sessRemain(s) }; })
-    .sort(function (a, b) { return (a.rem > 0 ? 0 : 1) - (b.rem > 0 ? 0 : 1) || sessStartMin(a.s.tm) - sessStartMin(b.s.tm); });
+    .sort(function (a, b) { return (a.rem > 0 ? 0 : 1) - (b.rem > 0 ? 0 : 1) || sessStartMin(a.s.tm) - sessStartMin(b.s.tm); })
+    .slice(0, 4);
   return '<div class="hsc">' + list.map(function (x, i) {
     return '<div class="hc" onclick="sessOpen(\'' + x.s.id + '\')">' +
-      '<div class="hcap"><span class="no">' + (i + 1) + '</span><span class="k">' + esc(x.s.ttl) + "</span></div>" +
-      '<p class="t">' + esc(x.s.sub || x.s.desc) + "</p>" +
-      '<p class="m">' + x.s.fl + "F · " + esc(x.s.tm) + "</p>" +
-      '<p class="r' + (x.rem > 0 ? "" : " full") + '">' + (x.rem > 0 ? "잔여 " + x.rem + "석" : "마감") + "</p></div>";
+      '<span class="no">' + (i + 1) + "</span>" +
+      '<span class="bd"><b class="t">' + esc(x.s.ttl) + "</b>" +
+      '<p class="m">' + x.s.fl + "F · " + esc(x.s.tm) + "</p></span>" +
+      '<span class="r' + (x.rem > 0 ? "" : " full") + '">' + (x.rem > 0 ? "잔여 " + x.rem + "석" : "마감") + "</span></div>";
   }).join("") + "</div>";
 }
 
@@ -2603,7 +2594,6 @@ var Views = {
     /* 구획: 라이브퀴즈 → 히어로 챌린지 → 내 일정 → 지금 → 안내 → 벤토 → 밴드 → 잔여석 → 혼잡도 */
     return "" +
       (liveOpen ? quizCardHtml() : "") +
-      a2hsCard() +
       heroChalHtml() +
       myScheduleHtml() +
       nowCardHtml() +
@@ -2686,11 +2676,6 @@ var Views = {
         var got = st.indexOf(s.id) >= 0;
         return '<div class="cell' + (got ? " got" : "") + '"><span class="n">' + s.no + '</span><span class="t">' + (s.short || s.title) + "</span></div>";
       }).join("") + "</div>" +
-      '<div class="myprog mb12">' +
-      '<div onclick="App.go(\'pp_reward\')"><p class="v">' + myPoints() + '<small>P</small></p><p class="l">추첨 포인트</p></div>' +
-      '<div onclick="App.go(\'entries\')"><p class="v">' + en + '<small>장</small></p><p class="l">응모권</p></div>' +
-      '<div onclick="App.go(\'pp_reward\')"><p class="v">' + (issued && !used ? 1 : 0) + '<small>장</small></p><p class="l">커피 나눔권</p></div>' +
-      "</div>" +
       '<div class="menu">' +
       menuItem("pp_code", "01", "스탬프 적립하기", "QR 스캔 · 코드 입력 · 8개 경로 안내", "") +
       menuItem("pp_reward", "02", "나의 보상", "커피 나눔권 · 완주 스페셜권", rewardBadge) +
@@ -2720,7 +2705,9 @@ var Views = {
 
   pp_reward: function () {
     return coffeeCouponHtml() + specialHtml() +
-      '<div class="card soft"><p class="muted">커피 나눔권 = 패스포트 1칸 또는 아이디어 1건이면 자동 발급 (선착순 ' + FESTIVAL.coffeeTotal + '잔). 완주 스페셜권 = 5개 경로 완주자 전용 프리미엄 보상. 모두 18F 라운지에서 무인 QR로 교환합니다.</p></div>';
+      '<div class="card soft mb8"><p class="muted">커피 나눔권 = 패스포트 1칸 또는 아이디어 1건이면 자동 발급 (선착순 ' + FESTIVAL.coffeeTotal + '잔). 완주 스페셜권 = 5개 경로 완주자 전용 프리미엄 보상. 모두 18F 라운지에서 무인 QR로 교환합니다.</p></div>' +
+      '<div class="card soft"><b style="font-size:calc(14.5px * var(--fs));color:var(--hi)">추첨 가중치 ' + myPoints() + 'P</b>' +
+      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">라이브 퀴즈 정답과 미니게임 클리어로 쌓입니다. 교환에 쓰는 포인트가 아니라, 17:00 대형경품 추첨에서 당첨 확률을 올리는 값이에요.</p></div>';
   },
 
   ideas: function () {
@@ -4060,7 +4047,7 @@ function gcEnd() {
     /* 글자 크기를 한 번도 고른 적 없으면, 그런 기능이 있다는 것만 조용히 알린다 (1회) */
     try {
       if (!localStorage.getItem(LS_FS)) setTimeout(function () {
-        if (App.current === "home" && el("a2hs").hidden) toast("글씨가 작으면 오른쪽 위 [가 글자크기]에서 키울 수 있어요");
+        if (App.current === "home" && el("a2hs").hidden) toast("글씨가 작으면 오른쪽 위 톱니 아이콘, 설정에서 키울 수 있어요");
       }, 3200);
     } catch (e) {}
     var m = location.hash.match(/^#s=(\w+)/i);
