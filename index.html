@@ -302,7 +302,8 @@
   .flcard b { display: block; margin-top: 3px; font-size: calc(15.5px * var(--fs)); color: var(--hi); }
   .flcard p { margin-top: 3px; font-size: calc(12.5px * var(--fs)); color: var(--muted); line-height: 1.45; }
   .fl-chips { display: flex; gap: 6px; margin-bottom: 12px; }
-  .fl-chips button { flex: 1; border: 1px solid var(--line); background: var(--white); color: var(--muted); font-family: inherit; font-weight: 800; font-size: calc(14.5px * var(--fs)); padding: 9px 0; border-radius: 11px; cursor: pointer; }
+  .fl-chips button { flex: 1; border: 1px solid var(--line); background: var(--white); color: var(--muted); font-family: inherit; font-weight: 800; font-size: calc(14.5px * var(--fs)); padding: 8px 0 7px; border-radius: 11px; cursor: pointer; line-height: 1.2; }
+  .fl-chips button small { display: block; margin-top: 1px; font-size: calc(10px * var(--fs)); font-weight: 700; opacity: 0.65; letter-spacing: -0.03em; }
   .fl-chips button.on { background: var(--mint); border-color: var(--mint); color: #fff; }
   .pmap { border: 1px solid var(--line); border-radius: 20px; background: var(--white); padding: 10px 10px 8px; margin-bottom: 12px; }
   .pmap svg { display: block; width: 100%; height: auto; }
@@ -495,10 +496,6 @@
   .mine .r .tx { flex: 1; font-size: calc(14.5px * var(--fs)); font-weight: 700; color: var(--hi); line-height: 1.45; }
   .mine .r .arw { flex: none; color: var(--acc2); font-weight: 800; }
   /* 공지 한 줄 */
-  .ntstrip { display: flex; align-items: center; gap: 11px; background: var(--white); border: 1px solid var(--line); border-radius: 20px; padding: 14px 15px; margin-bottom: 12px; cursor: pointer; }
-  .ntstrip .lb { flex: none; font-size: calc(11.5px * var(--fs)); font-weight: 800; color: #fff; background: var(--hi); border-radius: 6px; padding: 4px 8px; }
-  .ntstrip .tx { flex: 1; font-size: calc(14.5px * var(--fs)); font-weight: 700; color: var(--tx); line-height: 1.5; }
-  .ntstrip .arw { flex: none; font-size: calc(12.5px * var(--fs)); font-weight: 800; color: var(--faint); }
   /* 내 참여 현황 */
   .myprog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .myprog > div { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px; text-align: center; cursor: pointer; }
@@ -735,12 +732,12 @@ var FESTIVAL = {
 };
 /* short = 5칸 스탬프 그리드처럼 좁은 자리에 쓰는 짧은 이름 */
 var STAMPS = [
-  { id: "p1", no: "01", title: "1F 전시", short: "1F 전시", desc: "1F 전시존 QR 스캔", how: "현장 QR", code: "AXP1", go: "prog_fl" },
+  { id: "p1", no: "01", title: "1F 전시", short: "1F 전시", desc: "1F 전시존 QR 스캔", how: "현장 QR", code: "AXP1", go: "guide" },
   { id: "p2", no: "02", title: "AX Now! 체험", short: "부스 체험", desc: "HiDI-Q 또는 HI-Helper 부스 1곳 체험", how: "현장 QR", code: "AXP2", go: "booth" },
   { id: "p3", no: "03", title: "17F 강의", short: "17F 강의", desc: "17F 오후 강의 1회 참석 (10F 제외)", how: "현장 QR", code: "AXP3", go: "guide_time" },
   { id: "p4", no: "04", title: "라이브 퀴즈", short: "라이브 퀴즈", desc: "키노트 퀴즈 1회 이상 응답", how: "자동 적립", go: "home" },
   { id: "p5", no: "05", title: "아이디어 한 줄", short: "아이디어", desc: "아이디어 1건 제출", how: "자동 적립", go: "ideas" },
-  { id: "p6", no: "06", title: "AI 포토부스", short: "포토부스", desc: "1F AI 포토부스 촬영 완료", how: "현장 QR", code: "AXP6", go: "prog_fl" },
+  { id: "p6", no: "06", title: "AI 포토부스", short: "포토부스", desc: "1F AI 포토부스 촬영 완료", how: "현장 QR", code: "AXP6", go: "guide" },
   { id: "p7", no: "07", title: "QR 퀴즈 통과", short: "QR 퀴즈", desc: "DAP Wall QR 퀴즈 1세트 통과 (60점 이상)", how: "자동 적립", go: "wq_list" },
   { id: "p8", no: "08", title: "미니게임 클리어", short: "미니게임", desc: "AX 링크 또는 초성퀴즈 1종 클리어", how: "자동 적립", go: "ev_games" }
 ];
@@ -767,10 +764,10 @@ var TIMELINE = [
 ];
 var NOW_INDEX = 1;
 var FLOORS = [
-  { no: "18", en: "MEET", role: "만나는 곳", cls: "f-mint", items: ["커피 나눔 바 · 선착순 500잔 (11:30~16:30, 키노트 중 미운영)", "AX 커피챗 · 매칭제 14세션", "키링 DIY 스테이션 (H.E.A.R.T 참)", "폴라로이드 포토스팟 (옥외 정원)", "마음펀드 나눔 태그 (옵트인 1,000원 기부)"] },
-  { no: "17", en: "GATHER", role: "모이는 곳", cls: "f-ink", items: ["대강당(235석) · Keynote · 오후 루프 강의 · Outro/DAP 시상", "로비 · 강의 연계 부스"] },
-  { no: "10", en: "DIVE", role: "깊어지는 곳", cls: "f-blue", items: ["본사 심화 세션 Lv1 「AX 첫 성공부터」 · Lv2 「내 업무에 어떻게 쓸까」", "현장 직군별 세션 (영업·보상·마케팅)", "VIP 라운지"] },
-  { no: "01", en: "START", role: "시작하는 곳", cls: "f-wh", items: ["이벤트존 4스테이션 · INFO · 「내 3시간을 돌려줘」 보드 · 라이브 스크린 · 참가상(1F 한정 200개)", "DAP존 (미니 강의 · 과제 상담)", "기술지원부문 부스 · AX 헬프데스크", "체크인 (외부 주차장) · 웰컴키트"] }
+  { no: "18", nm: "커피챗 · 라운지", cls: "f-mint", items: ["커피 나눔 바 · 선착순 500잔 (11:30~16:30, 키노트 중 미운영)", "AX 커피챗 · 매칭제 14세션", "키링 DIY 스테이션 (H.E.A.R.T 참)", "폴라로이드 포토스팟 (옥외 정원)", "마음펀드 나눔 태그 (옵트인 1,000원 기부)"] },
+  { no: "17", nm: "키노트 · 강연", cls: "f-ink", items: ["대강당(235석) · Keynote · 오후 루프 강의 · Outro/DAP 시상", "로비 · 강의 연계 부스"] },
+  { no: "10", nm: "실습 강의", cls: "f-blue", items: ["본사 심화 세션 Lv1 「AX 첫 성공부터」 · Lv2 「내 업무에 어떻게 쓸까」", "현장 직군별 세션 (영업·보상·마케팅)", "VIP 라운지"] },
+  { no: "01", nm: "전시 · 체험 · 상담", cls: "f-wh", items: ["이벤트존 4스테이션 · INFO · 「내 3시간을 돌려줘」 보드 · 라이브 스크린 · 참가상(1F 한정 200개)", "DAP존 (미니 강의 · 과제 상담)", "기술지원부문 부스 · AX 헬프데스크", "체크인 (외부 주차장) · 웰컴키트"] }
 ];
 var SLOTS = [
   { time: "13:00–13:30", dept: "5F 보상부문" },
@@ -815,7 +812,7 @@ var STAMP_QR = {
 var LEC_MEDIA = {};
 /* 층별 안내 · 단순화 맵 존 + 추천 동선 (도면: 워크숍 p17 · 층별기획안 평면도 기준) */
 var PROG_FL = {
-  1: { role: "시작하는 곳", en: "START",
+  1: {
     course: ["SPECIAL WALL · INFO에서 오늘의 코스 받기", "AX WALL 1→2→3 관람 + 기둥 QR 퀴즈", "AX Now! 부스 체험 (HI-Helper · HIDI-Q)", "DAP ZONE 과제상담 (신청제)", "포토부스 촬영 · 참가상 수령"],
     zones: [
       { id: "special", nm: "SPECIAL WALL", d: "INFO 데스크 · 「내 3시간을 돌려줘」 보드 · 라이브 스크린 · 참가상 수령 (1F 한정 200개)" },
@@ -823,7 +820,7 @@ var PROG_FL = {
       { id: "now", nm: "AX NOW!", d: "HI-Helper · HIDI-Q 체험 부스 · 체험하면 스탬프가 적립됩니다" },
       { id: "dap", nm: "DAP ZONE", d: "미팅룸 1·2 · 30분 1:1 과제상담" },
       { id: "promo", nm: "포토부스 · 홍보존", d: "AI 포토부스 · 행사 안내 스크린 2대" }] },
-  10: { role: "깊어지는 곳", en: "DIVE",
+  10: {
     course: ["엘리베이터에서 내려 내 강의실 확인", "휴식 공간에서 입실 대기 (13:10 입실)", "세션 종료 후 과제 제출"],
     zones: [
       { id: "heart56", nm: "바이브코딩 실습 (Heart 5·6)", d: "AWS · 코드 없이 만드는 3시간 · 40석" },
@@ -832,12 +829,12 @@ var PROG_FL = {
       { id: "rest", nm: "참가자 휴식 공간", d: "세션 사이 쉬어 가는 곳" },
       { id: "staff", nm: "지휘통제실 (STAFF)", d: "행사 운영 모니터링 · 참가자 출입 없음", mute: 1 },
       { id: "vip", nm: "VIP 라운지", d: "CEO · CSO · CTO 우수 참가자 티타임", mute: 1 }] },
-  17: { role: "모이는 곳", en: "GATHER",
+  17: {
     course: ["대강당 입장 · 좌석 자유", "Keynote · 강연 참석 (강의 스탬프)", "쉬는 시간엔 로비 연계 부스"],
     zones: [
       { id: "hall", nm: "대강당 (235석)", d: "Intro · Keynote · 강연 1 · 강연 2 · Outro/DAP 시상" },
       { id: "lobby", nm: "로비", d: "강의 연계 부스" }] },
-  18: { role: "만나는 곳", en: "MEET",
+  18: {
     course: ["커피 나눔 바에서 커피 받기 (나눔권)", "AX 커피챗 테이블 · 매칭 시간 확인", "키링 DIY (신청제)", "옥외 정원 폴라로이드 포토스팟"],
     zones: [
       { id: "lounge", nm: "18F 라운지", d: "커피 나눔 바 (선착순 500잔) · AX 커피챗 테이블 · 키링 DIY · 마음펀드 나눔 태그" },
@@ -2152,7 +2149,7 @@ var App = {
     pp_reward: "passport", pp_code: "passport", entries: "passport",
     ideas_mine: "passport", ev_draw: "passport",
     /* 일정·지도 · 어디로 갈지 */
-    guide_time: "guide", prog_fl: "guide", sess_d: "prog_fl", guide_slots: "guide", crowd: "guide",
+    guide_time: "guide", sess_d: "guide", guide_slots: "guide", crowd: "guide",
     admin: "home", screen: "admin",
     wall_quiz: "admin", wall_wave: "admin", wall_live: "admin", wall_metowe: "admin", wall_rank: "admin", wall_tv: "wall_metowe"
   },
@@ -2161,7 +2158,7 @@ var App = {
     notices: "실시간 안내", wallv: "ME to WE 라이브 월", dap: "과제상담 신청", crowd: "층별 혼잡도",
     pp_reward: "나의 보상", pp_code: "스탬프 적립하기", booth: "AX Now! 부스",
     ideas: "아이디어 한 줄", ideas_mine: "내가 낸 아이디어",
-    guide_time: "타임라인", prog_fl: "층별 안내", sess_d: "프로그램 신청", guide_slots: "부문별 우선 관람",
+    guide_time: "타임라인", sess_d: "프로그램 신청", guide_slots: "부문별 우선 관람",
     ev_cchat: "내 커피챗", ev_games: "미니게임", ev_replay: "퀴즈 다시 풀기", ev_rank: "챔피언십 리더보드", ev_draw: "당첨 발표",
     wq_list: "DAP Wall QR 퀴즈", wq_play: "문제 풀이", entries: "즉석경품 응모권",
     admin: "관리자 콘솔", screen: "송출용 화면", game_word: "AX 링크", game_cho: "로드맵 초성퀴즈",
@@ -2220,8 +2217,8 @@ var App = {
     var tabBtns = this.TABS.map(function (t) {
       return '<button class="' + (activeTab === t[0] ? "on" : "") + '" onclick="App.go(\'' + t[0] + '\')"><span class="ico">' + icons[t[0]] + "</span>" + t[1] + "</button>";
     });
-    /* 중앙 FAB = 스탬프 적립 · 행사장에서 가장 자주 쓰는 실물 동작(QR) */
-    tabBtns.splice(2, 0, '<button class="fab" onclick="App.go(\'pp_code\')" aria-label="스탬프 적립">' + QR_SVG + "</button>");
+    /* 중앙 FAB = QR 스캔 즉시 실행 · 화면 이동 없이 카메라만 연다 (스탬프 현황·경로는 패스포트) */
+    tabBtns.splice(2, 0, '<button class="fab" onclick="qrScanOpen()" aria-label="QR 스캔">' + QR_SVG + "</button>");
     nav.innerHTML = tabBtns.join("");
     el("view").innerHTML = Views[v]();
     updateLed();
@@ -2416,7 +2413,7 @@ function sessCancel(id) {
 }
 function sessOpen(id) { PROG.sid = id; PROG.slot = null; App.go("sess_d"); }
 function sessPickSlot(t) { PROG.slot = t; App.render(); }
-function progOpenFl(fl, z) { PROG.fl = fl; PROG.hz = z || null; App.go("prog_fl"); }
+function progOpenFl(fl, z) { PROG.fl = fl; PROG.hz = z || null; App.go("guide"); }
 function progZoneTap(z) {
   PROG.hz = z; App.render();
   setTimeout(function () {
@@ -2436,7 +2433,7 @@ function sessCard(s) {
     '<button class="btn" onclick="App.go(\'' + s.go + '\')">' + (s.id === "dap" ? "상담 신청하기" : "커피챗 신청하기") + "</button>" :
     mine ? '<button class="btn line" onclick="sessOpen(\'' + s.id + '\')">내 신청 보기 · 취소</button>' :
       '<button class="btn line" style="font-weight:800" onclick="sessOpen(\'' + s.id + '\')">' + (s.kind === "slot" ? "시간 선택 · 신청" : "신청하기") + "</button>";
-  return '<div class="sess' + (App.current === "prog_fl" && PROG.hz && PROG.hz === s.zone ? " hl" : "") + '">' +
+  return '<div class="sess' + (App.current === "guide" && PROG.hz && PROG.hz === s.zone ? " hl" : "") + '">' +
     '<div class="top"><span class="tm">' + s.tm + '</span><span class="row" style="gap:5px">' +
     (s.kind === "slot" ? '<span class="badge gray">' + s.per + "분 단위</span>" : "") +
     '<span class="badge blue">' + s.fl + "F</span>" + mineBadge + "</span></div>" +
@@ -2542,18 +2539,6 @@ function myScheduleHtml() {
   }).join("") + "</div>";
 }
 
-/* 실시간 안내 · 최신 1건만 (전체는 탭해서) */
-function allNotices() {
-  return S.get("notices", []).slice().sort(function (a, b) { return b.ts - a.ts; }).concat(DEFAULT_NOTICES);
-}
-function noticeStripHtml() {
-  var all = allNotices();
-  if (!all.length) return "";
-  return '<div class="ntstrip" onclick="App.go(\'notices\')">' +
-    '<span class="lb">안내</span><span class="tx">' + esc(all[0].title) + "</span>" +
-    '<span class="arw">' + all.length + "건 ›</span></div>";
-}
-
 /* 히어로 · 스탬프 완주 챌린지 (풀컬러 카드 + 흰 CTA 내장) */
 function heroChalHtml() {
   var n = S.get("stamps", []).length;
@@ -2628,17 +2613,16 @@ function crowdStripHtml() {
 
 /* ════════════════ 화면 (Lv1) ════════════════ */
 var Views = {
-  /* ═══ 홈 · 상시 6블록(지금·내일정·안내·월·내현황·혼잡도). 나머지는 해당될 때만 ═══ */
+  /* ═══ 홈 · 상시 5블록(지금·내일정·월·내현황·혼잡도). 나머지는 해당될 때만 ═══ */
   home: function () {
     var st = S.get("quiz_state", INITIAL_QUIZ_STATE);
     var liveOpen = !!st.activeId && st.phase !== "idle";
-    /* 구획: 라이브퀴즈 → 히어로 챌린지 → 내 일정 → 지금 → 안내 → 벤토 → 밴드 → 잔여석 → 혼잡도 */
+    /* 구획: 라이브퀴즈 → 히어로 챌린지 → 내 일정 → 지금 → 벤토 → 밴드 → 잔여석 → 혼잡도. 공지 = 상단 종 + LED 전광판 */
     return "" +
       (liveOpen ? quizCardHtml() : "") +
       heroChalHtml() +
       myScheduleHtml() +
       nowCardHtml() +
-      noticeStripHtml() +
       bentoHtml() +
       ideaBandHtml() +
       '<div class="sect"><b>지금 신청할 수 있는 강의가 <span class="u">' + hotSessCount() + '건</span> 있어요</b>' +
@@ -2686,13 +2670,13 @@ var Views = {
         var v = crowdOf(f.no), b = crowdBand(v);
         var tip = v < 40 ? "지금 가면 대기가 거의 없어요" : v < 70 ? "적당히 붐비는 정도, 바로 참여할 수 있어요" : "지금 가장 붐비는 층이에요. 잠시 뒤에 오면 쾌적해요";
         return '<div class="card mb12" style="padding:16px">' +
-          '<div class="row" style="justify-content:space-between"><span><b class="disp" style="font-size:calc(19px * var(--fs));color:var(--hi)">' + (+f.no) + 'F</b><span style="margin-left:8px;font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--muted)">' + esc(f.role) + " · " + esc(f.en) + '</span></span>' +
+          '<div class="row" style="justify-content:space-between"><span><b class="disp" style="font-size:calc(19px * var(--fs));color:var(--hi)">' + (+f.no) + 'F</b><span style="margin-left:8px;font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--muted)">' + esc(f.nm) + '</span></span>' +
           '<b style="font-size:calc(15.5px * var(--fs));color:' + b[1] + '">' + b[0] + " · " + v + "%</b></div>" +
           '<div class="cbar big"><i style="width:' + v + '%;background:' + b[1] + '"></i></div>' +
           '<p style="margin-top:9px;font-size:calc(14.5px * var(--fs));font-weight:700;color:var(--muted)">' + tip + "</p>" +
           '<p style="margin-top:7px;font-size:calc(13.5px * var(--fs));color:var(--faint);line-height:1.7">' + f.items.slice(0, 2).map(function (x) { return "· " + esc(x); }).join("<br>") + (f.items.length > 2 ? "<br>· 외 " + (f.items.length - 2) + "개 프로그램" : "") + "</p></div>";
       }).join("") +
-      '<div class="row" style="justify-content:space-between;padding:4px 2px;cursor:pointer" onclick="App.go(\'prog_fl\')"><span style="font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--muted)">층별 지도 · 전체 프로그램 안내</span><span style="color:var(--faint);font-weight:800">›</span></div>';
+      '<div class="row" style="justify-content:space-between;padding:4px 2px;cursor:pointer" onclick="App.go(\'guide\')"><span style="font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--muted)">층별 지도 · 전체 프로그램 안내</span><span style="color:var(--faint);font-weight:800">›</span></div>';
   },
 
   /* ═══ 패스포트 · 내가 모은 것 전부 (스탬프·응모권·보상) ═══ */
@@ -2719,7 +2703,7 @@ var Views = {
         return '<div class="cell' + (got ? " got" : "") + '"><span class="n">' + s.no + '</span><span class="t">' + (s.short || s.title) + "</span></div>";
       }).join("") + "</div>" +
       '<div class="menu">' +
-      menuItem("pp_code", "01", "스탬프 적립하기", "QR 스캔 · 코드 입력 · 8개 경로 안내", "") +
+      menuItem("pp_code", "01", "스탬프 적립하기", "QR 스캔 · 8개 경로 · 담당자 적립", "") +
       menuItem("pp_reward", "02", "나의 보상", "커피 나눔권 · 완주 스페셜권", rewardBadge) +
       menuItem("entries", "03", "즉석경품 응모권", en ? "1F 이벤트존 가챠에서 사용" : "QR 퀴즈 통과 시 발급", en ? '<span class="badge mint">' + en + "장</span>" : "") +
       menuItem("ideas_mine", "04", "내가 낸 아이디어", mineN ? mineN + "건 제출" : "아직 없음", "") +
@@ -2777,6 +2761,7 @@ var Views = {
   },
 
   /* ═══ 일정·지도 · 어디로 갈지 (혼잡도 흡수) ═══ */
+  /* ═══ 프로그램 · 층을 먼저 고르면, 그 층의 프로그램에서 소개·신청 ═══ */
   guide: function () {
     var mine = sessMineList();
     var myHtml = !mine.length ? "" :
@@ -2784,18 +2769,26 @@ var Views = {
         var tmLbl = x.slot || x.s.tm.split("~")[0];
         return '<div class="r" onclick="sessOpen(\'' + x.s.id + '\')"><span class="tm">' + tmLbl + '</span><span class="tx">' + esc(x.s.ttl) + " · " + x.s.fl + 'F</span><span class="arw">›</span></div>';
       }).join("") + "</div>";
-    var FLSUB = { 1: "전시 · 체험 · 상담 · 포토부스", 10: "실습 강의 4개 · 신청제", 17: "키노트 · 강연 · 대강당 235석", 18: "커피챗 · 키링 · 옥상 정원" };
-    var list = SESSIONS.slice().sort(function (a, b) { return sessStartMin(a.tm) - sessStartMin(b.tm); });
-    return myHtml +
-      '<div class="sect" style="margin-top:0"><b>층별 안내</b><span onclick="App.go(\'guide_time\')">전체 타임라인 ›</span></div>' +
-      '<div class="flgrid mb12">' + [1, 10, 17, 18].map(function (n) {
-        var F = PROG_FL[n];
-        var myN = mine.filter(function (x) { return x.s.fl === n; }).length;
-        return '<div class="flcard" onclick="progOpenFl(' + n + ')"><span class="no">' + n + "F<small>" + F.en + "</small></span><b>" + F.role + "</b><p>" + FLSUB[n] + "</p>" +
-          (myN ? '<span class="badge mint" style="position:absolute;top:12px;right:12px">내 일정 ' + myN + "</span>" : "") + "</div>";
-      }).join("") + "</div>" +
-      '<div class="sect"><b>프로그램 신청</b><span>잔여석 확인 후 바로 신청</span></div>' +
-      list.map(function (s) { return sessCard(s); }).join("") +
+    var fl = PROG.fl, F = PROG_FL[fl];
+    var FLTAG = { 1: "전시·체험·상담", 10: "실습 강의", 17: "키노트·강연", 18: "커피챗·라운지" };
+    var chips = '<div class="fl-chips">' + [1, 10, 17, 18].map(function (n) {
+      return '<button class="' + (n === fl ? "on" : "") + '" onclick="progOpenFl(' + n + ')">' + n + "F<small>" + FLTAG[n] + "</small></button>";
+    }).join("") + "</div>";
+    var flN = SESSIONS.filter(function (s) { return s.fl === fl; }).length;
+    var head = '<div class="sect" style="margin-top:2px"><b>' + fl + "F 프로그램 " + flN + '개</b><span onclick="App.go(\'guide_time\')">전체 타임라인 ›</span></div>';
+    var map = '<div class="pmap">' + progMapSvg(fl) + '<p class="cap">존을 누르면 해당 프로그램으로 이동합니다</p></div>';
+    var course = '<div class="course"><p class="ct">' + fl + 'F 추천 동선</p>' +
+      F.course.map(function (c, i) { return '<div class="st"><span class="n">' + (i + 1) + '</span><span class="tx">' + c + "</span></div>"; }).join("") + "</div>";
+    var zones = F.zones.map(function (z) {
+      var zs = SESSIONS.filter(function (s) { return s.fl === fl && s.zone === z.id; });
+      var hl = PROG.hz === z.id;
+      return '<div id="zone-' + z.id + '" class="zonehd"><b>' + z.nm + "</b>" +
+        (z.mute ? "<span>참가자 출입 없음</span>" : zs.length ? "<span>" + zs.length + "개 프로그램</span>" : "<span>상시 운영</span>") + "</div>" +
+        '<div class="card soft mb8" style="' + (hl && !zs.length ? "border:1.5px solid var(--mint);" : "") + 'padding:12px 14px"><p style="font-size:calc(13.5px * var(--fs));color:var(--muted);line-height:1.6">' + z.d + "</p>" +
+        (z.id === "now" ? '<button class="btn" style="margin-top:10px;background:var(--white);border:1px solid var(--line)" onclick="App.go(\'booth\')">부스 안내 · 체험 스탬프</button>' : "") + "</div>" +
+        zs.map(function (s) { return sessCard(s); }).join("");
+    }).join("");
+    return myHtml + chips + head + map + course + zones +
       '<div class="sect"><b>안내</b></div>' +
       '<div class="menu mb12">' +
       menuItem("guide_time", "01", "전체 타임라인", "지금 · " + esc(TIMELINE[NOW_INDEX].title) + " (" + TIMELINE[NOW_INDEX].time + "~" + TIMELINE[NOW_INDEX].end + ")", '<span class="badge mint">NOW</span>') +
@@ -2813,27 +2806,6 @@ var Views = {
           '<p style="margin-top:5px;font-weight:800;font-size:calc(16.5px * var(--fs));color:var(--hi)">' + esc(t.title) + " <span style='font-size:calc(14.5px * var(--fs));font-weight:700;color:var(--muted)'>· " + esc(t.place) + "</span></p>" +
           '<p class="muted" style="margin-top:5px;font-size:calc(14.5px * var(--fs))">' + esc(t.desc) + "</p></div></li>";
       }).join("") + "</ol>";
-  },
-
-  /* ═══ 층별 안내 · 단순화 맵 + 추천 동선 + 존별 프로그램 ═══ */
-  prog_fl: function () {
-    var fl = PROG.fl, F = PROG_FL[fl];
-    var chips = '<div class="fl-chips">' + [1, 10, 17, 18].map(function (n) {
-      return '<button class="' + (n === fl ? "on" : "") + '" onclick="progOpenFl(' + n + ')">' + n + "F</button>";
-    }).join("") + "</div>";
-    var map = '<div class="pmap">' + progMapSvg(fl) + '<p class="cap">존을 누르면 해당 프로그램으로 이동합니다</p></div>';
-    var course = '<div class="course"><p class="ct">추천 동선 · ' + fl + "F " + F.role + "</p>" +
-      F.course.map(function (c, i) { return '<div class="st"><span class="n">' + (i + 1) + '</span><span class="tx">' + c + "</span></div>"; }).join("") + "</div>";
-    var zones = F.zones.map(function (z) {
-      var zs = SESSIONS.filter(function (s) { return s.fl === fl && s.zone === z.id; });
-      var hl = PROG.hz === z.id;
-      return '<div id="zone-' + z.id + '" class="zonehd"><b>' + z.nm + "</b>" +
-        (z.mute ? "<span>참가자 출입 없음</span>" : zs.length ? "<span>" + zs.length + "개 프로그램</span>" : "<span>상시 운영</span>") + "</div>" +
-        '<div class="card soft mb8" style="' + (hl && !zs.length ? "border:1.5px solid var(--mint);" : "") + 'padding:12px 14px"><p style="font-size:calc(13.5px * var(--fs));color:var(--muted);line-height:1.6">' + z.d + "</p>" +
-        (z.id === "now" ? '<button class="btn" style="margin-top:10px;background:var(--white);border:1px solid var(--line)" onclick="App.go(\'booth\')">부스 안내 · 체험 스탬프</button>' : "") + "</div>" +
-        zs.map(function (s) { return sessCard(s); }).join("");
-    }).join("");
-    return chips + map + course + zones;
   },
 
   /* ═══ 프로그램 상세 · 소개 영상 · 잔여석 · 신청 ═══ */
