@@ -62,19 +62,22 @@
   #splash[data-phase="intro"] #skip { display: block; }
   #panel { position: relative; z-index: 10; margin-top: auto; transform: translateY(40px); opacity: 0; pointer-events: none; transition: transform 0.7s, opacity 0.7s; }
   #splash[data-phase="ready"] #panel, #splash[data-phase="static"] #panel { transform: translateY(0); opacity: 1; pointer-events: auto; }
-  #panel .inner { background: linear-gradient(to top, #001F5B 0%, rgba(0,31,91,0.85) 60%, transparent 100%); padding: 64px 24px 32px; }
+  /* 월드(네이비+골드)는 그대로 두고, 손이 닿는 부분만 앱 카드 문법으로 (260830).
+     반투명 글래스 입력창은 앱 어디에도 없는 재질이라 진입부터 톤이 어긋났다.
+     이제 흰 카드(r20 + 오렌지 헤어라인)가 월드 위에 올라오고, 입장하면 같은 재질이 이어진다. */
+  #panel .inner { background: linear-gradient(to top, #001F5B 0%, rgba(0,31,91,0.9) 46%, transparent 100%); padding: 72px 16px calc(20px + env(safe-area-inset-bottom)); }
   .tagline { text-align: center; font-size: calc(19px * var(--fs)); font-weight: 800; letter-spacing: 0.2em; color: #fff; }
-  .tagline .me { color: rgba(255,255,255,0.6); }
-  .tagline .we { color: #FF9E1B; text-shadow: 0 0 12px rgba(255,158,27,0.6); }
-  .sub { margin-top: 6px; text-align: center; font-size: calc(13.5px * var(--fs)); color: rgba(255,255,255,0.6); }
-  #entryForm { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
-  #entryForm input { width: 100%; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); padding: 14px 16px; font-size: calc(16.5px * var(--fs)); color: #fff; outline: none; backdrop-filter: blur(4px); }
-  #entryForm input::placeholder { color: rgba(255,255,255,0.4); }
-  #entryForm input:focus { border-color: #FF9E1B; }
-  #err { font-size: calc(14.5px * var(--fs)); color: #fca5a5; display: none; }
-  #entryForm button { width: 100%; border: 0; cursor: pointer; border-radius: 16px; background: #FF7E31; padding: 16px; font-size: calc(16.5px * var(--fs)); font-weight: 700; color: #fff; transition: transform 0.1s; }
+  .tagline .me { color: rgba(255,255,255,0.55); }
+  .tagline .we { color: #FF9E1B; }
+  .sub { margin-top: 6px; text-align: center; font-size: calc(13.5px * var(--fs)); color: rgba(255,255,255,0.62); }
+  #entryForm { margin-top: 18px; background: var(--white); border: 1.5px solid var(--line); border-radius: 20px; padding: 16px 15px 15px; display: flex; flex-direction: column; gap: 9px; }
+  #entryForm input { width: 100%; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface2); padding: 14px 15px; font-family: inherit; font-size: calc(16.5px * var(--fs)); font-weight: 700; color: var(--hi); outline: none; }
+  #entryForm input::placeholder { color: var(--faint); font-weight: 700; }
+  #entryForm input:focus { border-color: var(--mint); background: var(--white); }
+  #err { font-size: calc(14.5px * var(--fs)); font-weight: 700; color: #E5484D; display: none; }
+  #entryForm button { width: 100%; border: 0; cursor: pointer; border-radius: 14px; background: var(--mint); padding: 16px; font-family: inherit; font-size: calc(16.5px * var(--fs)); font-weight: 800; color: #fff; transition: transform 0.1s; }
   #entryForm button:active { transform: scale(0.98); }
-  .note { text-align: center; font-size: calc(12.5px * var(--fs)); color: rgba(255,255,255,0.4); }
+  .note { text-align: center; font-size: calc(12.5px * var(--fs)); line-height: 1.5; color: var(--muted); }
 
   /* 홈 화면에 추가 · 로그인 직후 전용 단계 화면 (풀스크린) */
   #a2hs { position: fixed; inset: 0; z-index: 120; background: var(--paper); overflow-y: auto; animation: fadeIn 0.3s; }
@@ -82,9 +85,9 @@
   @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
   #a2hs .a-wrap { min-height: 100%; max-width: 360px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; padding: 44px 24px calc(28px + env(safe-area-inset-bottom)); text-align: center; }
   #a2hs .a-eyebrow { font-family: var(--disp); font-size: calc(13.5px * var(--fs)); letter-spacing: 0.14em; color: var(--acc2); }
-  #a2hs .a-ico { margin: 18px auto 0; width: 86px; height: 86px; border-radius: 22px; background: var(--mint); border: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 14px 34px rgba(255,126,49,0.3); }
-  #a2hs .a-ico b { font-family: var(--disp); font-size: 30px; line-height: 1; color: #fff; }
-  #a2hs .a-ico small { font-size: calc(10px * var(--fs)); font-weight: 800; letter-spacing: 0.04em; color: #fff; }
+  /* 실제 홈 화면 아이콘과 같은 그림을 보여준다(O100 + 흰 AX, 부제·장식 없음) */
+  #a2hs .a-ico { margin: 18px auto 0; width: 86px; height: 86px; border-radius: 22px; background: var(--mint); border: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 14px 34px rgba(255,126,49,0.3); }
+  #a2hs .a-ico b { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; color: #fff; }
   #a2hs .a-t { margin-top: 20px; font-size: 24px; font-weight: 800; line-height: 1.35; color: var(--hi); letter-spacing: -0.02em; }
   #a2hs .a-s { margin-top: 10px; font-size: calc(15.5px * var(--fs)); line-height: 1.7; color: var(--muted); }
   #a2hs .a-s b { color: var(--acc2); }
@@ -684,7 +687,7 @@
   <div id="a2hs" hidden>
     <div class="a-wrap">
       <p class="a-eyebrow">마지막 한 단계</p>
-      <span class="a-ico"><b>AX</b><small>ME to WE</small></span>
+      <span class="a-ico"><b>AX</b></span>
       <p class="a-t">홈 화면에<br>바로가기를 만드세요</p>
       <p class="a-s">다음부터 QR 없이 <b>아이콘 한 번</b>으로 열립니다.<br>행사 당일, 여는 속도가 곧 참여 속도예요.</p>
       <div id="a2hsBody"></div>
