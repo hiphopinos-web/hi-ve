@@ -4003,10 +4003,23 @@ function scanHit(raw) {
 function scanDone(emp, sp, act, res) {
   if (!res || !res.ok) {
     var why = res && res.reason;
+    /* 시트 잠금 충돌은 실패가 아니라 「지금 붐빔」이다. 통제 웹앱의 롤업이 스크립트 잠금을
+       잡고 있으면 스캔이 잠금 시간초과로 떨어진다(실측). 담당자가 다시 찍으면 되는 상황이므로
+       「처리 실패」로 말하지 않는다 — 데스크에서 실패로 읽히면 수기 대장으로 새어나간다. */
+    var err = res && res.err ? String(res.err) : "";
+    if (/잠금|Lock|timeout|시간초과/i.test(err)) {
+      scanLog(emp, "서버가 잠시 붐빕니다 · 다시 찍어주세요", null, true);
+      SCAN.last = "";                       /* 같은 QR을 곧바로 다시 찍을 수 있게 중복 가드 해제 */
+      return;
+    }
     var msg = why === "window" ? "지금은 스캔 시간이 아닙니다 (" + (res.open || "") + ")" :
       why === "noin" ? "입장 스캔이 없습니다" :
         why === "already" ? "이미 처리된 참가자입니다" :
-          why === "dup" ? "이미 접수됨" : "처리 실패" + (why ? " (" + why + ")" : "");
+          why === "empty" ? "대기 중인 사람이 없습니다" :
+            why === "nocoupon" ? "쓸 수 있는 쿠폰이 없습니다" :
+              why === "notfound" ? "대기 목록에 없습니다" :
+                why === "auth" ? "관리코드 불일치 · 설정 시트를 확인하세요" :
+                  why === "dup" ? "이미 접수됨" : "처리 실패" + (why || err ? " (" + (why || err.slice(0, 40)) + ")" : "");
     scanLog(emp, msg, false, true);
     return;
   }
