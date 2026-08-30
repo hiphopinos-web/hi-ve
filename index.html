@@ -686,7 +686,6 @@ var FESTIVAL = {
   name: "AX FESTIVAL 2026",
   date: "2026. 10. 26 (월)", timeRange: "09:30 – 17:30", place: "광화문 본사",
   floors: "1F · 10F · 17F · 18F",
-  adminCode: "1026",
   coffeeTotal: 500, coffeeClaimedMock: 287,
   mockOnline: 1842, mockIdeas: 214, mockQuizPlayers: 2087, mockHeart: 168,
   mockFinishers: 61, mockWave: 1128, mockWe: 1013
@@ -1314,7 +1313,7 @@ function resvAct(id, act) {
   S.set("resv", all);
   if (BE.on) {
     var m = { approve: "승인", checkin: "체크인", noshow: "노쇼", cancel: "취소" };
-    if (r.beId) { if (m[act]) beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: r.beId, status: m[act] }); }
+    if (r.beId) { if (m[act]) beCall({ action: "resv_set", key: admKey(), id: r.beId, status: m[act] }); }
     else if (act === "cancel" && r.mine) {
       /* beId 저장 전에 취소된 경우 · 사번 기준으로 서버 신청을 취소 (부활 방지) */
       var u2 = S.get("user", {});
@@ -1339,7 +1338,7 @@ function resvDoneSave(id) {
   var r = all.find(function (x) { return x.id === id; });
   if (!r) return;
   r.status = "done"; r.gift = true;
-  if (BE.on && r.beId) beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: r.beId, status: "완료" });
+  if (BE.on && r.beId) beCall({ action: "resv_set", key: admKey(), id: r.beId, status: "완료" });
   r.log = { work: el("rlW").value, block: el("rlB").value, plan: el("rlP").value, grade: el("rlG").value, ts: Date.now() };
   S.set("resv", all);
   modalClose();
@@ -2180,7 +2179,7 @@ var App = {
       tb.innerHTML = '<div class="httl">' +
         '<button class="back" onclick="App.go(\'' + this.PARENT[v] + '\')">' + BACK_SVG + "</button>" +
         '<span class="title">' + (this.TITLES[v] || "") + "</span>" +
-        (v === "admin" && S.get("admin_authed", false) ? '<button class="chip" onclick="S.set(\'admin_authed\', false); App.render()">잠금</button>' : "") +
+        (v === "admin" && S.get("admin_authed", false) ? '<button class="chip" onclick="admLock()">잠금</button>' : "") +
         '<button class="gear" onclick="fsSheet(true)" aria-label="설정">' + GEAR_SVG + "</button></div>";
     }
     tb.style.display = SIGNAGE.indexOf(v) >= 0 ? "none" : "";
@@ -3206,20 +3205,24 @@ var Views = {
        현장 스태프는 서서 한 손으로 누른다. 8개 탭을 가로로 뒤지게 하면 안 된다.
        이관 대상은 삭제하지 않는다. 통제 웹앱(AXF CONTROL)이 백엔드에 붙기 전까지 여기가 유일한 경로다. */
     var tab = S.get("admin_tab", "");
+    if (admRole() === "grade" && tab && tab !== "zone") tab = "zone";   /* 이전 세션의 탭이 남아 있어도 새지 않게 */
     if (tab && AdminTabs[tab]) {
       var meta = ADM_META[tab] || ["", ""];
       return '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px">' +
         '<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">' + esc(meta[0]) + '</b>' +
         '<button class="tag-btn" onclick="admMenu()">← 스태프 메뉴</button></div>' + AdminTabs[tab]();
     }
-    var staff = ADM_STAFF.map(function (t) {
+    /* 등급코드로 들어오면 「존 혼잡 등급」만 보인다 (260830).
+       서버가 다른 액션을 어차피 막지만, 눌렀다가 auth로 튕기는 것보다 안 보이는 편이 낫다. */
+    var onlyGrade = admRole() === "grade";
+    var staff = ADM_STAFF.filter(function (t) { return !onlyGrade || t[0] === "zone"; }).map(function (t) {
       return '<div class="card mb8" style="cursor:pointer" onclick="admOpen(\'' + t[0] + '\')">' +
         '<div class="row" style="justify-content:space-between;align-items:center;gap:10px">' +
         '<span><b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">' + t[1] + '</b>' +
         '<p class="muted" style="margin-top:2px;font-size:calc(13.5px * var(--fs))">' + t[2] + '</p></span>' +
         '<span style="color:var(--faint);font-size:20px">›</span></div></div>';
     }).join("");
-    var open = S.get("admin_cc_open", false);
+    var open = !onlyGrade && S.get("admin_cc_open", false);
     var cc = !open ? "" : ADM_CC.map(function (t) {
       return '<div class="card soft mb8" style="cursor:pointer" onclick="admOpen(\'' + t[0] + '\')">' +
         '<div class="row" style="justify-content:space-between;align-items:center;gap:10px">' +
@@ -3227,6 +3230,7 @@ var Views = {
         '<p class="muted" style="margin-top:2px;font-size:calc(12.5px * var(--fs))">' + t[2] + '</p></span>' +
         '<span style="color:var(--faint);font-size:20px">›</span></div></div>';
     }).join("");
+    if (onlyGrade) return '<p class="sub-label">등급 담당 모드 · 존 혼잡 등급만 입력할 수 있습니다</p>' + staff;
     return '<p class="sub-label">스태프 모드 · 현장에서 바로 누르는 것</p>' + staff +
       '<div class="card soft mb8" style="cursor:pointer;margin-top:14px" onclick="S.set(\'admin_cc_open\',' + (open ? "false" : "true") + ')">' +
       '<div class="row" style="justify-content:space-between;align-items:center;gap:10px">' +
@@ -3702,24 +3706,46 @@ function beSync() {
     if (App.current === "home") App.render();
   });
 }
+/* ═══ 관리 코드 · 앱에 두지 않는다 (260830 보안) ═══
+ * 구판은 FESTIVAL.adminCode에 상수로 박혀 있었고 저장소가 public이라, 소스만 열면
+ * GAS 주소와 함께 읽혔다. 주소창만으로 전 참여자 공지 발송·가짜 쿠폰 발급이 가능했다.
+ * 이제 입력값을 서버에 물어 확인하고, 맞으면 그 입력값을 이 기기에만 보관해 이후 호출에 쓴다.
+ * 서버 응답은 맞다/틀리다와 role뿐이고 코드 자체는 돌려주지 않는다. */
+function admKey() { return S.get("adm_key", ""); }
+function admRole() { return S.get("adm_role", ""); }
+function admLock() { S.set("adm_key", ""); S.set("adm_role", ""); S.set("admin_authed", false); App.render(); }
+function admVerify(v, done) {
+  v = String(v || "").trim();
+  if (!v) return;
+  /* 서버가 판정하므로 서버 없이는 열 수 없다. 로컬 비교로 되돌리면 상수가 되살아난다. */
+  if (!BE.on) { toast("서버에 연결되지 않아 관리자 모드를 열 수 없습니다."); return; }
+  beCall({ action: "admin_check", key: v }, function (res) {
+    if (res && res.ok) {
+      S.set("adm_key", v);
+      S.set("adm_role", res.role || "admin");
+      done(res.role || "admin");
+    } else toast("코드가 올바르지 않습니다.");
+  }, function () { toast("서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요."); });
+}
+
 /* ── BE 모드 관리자 패널 · 서버의 신청·대기 목록을 콘솔 탭 위에 얹는다 ── */
 var ADMIN_SRV = { resv: null, cchat: null };
 function beAdminLoad(kind) {
   if (!BE.on) return;
-  beCall({ action: kind + "_list", key: FESTIVAL.adminCode }, function (res) {
+  beCall({ action: kind + "_list", key: admKey() }, function (res) {
     if (res && res.ok) { ADMIN_SRV[kind] = res.rows; App.render(); }
     else toast(res && res.reason === "auth" ? "관리코드 불일치 · 시트 설정 탭 확인" : "서버 목록을 불러오지 못했습니다.");
   }, function () { toast("서버 연결 실패"); });
 }
 function beResvSet(id, status) {
-  beCall({ action: "resv_set", key: FESTIVAL.adminCode, id: id, status: status }, function (res) {
+  beCall({ action: "resv_set", key: admKey(), id: id, status: status }, function (res) {
     if (res && res.ok) { toast(status + " 처리 · 신청자 앱에 " + Math.round(BE_POLL_MS / 1000) + "초 안에 전달됩니다."); beAdminLoad("resv"); }
     else toast("처리 실패");
   });
 }
 function beCchatSet(emp) {
   var r = el("ccR_" + emp), t = el("ccT_" + emp);
-  beCall({ action: "cchat_set", key: FESTIVAL.adminCode, emp: emp, round: r ? r.value : "", table: t ? t.value : "" }, function (res) {
+  beCall({ action: "cchat_set", key: admKey(), emp: emp, round: r ? r.value : "", table: t ? t.value : "" }, function (res) {
     if (res && res.ok) { toast("매칭 완료 · 대상자 앱에 알림이 갑니다."); beAdminLoad("cchat"); }
     else toast("처리 실패");
   });
@@ -4022,7 +4048,7 @@ function zgSend(zone, grade) {
   if (!BE.on) { toast("서버가 연결되지 않아 기록되지 않습니다"); return; }
   if (ZG.busy) return;
   ZG.busy = zone; App.render();
-  beCall({ action: "zone_grade", key: FESTIVAL.adminCode, zone: zone, grade: grade }, function (res) {
+  beCall({ action: "zone_grade", key: admKey(), zone: zone, grade: grade }, function (res) {
     ZG.busy = "";
     if (!res || !res.ok) {
       toast(res && res.reason === "auth" ? "관리코드 불일치 · 설정 시트를 확인하세요" :
@@ -4083,7 +4109,7 @@ function scanHit(raw) {
   var sp = scanSpot(SCAN.spot), act = SCAN.act;
   if (!sp) return;
   if (!BE.on) { scanLog(emp, "서버 미연결 · 기록되지 않음", false); return; }
-  var params = { key: FESTIVAL.adminCode, emp: emp, spot: sp.id, act: act };
+  var params = { key: admKey(), emp: emp, spot: sp.id, act: act };
   if (sp.kind === "sess") { params.action = act === "in" ? "sess_in" : "sess_out"; params.sess = sp.id; }
   else if (sp.kind === "queue") params.action = "q_" + act;
   else params.action = "coupon_use";
@@ -4155,9 +4181,10 @@ function staffStampOpen() {
     '<div id="staffList" hidden>' + rows + "</div>");
 }
 function staffStampAuth() {
-  if ((el("staffCode").value || "").trim() !== FESTIVAL.adminCode) { toast("담당자 코드가 올바르지 않습니다."); return; }
-  el("staffBox").hidden = true;
-  el("staffList").hidden = false;
+  admVerify(el("staffCode").value, function () {
+    if (el("staffBox")) el("staffBox").hidden = true;
+    if (el("staffList")) el("staffList").hidden = false;
+  });
 }
 function staffStampGive(id) {
   modalClose();
@@ -4231,12 +4258,11 @@ function submitIdea() {
   setTimeout(function () { toast("오늘 " + (nth + 1).toLocaleString() + "번째 아이디어! ME to WE 월에 점 하나가 켜졌어요."); }, 100);
 }
 function tryAdmin() {
-  if ((el("adminCode").value || "").trim() === FESTIVAL.adminCode) S.set("admin_authed", true);
-  else toast("코드가 올바르지 않습니다.");
+  admVerify(el("adminCode").value, function () { S.set("admin_authed", true); App.render(); });
 }
 function fireQuiz(id) {
   S.set("quiz_state", { activeId: id, phase: "open", openedAt: Date.now(), finishedIds: S.get("quiz_state", INITIAL_QUIZ_STATE).finishedIds });
-  if (BE.on) beCall({ action: "quiz_set", key: FESTIVAL.adminCode, id: id, phase: "open" });
+  if (BE.on) beCall({ action: "quiz_set", key: admKey(), id: id, phase: "open" });
   toast("퀴즈 발사! 앱을 켠 참여자에게 " + Math.round(BE_POLL_MS / 1000) + "초 안에 전달됩니다.");
 }
 function setQuiz(phase) {
@@ -4245,7 +4271,7 @@ function setQuiz(phase) {
   if (phase === "revealed" && st.activeId && st.finishedIds.indexOf(st.activeId) < 0) st.finishedIds.push(st.activeId);
   st.phase = phase;
   S.set("quiz_state", st);
-  if (BE.on) beCall({ action: "quiz_set", key: FESTIVAL.adminCode, id: st.activeId || "", phase: phase });
+  if (BE.on) beCall({ action: "quiz_set", key: admKey(), id: st.activeId || "", phase: phase });
 }
 function adminNotice(title, body) {
   var localId = uid();
@@ -4253,7 +4279,7 @@ function adminNotice(title, body) {
   n.unshift({ id: localId, title: title, body: body, ts: Date.now() });
   S.set("notices", n);
   var seen = S.get("noti_seen", {}); seen.notice = localId; S.set("noti_seen", seen);   /* 발송자 기기엔 팝업 없음 */
-  if (BE.on) beCall({ action: "notice_set", key: FESTIVAL.adminCode, title: title, body: body }, function (res) {
+  if (BE.on) beCall({ action: "notice_set", key: admKey(), title: title, body: body }, function (res) {
     if (res && res.ok && res.notice) {
       var n2 = S.get("notices", []);
       var it = n2.find(function (x) { return x.id === localId; });
@@ -4546,9 +4572,8 @@ function gcEnd() {
         .find(function (x) { return got0.indexOf(x.id) < 0; });
       if (s) setTimeout(function () { awardStamp(s.id); }, 400);
     }
-    if (mc && mc[1] === FESTIVAL.adminCode) {
-      setTimeout(function () { redeemCoffee(); }, 500);
-    }
+    /* 커피 나눔권 사용(#c=코드)도 담당자만 · 코드 검증을 서버에 맡긴다 */
+    if (mc) admVerify(mc[1], function () { setTimeout(function () { redeemCoffee(); }, 300); });
     if (mq) {
       setTimeout(function () { wqOpen(mq[1].toLowerCase()); }, 400);
     }
