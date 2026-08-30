@@ -1290,7 +1290,8 @@ function modalOpen(html) {
   d.addEventListener("click", function (e) { if (e.target === d) modalClose(); });
   el("frame").appendChild(d);
 }
-function modalClose() { var m = el("modal"); if (m) m.remove(); }
+function modalClose() {
+  STAFFK = "";   /* 담당자 코드를 화면과 함께 버린다 */ var m = el("modal"); if (m) m.remove(); }
 
 /* ── v10: 과제상담 예약 (v5 p23~25) ── */
 function t2m(t) { var p = t.split(":"); return (+p[0]) * 60 + (+p[1]); }
@@ -3814,16 +3815,21 @@ function beSync() {
 function admKey() { return S.get("adm_key", ""); }
 function admRole() { return S.get("adm_role", ""); }
 function admLock() { S.set("adm_key", ""); S.set("adm_role", ""); S.set("admin_authed", false); App.render(); }
-function admVerify(v, done) {
+/* keep=false 면 코드를 이 기기에 남기지 않는다.
+   담당자 적립은 **참가자 폰**에서 도는 화면이라, 여기서 관리코드를 저장하면
+   그 참가자 기기에 코드가 영구히 남는다(260830 발견 · cd92d8c에서 들어간 회귀). */
+function admVerify(v, done, keep) {
   v = String(v || "").trim();
   if (!v) return;
   /* 서버가 판정하므로 서버 없이는 열 수 없다. 로컬 비교로 되돌리면 상수가 되살아난다. */
   if (!BE.on) { toast("서버에 연결되지 않아 관리자 모드를 열 수 없습니다."); return; }
   beCall({ action: "admin_check", key: v }, function (res) {
     if (res && res.ok) {
-      S.set("adm_key", v);
-      S.set("adm_role", res.role || "admin");
-      done(res.role || "admin");
+      if (keep !== false) {
+        S.set("adm_key", v);
+        S.set("adm_role", res.role || "admin");
+      }
+      done(res.role || "admin", v);
     } else toast("코드가 올바르지 않습니다.");
   }, function () { toast("서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요."); });
 }
@@ -4280,11 +4286,15 @@ function staffStampOpen() {
     '<button class="btn mint" style="margin-top:9px" onclick="staffStampAuth()">확인</button></div>' +
     '<div id="staffList" hidden>' + rows + "</div>");
 }
+/* 참가자 폰에서 도는 화면이라 코드를 저장하지 않는다(keep=false).
+   확인만 받고, 필요하면 그 값은 이 모달이 열려 있는 동안만 메모리에 든다. */
+var STAFFK = "";
 function staffStampAuth() {
-  admVerify(el("staffCode").value, function () {
+  admVerify(el("staffCode").value, function (role, key) {
+    STAFFK = key;
     if (el("staffBox")) el("staffBox").hidden = true;
     if (el("staffList")) el("staffList").hidden = false;
-  });
+  }, false);
 }
 function staffStampGive(id) {
   modalClose();
