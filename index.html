@@ -3199,11 +3199,37 @@ var Views = {
         '<button class="btn" style="max-width:280px" onclick="tryAdmin()">확인</button>' +
         "</div>";
     }
-    var tab = S.get("admin_tab", "quiz");
-    var seg = [["quiz", "퀴즈"], ["resv", "상담"], ["wq", "QR퀴즈"], ["notice", "공지"], ["ideas", "아이디어"], ["cchat", "커피챗"], ["qr", "부스 QR"], ["dash", "현황"]].map(function (t) {
-      return '<button class="' + (tab === t[0] ? "on" : "") + '" onclick="S.set(\'admin_tab\',\'' + t[0] + '\')">' + t[1] + "</button>";
+    /* v35 · 스태프 모드(현장 5기능) + 통제센터 기능(이관 예정, 접어둠) 2단 구조.
+       현장 스태프는 서서 한 손으로 누른다. 8개 탭을 가로로 뒤지게 하면 안 된다.
+       이관 대상은 삭제하지 않는다. 통제 웹앱(AXF CONTROL)이 백엔드에 붙기 전까지 여기가 유일한 경로다. */
+    var tab = S.get("admin_tab", "");
+    if (tab && AdminTabs[tab]) {
+      var meta = ADM_META[tab] || ["", ""];
+      return '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px">' +
+        '<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">' + esc(meta[0]) + '</b>' +
+        '<button class="tag-btn" onclick="admMenu()">← 스태프 메뉴</button></div>' + AdminTabs[tab]();
+    }
+    var staff = ADM_STAFF.map(function (t) {
+      return '<div class="card mb8" style="cursor:pointer" onclick="admOpen(\'' + t[0] + '\')">' +
+        '<div class="row" style="justify-content:space-between;align-items:center;gap:10px">' +
+        '<span><b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">' + t[1] + '</b>' +
+        '<p class="muted" style="margin-top:2px;font-size:calc(13.5px * var(--fs))">' + t[2] + '</p></span>' +
+        '<span style="color:var(--faint);font-size:20px">›</span></div></div>';
     }).join("");
-    return '<div class="seg wide">' + seg + "</div>" + AdminTabs[tab]();
+    var open = S.get("admin_cc_open", false);
+    var cc = !open ? "" : ADM_CC.map(function (t) {
+      return '<div class="card soft mb8" style="cursor:pointer" onclick="admOpen(\'' + t[0] + '\')">' +
+        '<div class="row" style="justify-content:space-between;align-items:center;gap:10px">' +
+        '<span><b style="font-size:calc(15.5px * var(--fs))">' + t[1] + '</b>' +
+        '<p class="muted" style="margin-top:2px;font-size:calc(12.5px * var(--fs))">' + t[2] + '</p></span>' +
+        '<span style="color:var(--faint);font-size:20px">›</span></div></div>';
+    }).join("");
+    return '<p class="sub-label">스태프 모드 · 현장에서 바로 누르는 것</p>' + staff +
+      '<div class="card soft mb8" style="cursor:pointer;margin-top:14px" onclick="S.set(\'admin_cc_open\',' + (open ? "false" : "true") + ')">' +
+      '<div class="row" style="justify-content:space-between;align-items:center;gap:10px">' +
+      '<span><b style="font-size:calc(15.5px * var(--fs));color:var(--faint)">통제센터 기능 ' + ADM_CC.length + '개</b>' +
+      '<p class="muted" style="margin-top:2px;font-size:calc(12.5px * var(--fs))">AXF CONTROL 웹앱으로 이관 예정 · 당일 폴백용으로 남겨둡니다</p></span>' +
+      '<span style="color:var(--faint);font-size:20px">' + (open ? "⌃" : "⌄") + '</span></div></div>' + cc;
   },
 
   screen: function () {
@@ -3242,7 +3268,52 @@ var Views = {
 };
 
 /* ── CC 콘솔 탭 ── */
+/* ════════ v35 · 관리자 콘솔 2단 구조 ════════
+ * 스태프 모드 = 존을 지키는 사람이 서서 폰으로 누르는 5가지.
+ * 통제센터 기능 = 앉아서 큰 화면으로 보는 것. AXF CONTROL 웹앱으로 이관 예정이나,
+ *   웹앱이 백엔드에 붙기 전까지 여기가 유일한 경로이므로 삭제하지 않고 접어둔다. */
+var ADM_STAFF = [
+  ["book",   "신청 현황",   "세션별 신청 인원과 잔여석"],
+  ["resv",   "상담 승인",   "1F DAP존 · 신청 승인·시간 변경"],
+  ["cchat",  "커피챗 매칭", "18F 라운지 · 회차·테이블 배정"],
+  ["endcls", "강의 종료",   "종료 즉시 혼잡 안내 원터치"],
+  ["urgent", "긴급 공지",   "전 참여자 LED 띠·실시간 안내"]
+];
+var ADM_CC = [
+  ["quiz",  "라이브 퀴즈",   "키노트 파트 경계 발사 · 송출 화면"],
+  ["wq",    "QR 퀴즈",       "DAP Wall 문항 운영"],
+  ["ideas", "아이디어",      "수집 현황 · 보드 수기 입력 · CSV"],
+  ["qr",    "부스 QR",       "스탬프 QR 인쇄"],
+  ["dash",  "현황·사이니지", "집계 · 사이니지 6종 · 대형경품 추첨"]
+];
+var ADM_META = {};
+ADM_STAFF.concat(ADM_CC).forEach(function (t) { ADM_META[t[0]] = [t[1], t[2]]; });
+function admOpen(id) { S.set("admin_tab", id); }
+function admMenu() { S.set("admin_tab", ""); }
+
 var AdminTabs = {
+  /* 신청 현황 · 세션별 신청 인원과 잔여석. 서버 모드면 시트 집계로 대체된다. */
+  book: function () {
+    var rows = SESSIONS.filter(function (x) { return x.cap; }).map(function (x) {
+      var left = sessRemain(x);              /* 앱 정본 헬퍼 · 내 신청분까지 반영 */
+      var bk = x.cap - left;
+      var pct = Math.min(100, Math.round(bk / x.cap * 100));
+      var full = left === 0;
+      return '<div class="card soft mb8"><div class="row" style="justify-content:space-between;align-items:baseline;gap:8px">' +
+        '<b style="font-size:calc(15.5px * var(--fs))">' + esc(x.ttl) + ' <span class="badge gray">' + x.fl + 'F</span></b>' +
+        '<span class="disp" style="font-size:19px;color:' + (full ? "#E5484D" : "var(--hi)") + '">' + bk + '<span style="font-size:13px;color:var(--faint)">/' + x.cap + '</span></span></div>' +
+        '<p class="muted" style="margin-top:2px;font-size:calc(12.5px * var(--fs))">' + esc(x.tm) + ' · ' + (full ? "만석" : "잔여 " + left + "석") + '</p>' +
+        '<div style="margin-top:7px;height:5px;border-radius:99px;background:var(--tint);overflow:hidden">' +
+        '<div style="height:100%;width:' + pct + '%;border-radius:99px;background:' + (full ? "#E5484D" : "var(--hi)") + '"></div></div></div>';
+    }).join("");
+    var tot = 0, cap = 0;
+    SESSIONS.forEach(function (x) { if (x.cap) { tot += x.cap - sessRemain(x); cap += x.cap; } });
+    return '<div class="card mb12"><div class="row" style="justify-content:space-between;align-items:baseline">' +
+      '<b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">전체 신청</b>' +
+      '<span class="disp" style="font-size:22px;color:var(--hi)">' + tot + '<span style="font-size:14px;color:var(--faint)">/' + cap + '</span></span></div>' +
+      '<p class="muted" style="margin-top:3px;font-size:calc(12.5px * var(--fs))">' + Math.round(tot / cap * 100) + '% · 이 수치가 통제센터 재실 예측의 기준선이 됩니다</p></div>' + rows;
+  },
+
   /* v10: 과제상담 운영 · 슬롯은 콘솔 설정값, 노쇼 즉시 재오픈 */
   resv: function () {
     var conf = resvConf();
@@ -3337,17 +3408,21 @@ var AdminTabs = {
       }).join("");
     return h;
   },
-  notice: function () {
+  /* 강의 종료 원터치 · 이 신호가 통제 웹앱 방출 예측의 트리거가 된다 */
+  endcls: function () {
+    return '<div class="card mb12"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">교육 종료 · 혼잡 안내 원터치</b>' +
+      '<p class="muted" style="margin-top:3px;font-size:calc(12.5px * var(--fs))">누르면 「○○ 교육 종료 · 엘리베이터 혼잡 안내」가 전 참여자 LED 띠·실시간 안내로 나갑니다. 통제센터의 방출 예측도 이 시각을 기준으로 다시 계산됩니다.</p>' +
+      '<div style="margin-top:10px">' + SESSION_LIST.map(function (nm, i) {
+        return '<button class="btn mb8" onclick="endSession(' + i + ')">' + nm + " 종료</button>";
+      }).join("") + "</div></div>" +
+      '<p style="font-size:calc(12.5px * var(--fs));color:var(--faint);line-height:1.6">종료 직후 5~10분이 층간 이동 피크입니다. 강의실 문이 열리는 순간 누르는 것이 가장 정확합니다.</p>';
+  },
+  urgent: function () {
     var notices = S.get("notices", []);
     return '<div class="card mb12"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">즉석 발송</b>' +
       '<input id="ntTitle" class="input" placeholder="제목" style="margin-top:10px">' +
       '<textarea id="ntBody" class="input" rows="2" placeholder="내용" style="margin-top:8px;resize:none"></textarea>' +
       '<button class="btn" style="margin-top:10px" onclick="sendNotice()">전체 발송</button></div>' +
-      '<div class="card mb12"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">교육 종료 · 혼잡 안내 원터치</b>' +
-      '<p class="muted" style="margin-top:3px;font-size:calc(12.5px * var(--fs))">누르면 「○○ 교육 종료 · 엘리베이터 혼잡 안내」가 전 참여자 LED 띠·실시간 안내로 나갑니다.</p>' +
-      '<div class="grid2" style="margin-top:10px">' + SESSION_LIST.map(function (nm, i) {
-        return '<button class="btn" onclick="endSession(' + i + ')">' + nm + " 종료</button>";
-      }).join("") + "</div></div>" +
       '<p class="sub-label">사전 작성 템플릿 · 탭하면 바로 발송</p>' +
       NOTICE_TEMPLATES.map(function (t, i) {
         return '<div class="card soft mb8" style="cursor:pointer" onclick="sendTemplate(' + i + ')"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">' + esc(t[0]) + '</b><p class="muted" style="margin-top:2px;font-size:calc(14.5px * var(--fs))">' + esc(t[1]) + "</p></div>";
