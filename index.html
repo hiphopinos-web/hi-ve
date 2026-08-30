@@ -824,7 +824,7 @@ var STAMP_QR = {
 };
 /* 강의 소개 영상 · 파일이 도착하면 여기에 경로만 채우면 카드에서 재생됩니다 (웹배포용/assets/) */
 var LEC_MEDIA = { key: "assets/lec_key.html", l1: "assets/lec_l1.html", ta: "assets/lec_ta.html", tb: "assets/lec_tb.html", aws: "assets/lec_aws.html", fld: "assets/lec_fld.html" };
-/* 층별 안내 · 단순화 맵 존 + 추천 동선 (도면: 워크숍 p17 · 층별기획안 평면도 기준) */
+/* 층별 존 정의 (워크숍 p17 · 층별기획안 기준). 평면도는 260830 폐기, 존 목록과 문구만 남는다 */
 var PROG_FL = {
   1: {
     course: ["SPECIAL WALL · INFO에서 오늘의 코스 받기", "AX WALL 1→2→3 관람 + 기둥 QR 퀴즈", "AX Now! 부스 체험 (HI-Helper · HIDI-Q)", "DAP ZONE 과제상담 (신청제)", "포토부스 촬영 · 참가상 수령"],
@@ -2139,7 +2139,7 @@ var BELL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 var QR_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.2"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.2"/><path d="M13.5 13.5h3.2v3.2h-3.2z"/><path d="M20.5 13.5v3.2"/><path d="M13.5 20.5h3.2"/><path d="M18.6 17.4v3.1h1.9"/></svg>';
 var App = {
   current: "home",
-  /* 4탭 · 홈(지금 무슨 일이) / 참여(지금 할 수 있는 것) / 패스포트(내가 모은 것) / 일정·지도(어디로 갈지) */
+  /* 4탭 · 홈(지금 무슨 일이) / 프로그램(어디로 갈지) / 이벤트(지금 할 수 있는 것) / 패스포트(내가 모은 것) */
   TABS: [
     ["home", "홈"], ["guide", "프로그램"], ["join", "이벤트"], ["passport", "패스포트"]
   ],
@@ -2162,7 +2162,7 @@ var App = {
     /* 패스포트 · 내가 모은 것 */
     pp_reward: "passport", pp_code: "passport", entries: "passport",
     ideas_mine: "passport", ev_draw: "passport",
-    /* 일정·지도 · 어디로 갈지 */
+    /* 프로그램 · 어디로 갈지 */
     guide_time: "guide", sess_d: "guide", guide_slots: "guide", crowd: "home",
     admin: "home", screen: "admin",
     wall_quiz: "admin", wall_wave: "admin", wall_live: "admin", wall_metowe: "admin", wall_rank: "admin", wall_tv: "wall_metowe"
@@ -2429,7 +2429,28 @@ function sessCancel(id) {
 }
 function sessOpen(id) { PROG.sid = id; PROG.slot = null; App.go("sess_d"); }
 function sessPickSlot(t) { PROG.slot = t; App.render(); }
-function progOpenFl(fl, z) { PROG.fl = fl; PROG.hz = z || null; App.go("guide"); }
+/* 평면도를 없앴으므로(260830) 「어디로 가라」는 안내는 스크롤이 맡는다.
+   존을 지정해 들어오면(세션 상세·패스포트 칸) 그 존 카드까지 내려준다. */
+function progOpenFl(fl, z) {
+  PROG.fl = fl; PROG.hz = z || null; App.go("guide");
+  if (!z) return;
+  /* 스티키 헤더 + 층 칩 높이만큼 띄워서 멈춘다. scrollIntoView는 두 요소에 가려 쓸 수 없다.
+     지연 160ms는 App.go가 80ms에 거는 상태 점검 재렌더보다 뒤에 오게 하려는 것(먼저 걸면 스크롤이 취소된다). */
+  setTimeout(function () {
+    var t = document.getElementById("zone-" + z);
+    if (!t) return;
+    var chips = document.querySelector(".fl-chips");
+    var head = (el("topbar") ? el("topbar").offsetHeight : 96) + (chips ? chips.offsetHeight : 58);
+    var y = Math.max(0, t.getBoundingClientRect().top + window.pageYOffset - head - 8);
+    var from = window.pageYOffset;
+    window.scrollTo({ top: y, behavior: "smooth" });
+    /* 부드러운 스크롤을 무시하는 웹뷰가 있다(실측). 전혀 움직이지 않았을 때만 즉시 이동시킨다.
+       사용자가 그 사이 직접 스크롤했다면 from과 달라지므로 건드리지 않는다. */
+    setTimeout(function () {
+      if (window.pageYOffset === from && Math.abs(y - from) > 24) window.scrollTo(0, y);
+    }, 420);
+  }, 160);
+}
 /* 세션 카드 · 리스트·존 상세 공용 */
 function seatRowHtml(s) {
   var rem = sessRemain(s), pct = Math.round((s.cap - rem) / s.cap * 100);
@@ -2633,7 +2654,7 @@ var Views = {
           '<p style="margin-top:9px;font-size:calc(14.5px * var(--fs));font-weight:700;color:var(--muted)">' + tip + "</p>" +
           '<p style="margin-top:7px;font-size:calc(13.5px * var(--fs));color:var(--faint);line-height:1.7">' + f.items.slice(0, 2).map(function (x) { return "· " + esc(x); }).join("<br>") + (f.items.length > 2 ? "<br>· 외 " + (f.items.length - 2) + "개 프로그램" : "") + "</p></div>";
       }).join("") +
-      '<div class="row" style="justify-content:space-between;padding:4px 2px;cursor:pointer" onclick="App.go(\'guide\')"><span style="font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--muted)">층별 지도 · 전체 프로그램 안내</span><span style="color:var(--faint);font-weight:800">›</span></div>';
+      '<div class="row" style="justify-content:space-between;padding:4px 2px;cursor:pointer" onclick="App.go(\'guide\')"><span style="font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--muted)">층별 안내 · 전체 프로그램</span><span style="color:var(--faint);font-weight:800">›</span></div>';
   },
 
   /* ═══ 패스포트 · 내가 모은 것 전부 (스탬프·응모권·보상) ═══ */
@@ -2722,7 +2743,7 @@ var Views = {
     }).join("");
   },
 
-  /* ═══ 일정·지도 · 어디로 갈지 (혼잡도 흡수) ═══ */
+  /* ═══ 프로그램 · 어디로 갈지 (혼잡도 흡수) ═══ */
   /* ═══ 프로그램 · 층을 먼저 고르면, 그 층의 프로그램에서 소개·신청 ═══ */
   guide: function () {
     var mine = sessMineList();
@@ -2811,7 +2832,7 @@ var Views = {
         (mine ? '<div class="tipbanner" style="margin-top:12px">' + mine.slot + ' 신청 완료. 시작 10분 전 앱 알림을 드려요</div><button class="btn line" style="margin-top:8px" onclick="sessCancel(\'' + s.id + '\')">신청 취소</button>' :
           '<button class="btn mint" style="margin-top:12px;padding:15px"' + (PROG.slot ? ' onclick="sessBook(\'' + s.id + '\', PROG.slot)"' : " disabled") + ">" + (PROG.slot ? PROG.slot + " 신청하기" : "시간을 선택하세요") + "</button>") + "</div>";
     }
-    var loc = '<div class="card soft"><div class="row" style="justify-content:space-between"><span style="font-size:calc(14px * var(--fs));font-weight:700;color:var(--muted)">위치 · ' + s.fl + "F " + esc(Z.nm || "") + '</span><button class="tag-btn" onclick="progOpenFl(' + s.fl + ", \'" + s.zone + "\')" + '">지도 보기</button></div></div>';
+    var loc = '<div class="card soft"><div class="row" style="justify-content:space-between"><span style="font-size:calc(14px * var(--fs));font-weight:700;color:var(--muted)">위치 · ' + s.fl + "F " + esc(Z.nm || "") + '</span><button class="tag-btn" onclick="progOpenFl(' + s.fl + ", \'" + s.zone + "\')" + '">이 층 프로그램 보기</button></div></div>';
     return hero + info + act + loc;
   },
 
