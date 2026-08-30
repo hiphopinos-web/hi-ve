@@ -19,12 +19,12 @@
   #stage{position:relative;width:calc(1280*var(--u));height:calc(720*var(--u));overflow:hidden;background:var(--ink)}
 
   /* 고정 아이덴티티 한 줄 (장식 아님 · 정보) */
-  #ident{position:absolute;top:calc(38*var(--u));left:0;width:100%;text-align:center;
-         font-size:calc(22*var(--u));font-weight:700;color:var(--dim);letter-spacing:.04em}
+  #ident{position:absolute;top:calc(30*var(--u));left:0;width:100%;text-align:center;
+         font-size:calc(34*var(--u));font-weight:700;color:var(--dim);letter-spacing:.04em}
   #ident b{color:var(--o100);font-weight:900}
 
   .scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-         text-align:center;padding:calc(60*var(--u)) calc(90*var(--u));
+         text-align:center;padding:calc(52*var(--u)) calc(56*var(--u));
          opacity:0;visibility:hidden;transition:opacity .3s ease}
   .scene.on{opacity:1;visibility:visible}
   .scene:not(.on){transition:none}
@@ -34,17 +34,18 @@
   .scene.on .up{opacity:1;transform:none}
   .scene:not(.on) .up{transition:none}
 
-  .hook{font-size:calc(56*var(--u));font-weight:800;line-height:1.3;letter-spacing:-.02em}
-  .hook .big{display:block;margin-top:calc(4*var(--u));font-size:calc(66*var(--u));font-weight:900;color:var(--gold)}
-  .lead{font-size:calc(26*var(--u));font-weight:800;color:var(--o100);letter-spacing:.05em}
-  .big2{margin-top:calc(12*var(--u));font-size:calc(56*var(--u));font-weight:900;line-height:1.3;letter-spacing:-.015em}
-  .who{margin-top:calc(20*var(--u));font-size:calc(28*var(--u));font-weight:700;color:#fff}
+  .hook{font-size:calc(88*var(--u));font-weight:800;line-height:1.26;letter-spacing:-.02em}
+  .hook .big{display:block;margin-top:calc(6*var(--u));font-size:calc(104*var(--u));font-weight:900;color:var(--gold)}
+  .lead{font-size:calc(40*var(--u));font-weight:800;color:var(--o100);letter-spacing:.05em}
+  /* 제목 크기는 가장 긴 줄 길이에 따라 빌더가 정한다(넘침 방지) */
+  .big2{margin-top:calc(14*var(--u));font-size:calc(72*var(--u));font-weight:900;line-height:1.26;letter-spacing:-.015em}
+  .who{margin-top:calc(22*var(--u));font-size:calc(52*var(--u));font-weight:800;color:#fff}
   .who em{font-style:normal;color:var(--dim);font-weight:600}
-  .meta{margin-top:calc(16*var(--u));font-size:calc(25*var(--u));font-weight:600;color:var(--dim)}
+  .meta{margin-top:calc(18*var(--u));font-size:calc(40*var(--u));font-weight:600;color:var(--dim)}
   .meta b{color:var(--gold);font-weight:800}
-  .cta{margin-top:calc(20*var(--u));display:inline-block;padding:calc(14*var(--u)) calc(34*var(--u));
-       border-radius:calc(12*var(--u));background:var(--o100);color:#fff;
-       font-size:calc(26*var(--u));font-weight:800}
+  .cta{margin-top:calc(24*var(--u));display:inline-block;padding:calc(18*var(--u)) calc(40*var(--u));
+       border-radius:calc(14*var(--u));background:var(--o100);color:#fff;
+       font-size:calc(42*var(--u));font-weight:800}
 </style>
 </head>
 <body>
@@ -71,7 +72,7 @@
   </section>
 
   <section class="scene" data-t0="14.5" data-t1="20.0">
-    <div class="up meta" style="--d:.1s;font-size:calc(28*var(--u))"><b>13:10 ~ 16:30</b> ㆍ 10F Heart 5 · 6</div>
+    <div class="up meta" style="--d:.1s;font-size:calc(46*var(--u))"><b>13:10 ~ 16:30</b> ㆍ 10F Heart 5 · 6</div>
     <div class="up cta" style="--d:.4s">아래에서 바로 신청하세요</div>
   </section>
 </div></div>
