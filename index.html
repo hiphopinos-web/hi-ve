@@ -3565,8 +3565,14 @@ var AdminTabs = {
       '<p style="margin-top:8px;font-size:calc(12.5px * var(--fs));color:var(--faint);line-height:1.6">정식판 공통 요건: 무인 10시간 · 1시간 자가 새로고침 · 네트워크 끊김 시 캐시 표시(에러 화면 금지) · 키오스크 자동 재실행 · 집계는 캐시 API만 · 배포 단계에서 적용 (기획서 v2 §5-3)</p></div>' +
       '<p style="font-size:calc(12.5px * var(--fs));color:var(--faint);line-height:1.6">※ 프로토타입 v10 (260822 · 기획서 v2 반영): 전사 수치는 시뮬레이션. KPI 목표(v16): 200명 멈춤 · 120명 아이디어 · 60명 완주 · 20건 과제화 검토. 부스 피드백 ' + S.get("booth_fb", []).length + "건 · 시연 신청 " + S.get("demo_reqs", []).length + "건.</p>" +
       '<div class="card mt16"><b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">대형경품 추첨</b><p class="muted" style="margin-top:3px;font-size:calc(14.5px * var(--fs))">조건: 패스포트 완주 · 8개 경로 중 5개 (자동 응모)</p>' +
-      '<button class="btn mint" style="margin-top:10px" onclick="drawWinner()">추첨 실행</button>' +
-      (winner ? '<p style="margin-top:10px;background:var(--tint);border-radius:6px;padding:12px;text-align:center;font-weight:800;color:var(--hi)">당첨: ' + esc(winner) + "</p>" : "") + "</div>" +
+      /* 추첨 로직이 아직 없다(260830). 이 버튼은 가짜 이름 3개 중에서 뽑아 보여줬고,
+         당일 무대에서 누르면 존재하지 않는 사람을 전사 앞에서 발표하게 된다.
+         실제 추첨이 서버에 붙기 전까지 잠근다. 붙으면 이 블록을 되돌린다. */
+      '<button class="btn" style="margin-top:10px;opacity:0.5" disabled>추첨 실행 · 준비 중</button>' +
+      '<p style="margin-top:8px;background:#FFECEC;border:1.5px solid #E5484D;border-radius:8px;padding:11px 12px;font-size:calc(13.5px * var(--fs));font-weight:700;color:#E5484D;line-height:1.6">' +
+      '당일 사용 금지. 추첨 로직이 아직 만들어지지 않았고, 이 버튼은 예시 이름 중에서 뽑아 보여주기만 합니다.<br>' +
+      '무대에서 누르면 실재하지 않는 당첨자를 발표하게 됩니다.</p>' +
+      (winner ? '<p style="margin-top:10px;background:var(--surface2);border-radius:6px;padding:12px;text-align:center;font-weight:800;color:var(--faint)">이전 예시 결과(무효): ' + esc(winner) + "</p>" : "") + "</div>" +
       '<div class="card mt16 soft"><b style="font-size:calc(14.5px * var(--fs));color:var(--hi)">18F 커피 나눔 (무인)</b><p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">내 기기 나눔권: ' + (used ? "사용 완료 " + fmtTime(used) : S.get("coffee_issued", false) ? "발급됨 (미사용)" : "미발급") + "</p></div>";
   }
 };
@@ -4320,7 +4326,12 @@ function exportIdeas() {
   a.href = URL.createObjectURL(blob); a.download = "ax-festival-ideas.csv"; a.click();
   URL.revokeObjectURL(a.href);
 }
+/* ⚠ 실제 추첨이 아니다. 예시 이름 중에서 뽑을 뿐이라 당일 사용하면 실재하지 않는
+   당첨자를 발표하게 된다. 260830에 호출을 막았다(관리자 화면의 버튼도 비활성).
+   서버에 추첨이 붙으면 이 함수를 그 결과를 받아오는 것으로 바꾼다. */
 function drawWinner() {
+  toast("추첨 기능이 아직 준비되지 않았습니다. 당일 사용하지 마세요.");
+  if (true) return;
   var pool = ["김○희 (디지털전략)", "박○영 (장기보험)", "이○준 (자동차보상)"];
   var u = S.get("user", {});
   if (S.get("raffle_entered", false)) pool.push(u.name + " (이 기기 참여자)");
