@@ -309,15 +309,6 @@
   .fl-chips button { flex: 1; border: 1px solid var(--line); background: var(--white); color: var(--muted); font-family: inherit; font-weight: 800; font-size: calc(14.5px * var(--fs)); padding: 8px 0 7px; border-radius: 11px; cursor: pointer; line-height: 1.2; }
   .fl-chips button small { display: block; margin-top: 1px; font-size: calc(10px * var(--fs)); font-weight: 700; opacity: 0.65; letter-spacing: -0.03em; }
   .fl-chips button.on { background: var(--mint); border-color: var(--mint); color: #fff; }
-  .pmap { border: 1px solid var(--line); border-radius: 20px; background: var(--white); padding: 10px 10px 8px; margin-bottom: 12px; }
-  .pmap svg { display: block; width: 100%; height: auto; }
-  .pmap .cap { margin: 6px 2px 2px; text-align: center; font-size: calc(11.5px * var(--fs)); font-weight: 700; color: var(--faint); }
-  .pz { cursor: pointer; }
-  .course { background: var(--surface2); border: 0; border-radius: 14px; padding: 13px 15px; margin-bottom: 14px; }
-  .course .ct { font-size: calc(12.5px * var(--fs)); font-weight: 800; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; }
-  .course .st { display: flex; align-items: center; gap: 9px; padding: 4px 0; }
-  .course .st .n { flex: none; width: 20px; height: 20px; border-radius: 999px; background: var(--mint); color: #fff; font-weight: 900; font-size: calc(12px * var(--fs)); display: flex; align-items: center; justify-content: center; }
-  .course .st .tx { font-size: calc(14px * var(--fs)); font-weight: 700; color: var(--hi); line-height: 1.4; }
   .zonehd { display: flex; align-items: baseline; gap: 8px; margin: 20px 2px 8px; }
   .zonehd b { font-size: calc(15.5px * var(--fs)); font-weight: 800; color: var(--hi); }
   .zonehd span { font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--faint); }
@@ -2436,13 +2427,6 @@ function sessCancel(id) {
 function sessOpen(id) { PROG.sid = id; PROG.slot = null; App.go("sess_d"); }
 function sessPickSlot(t) { PROG.slot = t; App.render(); }
 function progOpenFl(fl, z) { PROG.fl = fl; PROG.hz = z || null; App.go("guide"); }
-function progZoneTap(z) {
-  PROG.hz = z; App.render();
-  setTimeout(function () {
-    var t = document.getElementById("zone-" + z);
-    if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 60);
-}
 /* 세션 카드 · 리스트·존 상세 공용 */
 function seatRowHtml(s) {
   var rem = sessRemain(s), pct = Math.round((s.cap - rem) / s.cap * 100);
@@ -2464,53 +2448,7 @@ function sessCard(s) {
     (s.kind === "seat" ? seatRowHtml(s) : "") +
     '<div class="btns">' + (s.video || LEC_MEDIA[s.id] ? '<button class="btn vid" onclick="sessOpen(\'' + s.id + '\')">소개 영상</button>' : "") + cta + "</div></div>";
 }
-/* 층별 단순화 안내도 · 워크숍 p17·층별기획안 평면도를 앱 톤으로 재작도 */
-function pmz(id, x, y, w, h, nm, sub, kind) {
-  var fill = kind === "book" ? "#FF7E31" : kind === "mute" ? "#F7F6F5" : "#FFF1E7";
-  var tc = kind === "book" ? "#fff" : kind === "mute" ? "#A39C96" : "#1E2124";
-  var st = PROG.hz === id ? ' stroke="#C2570F" stroke-width="2.5"' :
-    kind === "mute" ? ' stroke="#DDD8D3" stroke-dasharray="4 3"' : ' stroke="#FFD8C1"';
-  var cy = y + h / 2 + (sub ? -2 : 4);
-  return '<g class="pz" onclick="progZoneTap(\'' + id + '\')"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="' + fill + '"' + st + "/>" +
-    '<text x="' + (x + w / 2) + '" y="' + cy + '" text-anchor="middle" font-size="11.5" font-weight="800" fill="' + tc + '">' + nm + "</text>" +
-    (sub ? '<text x="' + (x + w / 2) + '" y="' + (cy + 13) + '" text-anchor="middle" font-size="9" font-weight="700" fill="' + tc + '" opacity="0.72">' + sub + "</text>" : "") + "</g>";
-}
-function pmn(n, x, y) {
-  return '<circle cx="' + x + '" cy="' + y + '" r="10" fill="#FF7E31"/><text x="' + x + '" y="' + (y + 3.8) + '" text-anchor="middle" font-size="11" font-weight="900" fill="#fff">' + n + "</text>";
-}
-function progMapSvg(fl) {
-  if (fl === 1) return '<svg viewBox="0 0 360 252">' +
-    pmz("office", 12, 10, 336, 42, "오피스 공간", "행사 미사용", "mute") +
-    pmz("dap", 12, 60, 96, 58, "DAP ZONE", "미팅룸 1·2", "book") +
-    pmz("now", 12, 124, 96, 52, "AX NOW!", "체험 부스", "open") +
-    pmz("promo", 12, 182, 96, 50, "포토부스", "홍보존", "book") +
-    pmz("core", 118, 60, 230, 58, "엘리베이터 · 복도", "", "mute") +
-    pmz("wall", 118, 124, 128, 108, "AX WALL", "월 1·2·3 + 기둥", "open") +
-    pmz("special", 252, 124, 96, 108, "SPECIAL WALL", "INFO · 참가상", "open") +
-    '<path d="M300 178 H182 L60 150 M60 89 V207" stroke="#FF7E31" stroke-width="2" stroke-dasharray="5 5" fill="none" opacity="0.3"/>' +
-    pmn(1, 342, 130) + pmn(2, 240, 130) + pmn(3, 102, 130) + pmn(4, 102, 66) + pmn(5, 102, 188) +
-    '<text x="180" y="248" text-anchor="middle" font-size="10" font-weight="800" fill="#A39C96">▲ 정문 입구</text></svg>';
-  if (fl === 10) return '<svg viewBox="0 0 360 246">' +
-    pmz("staff", 12, 12, 82, 82, "운영 사무실", "STAFF", "mute") +
-    pmz("heart56", 100, 12, 116, 66, "바이브코딩 실습", "Heart 5·6 · AWS", "book") +
-    pmz("heart18", 222, 12, 126, 82, "Track A·B 실습", "Heart 1·7~8", "book") +
-    pmz("rest", 100, 84, 116, 34, "참가자 휴게 공간", "", "open") +
-    pmz("vip", 12, 100, 82, 66, "VIP 라운지", "", "mute") +
-    pmz("core", 100, 124, 116, 66, "EV · 복도", "", "mute") +
-    pmz("conf", 222, 100, 126, 112, "현장 프로그램", "컨퍼런스룸", "book") +
-    '<text x="180" y="240" text-anchor="middle" font-size="10" font-weight="800" fill="#A39C96">기준층 평면 · 단순화 안내도</text></svg>';
-  if (fl === 17) return '<svg viewBox="0 0 360 216">' +
-    pmz("core17", 12, 28, 44, 174, "EV", "", "mute") +
-    pmz("hall", 64, 28, 284, 130, "대강당", "235석 · Keynote · 강연 1·2 · Outro", "book") +
-    pmz("lobby", 64, 166, 284, 36, "로비 · 강의 연계 부스", "", "open") +
-    "</svg>";
-  return '<svg viewBox="0 0 360 240">' +
-    pmz("garden", 12, 12, 336, 104, "옥외 휴게공간 · 옥상 정원", "폴라로이드 포토스팟 · 400㎡", "open") +
-    pmz("core18", 12, 124, 174, 104, "기계실 · EV", "", "mute") +
-    pmz("lounge", 194, 124, 154, 104, "18F 라운지", "커피 바 · 커피챗 · 키링 DIY", "book") +
-    pmn(1, 342, 130) + pmn(2, 342, 18) +
-    "</svg>";
-}
+/* 층별 평면도(pmz·pmn·progMapSvg)는 260830 폐기. 층 안내는 assets/fl_*.html 광고 루프가 맡는다. */
 
 function menuItem(target, no, title, desc, badge) {
   return '<div class="mi" onclick="App.go(\'' + target + '\')"><span class="no">' + no + '</span>' +
@@ -2799,9 +2737,6 @@ var Views = {
     var head = '<div class="sect" style="margin-top:2px"><b>' + fl + "F 프로그램 " + flN + '개</b><span onclick="App.go(\'guide_time\')">전체 타임라인 ›</span></div>';
     /* 층 안내 루프: 정지 평면도만으로는 동선이 안 읽힌다는 피드백(260830) → 동선이 그려지는 영상을 먼저 */
     var flv = '<div class="flvid"><iframe src="assets/fl_' + fl + '.html" title="' + fl + 'F 추천 동선" scrolling="no" loading="lazy"></iframe></div>';
-    var map = '<div class="pmap">' + progMapSvg(fl) + '<p class="cap">존을 누르면 해당 프로그램으로 이동합니다</p></div>';
-    var course = '<div class="course"><p class="ct">' + fl + 'F 추천 동선</p>' +
-      F.course.map(function (c, i) { return '<div class="st"><span class="n">' + (i + 1) + '</span><span class="tx">' + c + "</span></div>"; }).join("") + "</div>";
     var zones = F.zones.map(function (z) {
       var zs = SESSIONS.filter(function (s) { return s.fl === fl && s.zone === z.id; });
       var hl = PROG.hz === z.id;
@@ -2816,7 +2751,7 @@ var Views = {
       '<div class="card soft mb12" style="display:flex;align-items:center;gap:10px;padding:13px 15px;cursor:pointer" onclick="App.go(\'guide_slots\')">' +
       '<span style="flex:1;font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--hi)">우리 부문 우선 관람 시간</span>' +
       '<span style="color:var(--faint);font-weight:800">›</span></div>';
-    return myHtml + chips + head + flv + map + slotLink + zones;
+    return myHtml + chips + head + flv + slotLink + zones;
   },
 
   guide_time: function () {
