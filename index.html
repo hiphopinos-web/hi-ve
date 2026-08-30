@@ -335,7 +335,9 @@
   .sess .btns { display: flex; gap: 8px; margin-top: 12px; }
   .sess .btns .btn { padding: 11px; }
   .sess .btns .btn.vid { background: var(--surface2); color: var(--hi); }
-  .vhero { position: relative; border-radius: 20px; overflow: hidden; background: var(--ink); margin-bottom: 12px; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; }
+  .flvid { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); margin-bottom: 12px; aspect-ratio: 16 / 9; }
+.flvid iframe { width: 100%; height: 100%; border: 0; display: block; pointer-events: none; }
+.vhero { position: relative; border-radius: 20px; overflow: hidden; background: var(--ink); margin-bottom: 12px; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; }
   .vhero .vt { font-family: var(--disp); font-size: 21px; letter-spacing: 0.03em; padding: 0 22px; line-height: 1.3; }
   .vhero .vs { position: absolute; bottom: 11px; left: 0; right: 0; font-size: calc(12.5px * var(--fs)); font-weight: 700; color: rgba(255,255,255,0.55); }
   .vhero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
@@ -2795,6 +2797,8 @@ var Views = {
     }).join("") + "</div>";
     var flN = SESSIONS.filter(function (s) { return s.fl === fl; }).length;
     var head = '<div class="sect" style="margin-top:2px"><b>' + fl + "F 프로그램 " + flN + '개</b><span onclick="App.go(\'guide_time\')">전체 타임라인 ›</span></div>';
+    /* 층 안내 루프: 정지 평면도만으로는 동선이 안 읽힌다는 피드백(260830) → 동선이 그려지는 영상을 먼저 */
+    var flv = '<div class="flvid"><iframe src="assets/fl_' + fl + '.html" title="' + fl + 'F 추천 동선" scrolling="no" loading="lazy"></iframe></div>';
     var map = '<div class="pmap">' + progMapSvg(fl) + '<p class="cap">존을 누르면 해당 프로그램으로 이동합니다</p></div>';
     var course = '<div class="course"><p class="ct">' + fl + 'F 추천 동선</p>' +
       F.course.map(function (c, i) { return '<div class="st"><span class="n">' + (i + 1) + '</span><span class="tx">' + c + "</span></div>"; }).join("") + "</div>";
@@ -2812,7 +2816,7 @@ var Views = {
       '<div class="card soft mb12" style="display:flex;align-items:center;gap:10px;padding:13px 15px;cursor:pointer" onclick="App.go(\'guide_slots\')">' +
       '<span style="flex:1;font-size:calc(14.5px * var(--fs));font-weight:800;color:var(--hi)">우리 부문 우선 관람 시간</span>' +
       '<span style="color:var(--faint);font-weight:800">›</span></div>';
-    return myHtml + chips + head + map + course + slotLink + zones;
+    return myHtml + chips + head + flv + map + slotLink + zones;
   },
 
   guide_time: function () {

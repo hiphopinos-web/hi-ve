@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>18F 추천 동선 · AX Festival</title>
+<style>
+  /* 앱 프로그램 탭 상단(16:9)용 층 안내 루프.
+     정지 평면도로는 동선이 안 읽힌다는 피드백 → 같은 지도 위에서 한 스텝씩 그린다.
+     논리 좌표 1280x720. 앱 실폭 420px 기준으로 글자 크기를 잡았다. */
+  :root{
+    --u: min(calc(100vw / 1280), calc(100vh / 720));
+    --bg:#F4F2F0; --paper:#fff; --ink:#1E2124; --body:#464C53; --sub:#6D7882;
+    --o100:#FF7E31; --line:#FFE3D5; --acc:#C2570F;
+    --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);overflow:hidden;font-family:var(--font);color:var(--ink);word-break:keep-all}
+  #wrap{position:fixed;inset:0;display:grid;place-items:center}
+  #stage{position:relative;width:calc(1280*var(--u));height:calc(720*var(--u));overflow:hidden;
+         background:var(--bg);display:flex;padding:calc(26*var(--u))}
+
+  /* 왼쪽: 지도 */
+  #left{width:calc(640*var(--u));background:var(--paper);border:calc(1.5*var(--u)) solid var(--line);
+        border-radius:calc(18*var(--u));padding:calc(16*var(--u));display:flex;align-items:center}
+  #map{width:100%;height:auto;display:block}
+  #map .hi,#map .mk{opacity:0;transition:opacity .45s ease}
+  #map .hi.on,#map .mk.on{opacity:1}
+  #map .rt{opacity:0;stroke-dashoffset:0;transition:opacity .4s ease}
+  #map .rt.on{opacity:.85;animation:dash 1.1s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-24}}
+
+  /* 오른쪽: 층 이름 + 스텝 목록 */
+  #right{flex:1;min-width:0;margin-left:calc(20*var(--u));display:flex;flex-direction:column;justify-content:center}
+  .fl{font-size:calc(92*var(--u));font-weight:900;letter-spacing:-.02em;line-height:1}
+  .fl em{font-style:normal;color:var(--o100)}
+  .tag{margin-top:calc(6*var(--u));font-size:calc(38*var(--u));font-weight:700;color:var(--sub)}
+  .cap{margin-top:calc(22*var(--u));font-size:calc(34*var(--u));font-weight:800;color:var(--acc)}
+  .steps{margin-top:calc(14*var(--u))}
+  .step{display:flex;align-items:center;gap:calc(14*var(--u));padding:calc(11*var(--u)) 0;
+         opacity:.32;transition:opacity .4s ease}
+  .step.on{opacity:1}
+  .step .n{width:calc(46*var(--u));height:calc(46*var(--u));border-radius:50%;flex:none;
+           display:flex;align-items:center;justify-content:center;
+           font-size:calc(26*var(--u));font-weight:900;color:var(--acc);
+           background:#fff;border:calc(2*var(--u)) solid var(--line);transition:background-color .4s ease,color .4s ease,border-color .4s ease}
+  .step.on .n{background:var(--o100);border-color:var(--o100);color:#fff}
+  .step .t{flex:1;min-width:0;font-size:calc(40*var(--u));font-weight:700;color:var(--body);line-height:1.3}
+  .step.on .t{color:var(--ink);font-weight:800}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div id="left"><svg id="map" viewBox="0 0 360 240"><g class="z" data-z="garden"><rect x="12" y="12" width="336" height="104" rx="10" fill="#FFF1E7" stroke="#FFD8C1" stroke-width="1"/><text x="180.0" y="62.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#1E2124">옥외 휴게공간 · 옥상 정원</text><text x="180.0" y="75.0" text-anchor="middle" font-size="9" font-weight="700" fill="#1E2124" opacity="0.72">폴라로이드 포토스팟 · 400㎡</text></g><g class="z" data-z="core18"><rect x="12" y="124" width="174" height="104" rx="10" fill="#F7F6F5" stroke="#DDD8D3" stroke-width="1" stroke-dasharray="4 3"/><text x="99.0" y="180.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#A39C96">기계실 · EV</text></g><g class="z" data-z="lounge"><rect x="194" y="124" width="154" height="104" rx="10" fill="#FF7E31" stroke="#FFD8C1" stroke-width="1"/><text x="271.0" y="174.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#fff">18F 라운지</text><text x="271.0" y="187.0" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" opacity="0.72">커피 바 · 커피챗 · 키링 DIY</text></g><line class="rt" data-i="1" x1="271.0" y1="176.0" x2="271.0" y2="176.0" stroke="#C2570F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/><line class="rt" data-i="2" x1="271.0" y1="176.0" x2="180.0" y2="64.0" stroke="#C2570F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/><rect class="hi" data-i="1" x="194" y="124" width="154" height="104" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><rect class="hi" data-i="2" x="194" y="124" width="154" height="104" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><rect class="hi" data-i="3" x="12" y="12" width="336" height="104" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><g class="mk" data-i="1"><circle cx="271.0" cy="176.0" r="11" fill="#C2570F"/><text x="271.0" y="180.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">1</text></g><g class="mk" data-i="2"><circle cx="271.0" cy="176.0" r="11" fill="#C2570F"/><text x="271.0" y="180.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">2</text></g><g class="mk" data-i="3"><circle cx="180.0" cy="64.0" r="11" fill="#C2570F"/><text x="180.0" y="68.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">3</text></g></svg></div>
+  <div id="right">
+    <div class="fl">18<em>F</em></div>
+    <div class="tag">커피챗 · 라운지</div>
+    <div class="cap">추천 동선</div>
+    <div class="steps"><div class="step" data-i="1"><span class="n">1</span><span class="t">커피 나눔권으로 커피 받기</span></div><div class="step" data-i="2"><span class="n">2</span><span class="t">AX 커피챗 · 키링 DIY</span></div><div class="step" data-i="3"><span class="n">3</span><span class="t">옥상 정원 포토스팟</span></div></div>
+  </div>
+</div></div>
+
+<script>
+(function(){
+  var NSTEP = 3, INTRO = 3.0, PER = 3.4, TOTAL = 15.799999999999999;
+  var steps = [].slice.call(document.querySelectorAll('.step'));
+  var his   = [].slice.call(document.querySelectorAll('#map .hi'));
+  var mks   = [].slice.call(document.querySelectorAll('#map .mk'));
+  var rts   = [].slice.call(document.querySelectorAll('#map .rt'));
+
+  function setOn(list, pred){
+    list.forEach(function(el){
+      var on = pred(+el.dataset.i);
+      if (on !== el.classList.contains('on')) el.classList.toggle('on', on);
+    });
+  }
+
+  var start = Date.now(), offset = 0;
+  function tick(){
+    var t = ((Date.now() - start) / 1000 + offset) % TOTAL;
+    /* cur = 지금 스텝(1..N). 인트로 구간은 0, 아웃트로는 N(전체 켜둠) */
+    var cur = t < INTRO ? 0 : Math.min(NSTEP, Math.floor((t - INTRO) / PER) + 1);
+    var done = t >= INTRO + PER * NSTEP;   /* 아웃트로: 전체 동선을 한 번에 */
+    setOn(steps, function(i){ return done || i === cur; });
+    setOn(his,   function(i){ return !done && i === cur; });
+    setOn(mks,   function(i){ return done || i <= cur; });
+    setOn(rts,   function(i){ return done || i < cur; });
+  }
+  setInterval(tick, 50); tick();
+
+  window.seek = function(t){ start = Date.now(); offset = t; tick(); };
+  var q = new URLSearchParams(location.search).get('t');
+  if (q !== null) window.seek(parseFloat(q) || 0);
+})();
+</script>
+</body>
+</html>

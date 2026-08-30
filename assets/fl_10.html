@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>10F 추천 동선 · AX Festival</title>
+<style>
+  /* 앱 프로그램 탭 상단(16:9)용 층 안내 루프.
+     정지 평면도로는 동선이 안 읽힌다는 피드백 → 같은 지도 위에서 한 스텝씩 그린다.
+     논리 좌표 1280x720. 앱 실폭 420px 기준으로 글자 크기를 잡았다. */
+  :root{
+    --u: min(calc(100vw / 1280), calc(100vh / 720));
+    --bg:#F4F2F0; --paper:#fff; --ink:#1E2124; --body:#464C53; --sub:#6D7882;
+    --o100:#FF7E31; --line:#FFE3D5; --acc:#C2570F;
+    --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);overflow:hidden;font-family:var(--font);color:var(--ink);word-break:keep-all}
+  #wrap{position:fixed;inset:0;display:grid;place-items:center}
+  #stage{position:relative;width:calc(1280*var(--u));height:calc(720*var(--u));overflow:hidden;
+         background:var(--bg);display:flex;padding:calc(26*var(--u))}
+
+  /* 왼쪽: 지도 */
+  #left{width:calc(640*var(--u));background:var(--paper);border:calc(1.5*var(--u)) solid var(--line);
+        border-radius:calc(18*var(--u));padding:calc(16*var(--u));display:flex;align-items:center}
+  #map{width:100%;height:auto;display:block}
+  #map .hi,#map .mk{opacity:0;transition:opacity .45s ease}
+  #map .hi.on,#map .mk.on{opacity:1}
+  #map .rt{opacity:0;stroke-dashoffset:0;transition:opacity .4s ease}
+  #map .rt.on{opacity:.85;animation:dash 1.1s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-24}}
+
+  /* 오른쪽: 층 이름 + 스텝 목록 */
+  #right{flex:1;min-width:0;margin-left:calc(20*var(--u));display:flex;flex-direction:column;justify-content:center}
+  .fl{font-size:calc(92*var(--u));font-weight:900;letter-spacing:-.02em;line-height:1}
+  .fl em{font-style:normal;color:var(--o100)}
+  .tag{margin-top:calc(6*var(--u));font-size:calc(38*var(--u));font-weight:700;color:var(--sub)}
+  .cap{margin-top:calc(22*var(--u));font-size:calc(34*var(--u));font-weight:800;color:var(--acc)}
+  .steps{margin-top:calc(14*var(--u))}
+  .step{display:flex;align-items:center;gap:calc(14*var(--u));padding:calc(11*var(--u)) 0;
+         opacity:.32;transition:opacity .4s ease}
+  .step.on{opacity:1}
+  .step .n{width:calc(46*var(--u));height:calc(46*var(--u));border-radius:50%;flex:none;
+           display:flex;align-items:center;justify-content:center;
+           font-size:calc(26*var(--u));font-weight:900;color:var(--acc);
+           background:#fff;border:calc(2*var(--u)) solid var(--line);transition:background-color .4s ease,color .4s ease,border-color .4s ease}
+  .step.on .n{background:var(--o100);border-color:var(--o100);color:#fff}
+  .step .t{flex:1;min-width:0;font-size:calc(40*var(--u));font-weight:700;color:var(--body);line-height:1.3}
+  .step.on .t{color:var(--ink);font-weight:800}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div id="left"><svg id="map" viewBox="0 0 360 246"><g class="z" data-z="staff"><rect x="12" y="12" width="82" height="82" rx="10" fill="#F7F6F5" stroke="#DDD8D3" stroke-width="1" stroke-dasharray="4 3"/><text x="53.0" y="51.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#A39C96">운영 사무실</text><text x="53.0" y="64.0" text-anchor="middle" font-size="9" font-weight="700" fill="#A39C96" opacity="0.72">STAFF</text></g><g class="z" data-z="heart56"><rect x="100" y="12" width="116" height="66" rx="10" fill="#FF7E31" stroke="#FFD8C1" stroke-width="1"/><text x="158.0" y="43.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#fff">바이브코딩 실습</text><text x="158.0" y="56.0" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" opacity="0.72">Heart 5·6 · AWS</text></g><g class="z" data-z="heart18"><rect x="222" y="12" width="126" height="82" rx="10" fill="#FF7E31" stroke="#FFD8C1" stroke-width="1"/><text x="285.0" y="51.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#fff">Track A·B 실습</text><text x="285.0" y="64.0" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" opacity="0.72">Heart 1·7~8</text></g><g class="z" data-z="rest"><rect x="100" y="84" width="116" height="34" rx="10" fill="#FFF1E7" stroke="#FFD8C1" stroke-width="1"/><text x="158.0" y="105.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#1E2124">참가자 휴게 공간</text></g><g class="z" data-z="vip"><rect x="12" y="100" width="82" height="66" rx="10" fill="#F7F6F5" stroke="#DDD8D3" stroke-width="1" stroke-dasharray="4 3"/><text x="53.0" y="137.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#A39C96">VIP 라운지</text></g><g class="z" data-z="core"><rect x="100" y="124" width="116" height="66" rx="10" fill="#F7F6F5" stroke="#DDD8D3" stroke-width="1" stroke-dasharray="4 3"/><text x="158.0" y="161.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#A39C96">EV · 복도</text></g><g class="z" data-z="conf"><rect x="222" y="100" width="126" height="112" rx="10" fill="#FF7E31" stroke="#FFD8C1" stroke-width="1"/><text x="285.0" y="154.0" text-anchor="middle" font-size="11.5" font-weight="800" fill="#fff">현장 프로그램</text><text x="285.0" y="167.0" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" opacity="0.72">컨퍼런스룸</text></g><line class="rt" data-i="1" x1="158.0" y1="157.0" x2="158.0" y2="101.0" stroke="#C2570F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/><line class="rt" data-i="2" x1="158.0" y1="101.0" x2="158.0" y2="45.0" stroke="#C2570F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/><line class="rt" data-i="3" x1="158.0" y1="45.0" x2="285.0" y2="53.0" stroke="#C2570F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/><line class="rt" data-i="4" x1="285.0" y1="53.0" x2="285.0" y2="156.0" stroke="#C2570F" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/><rect class="hi" data-i="1" x="100" y="124" width="116" height="66" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><rect class="hi" data-i="2" x="100" y="84" width="116" height="34" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><rect class="hi" data-i="3" x="100" y="12" width="116" height="66" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><rect class="hi" data-i="4" x="222" y="12" width="126" height="82" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><rect class="hi" data-i="5" x="222" y="100" width="126" height="112" rx="10" fill="none" stroke="#C2570F" stroke-width="3"/><g class="mk" data-i="1"><circle cx="158.0" cy="157.0" r="11" fill="#C2570F"/><text x="158.0" y="161.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">1</text></g><g class="mk" data-i="2"><circle cx="158.0" cy="101.0" r="11" fill="#C2570F"/><text x="158.0" y="105.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">2</text></g><g class="mk" data-i="3"><circle cx="158.0" cy="45.0" r="11" fill="#C2570F"/><text x="158.0" y="49.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">3</text></g><g class="mk" data-i="4"><circle cx="285.0" cy="53.0" r="11" fill="#C2570F"/><text x="285.0" y="57.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">4</text></g><g class="mk" data-i="5"><circle cx="285.0" cy="156.0" r="11" fill="#C2570F"/><text x="285.0" y="160.0" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">5</text></g></svg></div>
+  <div id="right">
+    <div class="fl">10<em>F</em></div>
+    <div class="tag">실습 강의</div>
+    <div class="cap">추천 동선</div>
+    <div class="steps"><div class="step" data-i="1"><span class="n">1</span><span class="t">내 강의실 확인</span></div><div class="step" data-i="2"><span class="n">2</span><span class="t">휴게 공간에서 대기 (13:10 입실)</span></div><div class="step" data-i="3"><span class="n">3</span><span class="t">바이브코딩 · Heart 5·6</span></div><div class="step" data-i="4"><span class="n">4</span><span class="t">Track A·B · Heart 1·7~8</span></div><div class="step" data-i="5"><span class="n">5</span><span class="t">현장 프로그램 · 컨퍼런스룸</span></div></div>
+  </div>
+</div></div>
+
+<script>
+(function(){
+  var NSTEP = 5, INTRO = 3.0, PER = 3.4, TOTAL = 22.6;
+  var steps = [].slice.call(document.querySelectorAll('.step'));
+  var his   = [].slice.call(document.querySelectorAll('#map .hi'));
+  var mks   = [].slice.call(document.querySelectorAll('#map .mk'));
+  var rts   = [].slice.call(document.querySelectorAll('#map .rt'));
+
+  function setOn(list, pred){
+    list.forEach(function(el){
+      var on = pred(+el.dataset.i);
+      if (on !== el.classList.contains('on')) el.classList.toggle('on', on);
+    });
+  }
+
+  var start = Date.now(), offset = 0;
+  function tick(){
+    var t = ((Date.now() - start) / 1000 + offset) % TOTAL;
+    /* cur = 지금 스텝(1..N). 인트로 구간은 0, 아웃트로는 N(전체 켜둠) */
+    var cur = t < INTRO ? 0 : Math.min(NSTEP, Math.floor((t - INTRO) / PER) + 1);
+    var done = t >= INTRO + PER * NSTEP;   /* 아웃트로: 전체 동선을 한 번에 */
+    setOn(steps, function(i){ return done || i === cur; });
+    setOn(his,   function(i){ return !done && i === cur; });
+    setOn(mks,   function(i){ return done || i <= cur; });
+    setOn(rts,   function(i){ return done || i < cur; });
+  }
+  setInterval(tick, 50); tick();
+
+  window.seek = function(t){ start = Date.now(); offset = t; tick(); };
+  var q = new URLSearchParams(location.search).get('t');
+  if (q !== null) window.seek(parseFloat(q) || 0);
+})();
+</script>
+</body>
+</html>
