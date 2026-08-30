@@ -2193,8 +2193,8 @@ var App = {
     var tabBtns = this.TABS.map(function (t) {
       return '<button class="' + (activeTab === t[0] ? "on" : "") + '" onclick="App.go(\'' + t[0] + '\')"><span class="ico">' + icons[t[0]] + "</span>" + t[1] + "</button>";
     });
-    /* 중앙 FAB = QR 스캔 즉시 실행 · 화면 이동 없이 카메라만 연다 (스탬프 현황·경로는 패스포트) */
-    tabBtns.splice(2, 0, '<button class="fab" onclick="qrScanOpen()" aria-label="QR 스캔">' + QR_SVG + "</button>");
+    /* 중앙 FAB = QR 패널 · 기본은 「내 QR」(보여주기), 두 번째 탭이 스캔이다 (스탬프 현황·경로는 패스포트) */
+    tabBtns.splice(2, 0, '<button class="fab" onclick="qrPanelOpen()" aria-label="내 QR 보기 · QR 스캔">' + QR_SVG + "</button>");
     nav.innerHTML = tabBtns.join("");
     el("view").innerHTML = Views[v]();
     updateLed();
@@ -3868,7 +3868,9 @@ function qrTextSvg(text, px) {
 /* ── 참가자 패널 · 스캔과 내 QR을 한 자리에 (QR을 주고받는 순간은 하나다) ── */
 function qrPanelOpen(tab) {
   var can = qrScanSupported();
-  QRS.tab = tab || (can ? "scan" : "mine");
+  /* 기본은 「내 QR」 (260830 사용자 지시). 이 버튼을 누르는 대부분의 상황은 자기 QR을 내미는
+     순간이다. 부스 QR을 읽는 일은 스탬프 화면의 「부스 QR 스캔하기」 버튼이 맡는다. */
+  QRS.tab = tab || "mine";
   modalOpen(qrPanelHtml());
   if (QRS.tab === "scan" && can) qrCamStart();
 }
@@ -3883,8 +3885,8 @@ function qrPanelTab(t) {
 function qrPanelHtml(inner) {
   var t = QRS.tab, u = S.get("user", {}) || {};
   var seg = '<div class="qseg">' +
-    '<button class="' + (t === "scan" ? "on" : "") + '" onclick="qrPanelTab(\'scan\')">스캔하기</button>' +
-    '<button class="' + (t === "mine" ? "on" : "") + '" onclick="qrPanelTab(\'mine\')">내 QR</button></div>';
+    '<button class="' + (t === "mine" ? "on" : "") + '" onclick="qrPanelTab(\'mine\')">내 QR</button>' +
+    '<button class="' + (t === "scan" ? "on" : "") + '" onclick="qrPanelTab(\'scan\')">QR 스캔</button></div>';
   var body;
   if (t === "scan") {
     body = !qrScanSupported() ?
