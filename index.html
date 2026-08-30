@@ -3277,6 +3277,7 @@ var Views = {
  *   웹앱이 백엔드에 붙기 전까지 여기가 유일한 경로이므로 삭제하지 않고 접어둔다. */
 var ADM_STAFF = [
   ["scan",   "현장 스캔",   "참가자 QR로 체크인·대기·쿠폰"],
+  ["zone",   "존 혼잡 등급", "내 담당 존을 15분마다 여유·보통·혼잡"],
   ["book",   "신청 현황",   "세션별 신청 인원과 잔여석"],
   ["resv",   "상담 승인",   "1F DAP존 · 신청 승인·시간 변경"],
   ["cchat",  "커피챗 매칭", "18F 라운지 · 회차·테이블 배정"],
@@ -3296,6 +3297,43 @@ function admOpen(id) { S.set("admin_tab", id); }
 function admMenu() { S.set("admin_tab", ""); }
 
 var AdminTabs = {
+
+  /* 존 혼잡 등급 · 서서 한 손으로 누르는 화면이라 층을 먼저 고르고 존은 목록으로 편다.
+     마지막 입력 시각을 존마다 보여 준다 — 15분 주기를 지키려면 「언제 눌렀는지」가 보여야 한다.
+     20분이 넘은 존은 세워서, 무엇이 비어 있는지 훑기만 해도 보이게 했다. */
+  zone: function () {
+    var sent = S.get("zone_sent", {});
+    var chips = '<div class="fl-chips" style="position:static;margin:0 0 12px;padding:0;background:none">' +
+      [1, 10, 17, 18].map(function (n) {
+        var miss = ZONE_GRADE.filter(function (z) {
+          return z.fl === n && (!sent[z.id] || Date.now() - sent[z.id].ts > ZG_STALE);
+        }).length;
+        return '<button class="' + (ZG.fl === n ? "on" : "") + '" onclick="zgPickFl(' + n + ')">' + n + "F" +
+          "<small>" + (miss ? miss + "곳 필요" : "최신") + "</small></button>";
+      }).join("") + "</div>";
+    var rows = ZONE_GRADE.filter(function (z) { return z.fl === ZG.fl; }).map(function (z) {
+      var r = sent[z.id], stale = !r || Date.now() - r.ts > ZG_STALE;
+      var meta = !r ? '<span style="color:#E5484D;font-weight:800">아직 입력 없음</span>' :
+        '<span style="color:' + (stale ? "#E5484D" : "var(--faint)") + ';font-weight:' + (stale ? "800" : "700") + '">' +
+        esc(r.g) + " · " + zgAgo(r.ts) + (stale ? " · 갱신 필요" : "") + "</span>";
+      return '<div class="card' + (stale ? "" : " soft") + ' mb8"' + (stale ? ' style="border-color:var(--tint2)"' : "") + ">" +
+        '<div class="row" style="justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:9px">' +
+        '<b style="font-size:calc(15.5px * var(--fs));color:var(--hi)">' + esc(z.nm) + "</b>" +
+        '<span style="font-size:calc(12.5px * var(--fs))">' + meta + "</span></div>" +
+        '<div class="qseg">' + GRADE3.map(function (g) {
+          var on = r && r.g === g && !stale;
+          return '<button class="' + (on ? "on" : "") + '"' + (ZG.busy === z.id ? " disabled" : "") +
+            ' onclick="zgSend(\'' + z.id + '\', \'' + g + '\')">' + g + "</button>";
+        }).join("") + "</div></div>";
+    }).join("");
+    var warn = BE.on ? "" :
+      '<div class="card soft mb12" style="border:1.5px solid #E5484D"><p style="font-size:calc(14px * var(--fs));font-weight:800;color:#E5484D">서버가 연결되지 않았습니다</p>' +
+      '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs));line-height:1.6">이 상태로 누르면 <b style="color:var(--hi)">기록이 남지 않습니다.</b></p></div>';
+    return warn + chips +
+      '<div class="card soft mb12"><p class="muted" style="font-size:calc(13.5px * var(--fs));line-height:1.65">' +
+      '담당 존을 <b style="color:var(--hi)">15분마다 한 번</b> 눌러 주세요. 1F·18F는 강의 체크인이 없어서, ' +
+      '이 입력이 통제센터가 그 층을 보는 <b style="color:var(--hi)">유일한 실측</b>입니다.</p></div>' + rows;
+  },
 
   /* 현장 스캔 · 참가자가 내민 QR을 계속 찍는 화면 (260830)
      스팟마다 하는 일이 달라 스팟 → 동작 순으로 고르게 했다. 서버가 꺼져 있으면 기록되지 않으므로
@@ -3950,12 +3988,65 @@ function qrCamStop() {
   if (QRS.stream) { try { QRS.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} QRS.stream = null; }
 }
 
+/* ═══ 스태프 존 등급 (260830) ═══
+ * 1F·18F 존에는 세션이 없다. 체크인 실측이 닿지 않는 구역이라, 스태프가 눌러 주지 않으면
+ * 통제센터 화면의 그 절반은 하루 종일 신청 데이터 추정치만 그린다.
+ * 신호가 전부 끊겼을 때의 폴백(플레이북 P7)도 이 입력 하나에 걸려 있다.
+ * 존 id·등급 문자열은 백엔드 ZONE_IDS·GRADES와 정확히 일치해야 한다(다르면 zone/grade로 거부). */
+var ZONE_GRADE = [
+  { fl: 1, id: "f1_check", nm: "체크인 · 정문 입구" },
+  { fl: 1, id: "f1_wall", nm: "AX WALL · SPECIAL WALL" },
+  { fl: 1, id: "f1_booth", nm: "AX Now! 체험 부스" },
+  { fl: 1, id: "f1_dap", nm: "DAP ZONE 과제상담" },
+  { fl: 1, id: "f1_promo", nm: "포토부스 · 홍보존" },
+  { fl: 10, id: "f10_h18", nm: "Track A·B (Heart 1 · 7~8)" },
+  { fl: 10, id: "f10_h56", nm: "바이브코딩 (Heart 5·6)" },
+  { fl: 10, id: "f10_conf", nm: "현장 프로그램 (컨퍼런스룸)" },
+  { fl: 10, id: "f10_stf", nm: "운영 사무실 · 휴게" },
+  { fl: 17, id: "f17_hall", nm: "대강당" },
+  { fl: 17, id: "f17_lob", nm: "로비 · 강의 연계 부스" },
+  { fl: 18, id: "f18_lng", nm: "라운지 · 커피 바" },
+  { fl: 18, id: "f18_out", nm: "옥상 정원" }
+];
+var GRADE3 = ["여유", "보통", "혼잡"];
+var ZG = { fl: 1, busy: "" };
+var ZG_STALE = 20 * 60000;      /* 15분마다 한 번이 목표 · 20분 넘으면 「오래됨」으로 세운다 */
+
+function zgPickFl(fl) { ZG.fl = fl; App.render(); }
+function zgAgo(ts) {
+  if (!ts) return "";
+  var m = Math.floor((Date.now() - ts) / 60000);
+  return m < 1 ? "방금" : m + "분 전";
+}
+function zgSend(zone, grade) {
+  if (!BE.on) { toast("서버가 연결되지 않아 기록되지 않습니다"); return; }
+  if (ZG.busy) return;
+  ZG.busy = zone; App.render();
+  beCall({ action: "zone_grade", key: FESTIVAL.adminCode, zone: zone, grade: grade }, function (res) {
+    ZG.busy = "";
+    if (!res || !res.ok) {
+      toast(res && res.reason === "auth" ? "관리코드 불일치 · 설정 시트를 확인하세요" :
+        res && res.reason === "zone" ? "존 코드가 백엔드와 다릅니다" :
+          res && res.reason === "grade" ? "등급 값이 올바르지 않습니다" : "전송 실패 · 다시 눌러주세요");
+      App.render();
+      return;
+    }
+    /* 서버는 존별 최신 값만 쓴다. 「언제 눌렀는지」는 이 기기에만 남는다(다음 입력 시점을 알려주려는 것) */
+    var st = S.get("zone_sent", {});
+    st[zone] = { g: grade, ts: Date.now() };
+    S.set("zone_sent", st);
+    toast(zgName(zone) + " · " + grade);
+  }, function () { ZG.busy = ""; toast("서버 연결 실패 · 다시 눌러주세요"); App.render(); });
+}
+function zgName(id) { var z = ZONE_GRADE.filter(function (x) { return x.id === id; })[0]; return z ? z.nm : id; }
+
 /* ═══ 운영자 · 현장 스캔 ═══
  * 스팟마다 하는 일이 다르다. sess=입장/퇴장, queue=대기 접수·호출, coupon=쿠폰 사용.
  * 세션 id는 백엔드 SESS_META와 같아야 한다(창 검증이 그 표를 본다). */
 var SCAN_SPOTS = [
   { id: "key", nm: "17F Keynote", kind: "sess" },
   { id: "l1", nm: "17F 강연 1", kind: "sess" },
+  { id: "l2", nm: "17F 강연 2", kind: "sess" },
   { id: "ta", nm: "10F Track A", kind: "sess" },
   { id: "tb", nm: "10F Track B", kind: "sess" },
   { id: "aws", nm: "10F 바이브코딩", kind: "sess" },
