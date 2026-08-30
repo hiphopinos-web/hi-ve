@@ -2458,7 +2458,10 @@ function nowCardHtml() {
     "</div>";
 }
 
-/* 내 일정 · 예약·매칭이 있으면 내 것, 없으면 남은 자리 안내 한 줄 */
+/* 나의 스케줄 · 내가 신청한 것만 담는다 (260830 사용자 지시).
+   전사 참석인 Keynote라도 자동으로 채우지 않는다. 「모두가 가는 것」을 미리 넣어 두면
+   내가 신청한 것과 그냥 열려 있는 것이 섞여, 이 영역이 무슨 뜻인지 흐려진다.
+   비었으면 비었다고 말하고 신청으로 보낸다. */
 function myScheduleHtml() {
   var rows = [];
   /* 지금 걸려 있는 대기는 시간이 정해진 일정보다 급하다 · 맨 위(정렬키 -1)에 둔다.
@@ -2482,12 +2485,18 @@ function myScheduleHtml() {
     rows.push([sessStartMin(tmLbl), "sessOpen('" + x.s.id + "')", tmLbl, x.s.ttl + " · " + x.s.fl + "F"]);
   });
   rows.sort(function (a, b) { return a[0] - b[0]; });
+  var head = '<div class="sect" style="margin-top:16px"><b>나의 스케줄</b>' +
+    '<span onclick="App.go(\'guide\')">프로그램 전체 ›</span></div>';
   if (!rows.length) {
     var rem = resvRemain();
-    if (rem <= 0) return "";
-    rows.push([0, "App.go('guide')", "신청", "강의 · 상담 잔여석 · 프로그램 탭에서 신청"]);
+    return head + '<div class="card soft mb12" style="text-align:center;padding:22px 16px">' +
+      '<p style="font-size:calc(15.5px * var(--fs));font-weight:800;color:var(--hi)">신청한 프로그램이 없습니다</p>' +
+      '<p class="muted" style="margin-top:6px;font-size:calc(13.5px * var(--fs));line-height:1.6">' +
+      (rem > 0 ? "강의 · 실습 · 과제상담은 프로그램 탭에서 신청할 수 있어요" :
+        "지금은 남은 자리가 없어요. 취소가 나오면 다시 열립니다") + "</p>" +
+      '<button class="btn line" style="margin-top:12px" onclick="App.go(\'guide\')">프로그램 보러 가기</button></div>';
   }
-  return '<div class="mine">' + rows.map(function (r) {
+  return head + '<div class="mine">' + rows.map(function (r) {
     return '<div class="r" onclick="' + r[1] + '"><span class="tm">' + esc(r[2]) + "</span>" +
       '<span class="tx">' + esc(r[3]) + '</span><span class="arw">›</span></div>';
   }).join("") + "</div>";
