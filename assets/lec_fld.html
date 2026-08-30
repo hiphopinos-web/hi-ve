@@ -28,11 +28,18 @@
          opacity:0;visibility:hidden;transition:opacity .3s ease}
   .scene.on{opacity:1;visibility:visible}
   .scene:not(.on){transition:none}
-  .up{opacity:0;transform:translateY(calc(16*var(--u)));
-      transition:opacity .45s cubic-bezier(.2,.7,.2,1),transform .45s cubic-bezier(.2,.7,.2,1);
-      transition-delay:var(--d,0s)}
-  .scene.on .up{opacity:1;transform:none}
-  .scene:not(.on) .up{transition:none}
+  /* 등장은 @keyframes. 광고 리듬(빠르게 들어와 부드럽게 안착) */
+  .up{opacity:0;transform:translateY(calc(22*var(--u)))}
+  .scene.on .up{animation:rise .5s cubic-bezier(.16,.84,.3,1) var(--d,0s) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  /* 후킹 둘째 줄은 살짝 키워서 들어온다 */
+  .hook .big{opacity:0;transform:translateY(calc(22*var(--u))) scale(.94)}
+  .scene.on .hook .big{animation:riseBig .55s cubic-bezier(.16,.84,.3,1) var(--d,0s) forwards}
+  @keyframes riseBig{to{opacity:1;transform:none}}
+  /* CTA는 안착 후 한 번 숨 쉰다(과하지 않게) */
+  .scene.on .cta{animation:rise .5s cubic-bezier(.16,.84,.3,1) var(--d,0s) forwards,
+                 pulse 2.2s ease-in-out 1.2s infinite}
+  @keyframes pulse{0%,100%{transform:none}50%{transform:scale(1.035)}}
 
   .hook{font-size:calc(88*var(--u));font-weight:800;line-height:1.26;letter-spacing:-.02em}
   .hook .big{display:block;margin-top:calc(6*var(--u));font-size:calc(104*var(--u));font-weight:900;color:var(--gold)}
