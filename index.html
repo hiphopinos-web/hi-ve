@@ -402,23 +402,39 @@
   .wallcard .wbar { margin-top: 8px; height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; }
   .wallcard .wbar i { display: block; height: 100%; background: var(--mint); }
   /* 지금 진행 중 */
-  .nowcard { background: var(--white); border: 1px solid var(--line); border-radius: 20px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
+  /* 지금 진행 중 · 한 화면 안에 들어가야 해서 제목과 장소를 한 줄로 합치고 설명은 뺐다 (260830) */
+  .nowcard { background: var(--white); border: 1px solid var(--line); border-radius: 18px; padding: 13px 15px; margin-bottom: 9px; cursor: pointer; }
   .nowcard .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .nowcard .live { display: flex; align-items: center; gap: 7px; font-size: calc(12.5px * var(--fs)); font-weight: 800; letter-spacing: 0.06em; color: var(--acc2); }
   .nowcard .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); animation: pulse 1.6s infinite; }
   .nowcard .when { font-family: var(--disp); font-size: calc(14.5px * var(--fs)); color: var(--muted); letter-spacing: 0.03em; }
-  .nowcard .ttl { margin-top: 11px; font-size: calc(19px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.35; letter-spacing: -0.01em; }
-  .nowcard .place { margin-top: 6px; font-size: calc(14.5px * var(--fs)); font-weight: 800; color: var(--hi); }
-  .nowcard .desc { margin-top: 9px; font-size: calc(13.5px * var(--fs)); line-height: 1.65; color: var(--muted); }
-  .nowcard .next { display: flex; align-items: center; gap: 10px; margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--line); }
+  .nowcard .ttl { margin-top: 7px; font-size: calc(17.5px * var(--fs)); font-weight: 800; color: var(--hi); line-height: 1.35; letter-spacing: -0.01em; }
+  .nowcard .ttl .pl { margin-left: 8px; font-size: calc(13.5px * var(--fs)); font-weight: 700; color: var(--muted); }
+  .nowcard .next { display: flex; align-items: center; gap: 10px; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line); }
   .nowcard .next .lb { font-size: calc(12.5px * var(--fs)); font-weight: 800; color: var(--faint); }
   .nowcard .next .tm { font-family: var(--disp); font-size: calc(15.5px * var(--fs)); color: var(--hi); }
   .nowcard .next .nm { flex: 1; font-size: calc(14.5px * var(--fs)); font-weight: 700; color: var(--tx); line-height: 1.4; }
   .nowcard .next .arw { font-weight: 800; color: var(--faint); }
+  /* 층별 혼잡도 압축 스트립 · 프로그램 탭 하단으로 내렸더니 안 보인다는 지적으로 홈에 복귀 (260830).
+     「지금 어디가 붐비나」는 「지금 진행 중」과 같은 질문이라 바로 아래에 붙인다. */
+  .cstrip { background: var(--white); border: 1px solid var(--line); border-radius: 18px; padding: 10px 13px 9px; margin-bottom: 9px; cursor: pointer; }
+  .cstrip:active { background: var(--surface2); }
+  .cstrip .hd { display: flex; align-items: baseline; justify-content: space-between; }
+  .cstrip .hd b { font-size: calc(14px * var(--fs)); font-weight: 800; color: var(--hi); }
+  .cstrip .hd span { font-size: calc(12px * var(--fs)); font-weight: 700; color: var(--faint); }
+  .cstrip .row4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 7px; }
+  .cstrip .fl { font-family: var(--disp); font-size: calc(13.5px * var(--fs)); color: var(--hi); }
+  .cstrip .bar { height: 6px; border-radius: 3px; background: var(--tint); overflow: hidden; margin-top: 4px; }
+  .cstrip .bar i { display: block; height: 100%; border-radius: 3px; }
+  .cstrip .st { margin-top: 3px; font-size: calc(11px * var(--fs)); font-weight: 800; }
   /* 내 일정 · 예약·매칭이 있을 때만 (오렌지 틴트 = 내 것) */
   .mine { background: var(--tint); border: 1px solid var(--tint2); border-radius: 20px; padding: 2px 15px; margin-bottom: 12px; }
-  .mine .r { display: flex; align-items: center; gap: 11px; padding: 13px 0; cursor: pointer; border-bottom: 1px solid rgba(255,126,49,0.25); }
+  .mine .r { display: flex; align-items: center; gap: 11px; padding: 11px 0; cursor: pointer; border-bottom: 1px solid rgba(255,126,49,0.25); }
   .mine .r:last-child { border-bottom: 0; }
+  /* 빈 상태도 같은 재질로 · 별도 카드를 만들면 홈이 한 화면을 넘는다 (260830) */
+  .mine.empty .r { justify-content: space-between; }
+  .mine.empty .tx { flex: none; color: var(--muted); font-weight: 700; }
+  .mine.empty .go { font-size: calc(13.5px * var(--fs)); font-weight: 800; color: var(--acc2); }
   .mine .r .tm { flex: none; font-family: var(--disp); font-size: calc(15.5px * var(--fs)); color: var(--acc2); }
   .mine .r .tx { flex: 1; font-size: calc(14.5px * var(--fs)); font-weight: 700; color: var(--hi); line-height: 1.45; }
   .mine .r .arw { flex: none; color: var(--acc2); font-weight: 800; }
@@ -426,23 +442,23 @@
   /* 홈 히어로 챌린지 카드 (design.md §4) · O100 풀컬러 + 흰 글자.
      260830 홈 단순화 때 작은 흰 카드로 바뀌면서 후킹이 사라져 되살렸다.
      쿠폰 상태는 규정의 「정보 필」 자리(흰 18% 칩)에 얹어 한 카드에 담는다. */
-  .hero2 { position: relative; overflow: hidden; background: var(--mint); border-radius: 24px; padding: 20px 18px 14px; margin-bottom: 12px; color: #fff; }
-  .hero2 .eb { font-size: calc(12px * var(--fs)); font-weight: 800; letter-spacing: 0.09em; opacity: 0.85; }
-  .hero2 .ttl { margin-top: 7px; font-size: calc(23px * var(--fs)); font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; }
-  .hero2 .sub { margin-top: 8px; text-align: left; font-size: calc(13.5px * var(--fs)); font-weight: 700; line-height: 1.6; opacity: 0.9; }
-  .hero2 .cpill { display: flex; align-items: center; gap: 8px; margin-top: 13px; background: rgba(255,255,255,0.18); border-radius: 12px; padding: 10px 12px; }
+  .hero2 { position: relative; overflow: hidden; background: var(--mint); border-radius: 20px; padding: 14px 15px 11px; margin-bottom: 8px; color: #fff; }
+  .hero2 .ebrow { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .hero2 .eb { font-size: calc(11.5px * var(--fs)); font-weight: 800; letter-spacing: 0.09em; opacity: 0.85; }
+  .hero2 .cnt { font-family: var(--disp); font-size: calc(16.5px * var(--fs)); letter-spacing: 0.03em; }
+  .hero2 .ttl { margin-top: 4px; font-size: calc(19px * var(--fs)); font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; }
+  .hero2 .cpill { display: flex; align-items: center; gap: 8px; margin-top: 9px; background: rgba(255,255,255,0.18); border-radius: 11px; padding: 8px 11px; }
   .hero2 .cpill .nm { font-size: calc(14px * var(--fs)); font-weight: 800; }
   .hero2 .cpill .pl { flex: 1; font-size: calc(12.5px * var(--fs)); font-weight: 700; opacity: 0.85; }
   .hero2 .cpill .st { flex: none; background: #fff; color: var(--acc2); border-radius: 999px; padding: 3px 9px; font-size: calc(11.5px * var(--fs)); font-weight: 800; white-space: nowrap; }
   .hero2 .cpill .st.off { background: rgba(255,255,255,0.28); color: #fff; }
-  .hero2 .p5 { display: flex; gap: 4px; margin-top: 12px; }
-  .hero2 .p5 span { flex: 1; height: 9px; border-radius: 2px; background: rgba(255,255,255,0.32); }
+  .hero2 .p5 { display: flex; gap: 4px; margin-top: 9px; }
+  .hero2 .p5 span { flex: 1; height: 8px; border-radius: 2px; background: rgba(255,255,255,0.32); }
   .hero2 .p5 span.on { background: #fff; }
-  .hero2 .ft { margin-top: 8px; text-align: left; font-size: calc(12.5px * var(--fs)); font-weight: 700; opacity: 0.9; }
-  .hero2 .cta { display: block; width: 100%; margin-top: 12px; border: 0; cursor: pointer; background: #fff; color: var(--acc2); border-radius: 14px; padding: 13px; font-family: inherit; font-size: calc(15.5px * var(--fs)); font-weight: 800; }
+  .hero2 .cta { display: block; width: 100%; margin-top: 9px; border: 0; cursor: pointer; background: #fff; color: var(--acc2); border-radius: 14px; padding: 13px; font-family: inherit; font-size: calc(15.5px * var(--fs)); font-weight: 800; }
   .hero2 .cta:active { transform: scale(0.99); }
   .hero2 .deco { position: absolute; top: -38px; right: -38px; width: 136px; height: 136px; border-radius: 999px; background: rgba(255,255,255,0.13); pointer-events: none; }
-  .hero2 .deco2 { position: absolute; top: 24px; right: 16px; display: flex; align-items: center; pointer-events: none; }
+  .hero2 .deco2 { position: absolute; top: 54px; right: 16px; display: flex; align-items: center; pointer-events: none; }
   .hero2 .deco2 .tri { width: 0; height: 0; border-top: 11px solid transparent; border-bottom: 11px solid transparent; border-left: 15px solid rgba(255,255,255,0.6); }
   .hero2 .deco2 .tri + .tri { margin-left: -5px; border-left-color: var(--mint-deep); }
   /* 공지 한 줄 */
@@ -465,7 +481,7 @@
   .ldr .lrow.lock .lb b { color: var(--muted); }
   .ldr .lb p { margin-top: 2px; font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--faint); line-height: 1.5; }
   /* 섹션 제목 (카드 바깥) */
-  .sect { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 20px 2px 9px; }
+  .sect { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 9px 2px 6px; }
   .sect b { font-size: calc(15.5px * var(--fs)); font-weight: 800; color: var(--hi); }
   .sect span { font-size: calc(12.5px * var(--fs)); font-weight: 700; color: var(--faint); cursor: pointer; }
   /* 참여 탭 · 그룹 구분 */
@@ -2431,25 +2447,40 @@ function menuItem(target, no, title, desc, badge) {
 
 /* ════════════════ 홈 조각 · 상시 블록 6개, 나머지는 해당될 때만 ════════════════ */
 
-/* 지금 진행 중 · 당일 가장 자주 확인하는 정보라 홈 최상단 고정 */
+/* 지금 진행 중 · 홈은 한 화면에 들어와야 해서 최소한만 남긴다 (260830 사용자 지시).
+   설명 한 줄(now.desc)은 뺐다. 자세한 내용은 눌러서 타임라인으로 간다. */
 function nowCardHtml() {
   var now = TIMELINE[NOW_INDEX];
   var nx = TIMELINE[NOW_INDEX + 1];
   return '<div class="nowcard" onclick="App.go(\'guide_time\')">' +
     '<div class="top"><span class="live"><i></i>지금 진행 중</span>' +
     '<span class="when">' + now.time + " – " + now.end + "</span></div>" +
-    '<p class="ttl">' + esc(now.title) + "</p>" +
-    '<p class="place">' + esc(now.place) + "</p>" +
-    '<p class="desc">' + esc(now.short || now.desc) + "</p>" +
+    '<p class="ttl">' + esc(now.title) + '<span class="pl">' + esc(now.place) + "</span></p>" +
     (nx ? '<div class="next"><span class="lb">다음</span><span class="tm">' + nx.time + "</span>" +
       '<span class="nm">' + esc(nx.title) + '</span><span class="arw">›</span></div>' : "") +
     "</div>";
 }
 
+/* 층별 혼잡도 · 홈에 다시 올린다 (260830: 프로그램 탭 하단으로 내렸더니 안 보인다는 지적).
+   지금 어디가 붐비는지는 「지금 진행 중」과 같은 질문이라 바로 아래에 붙인다.
+   한 줄짜리 막대 4개로만 보여주고, 자세한 건 눌러서 crowd 화면으로. */
+function crowdStripHtml() {
+  return '<div class="cstrip" onclick="App.go(\'crowd\')">' +
+    '<div class="hd"><b>층별 혼잡도</b><span>자세히 ›</span></div>' +
+    '<div class="row4">' + FLOORS.slice().reverse().map(function (f) {
+      var v = crowdOf(f.no), b = crowdBand(v);
+      return '<div><p class="fl">' + (+f.no) + 'F</p>' +
+        '<div class="bar"><i style="width:' + v + "%;background:" + b[1] + '"></i></div>' +
+        '<p class="st" style="color:' + b[1] + '">' + b[0] + "</p></div>";
+    }).join("") + "</div></div>";
+}
+
 /* 나의 스케줄 · 내가 신청한 것만 담는다 (260830 사용자 지시).
    전사 참석인 Keynote라도 자동으로 채우지 않는다. 「모두가 가는 것」을 미리 넣어 두면
    내가 신청한 것과 그냥 열려 있는 것이 섞여, 이 영역이 무슨 뜻인지 흐려진다.
-   비었으면 비었다고 말하고 신청으로 보낸다. */
+   ⚠홈은 한 화면에 들어와야 하므로 이 목록은 2행까지만 편다(260830).
+   목록만 길이가 가변이라, 여기를 안 막으면 신청이 많은 사람에게서 홈이 넘친다. */
+var SCHED_MAX = 2;
 function myScheduleHtml() {
   var rows = [];
   /* 지금 걸려 있는 대기는 시간이 정해진 일정보다 급하다 · 맨 위(정렬키 -1)에 둔다.
@@ -2473,49 +2504,44 @@ function myScheduleHtml() {
     rows.push([sessStartMin(tmLbl), "sessOpen('" + x.s.id + "')", tmLbl, x.s.ttl + " · " + x.s.fl + "F"]);
   });
   rows.sort(function (a, b) { return a[0] - b[0]; });
-  var head = '<div class="sect" style="margin-top:16px"><b>나의 스케줄</b>' +
-    '<span onclick="App.go(\'guide\')">프로그램 전체 ›</span></div>';
+  var head = '<div class="sect"><b>나의 스케줄</b>' +
+    '<span onclick="App.go(\'guide_time\')">전체 타임라인 ›</span></div>';
   if (!rows.length) {
-    var rem = resvRemain();
-    return head + '<div class="card soft mb12" style="text-align:center;padding:22px 16px">' +
-      '<p style="font-size:calc(15.5px * var(--fs));font-weight:800;color:var(--hi)">신청한 프로그램이 없습니다</p>' +
-      '<p class="muted" style="margin-top:6px;font-size:calc(13.5px * var(--fs));line-height:1.6">' +
-      (rem > 0 ? "강의 · 실습 · 과제상담은 프로그램 탭에서 신청할 수 있어요" :
-        "지금은 남은 자리가 없어요. 취소가 나오면 다시 열립니다") + "</p>" +
-      '<button class="btn line" style="margin-top:12px" onclick="App.go(\'guide\')">프로그램 보러 가기</button></div>';
+    return head + '<div class="mine empty" onclick="App.go(\'guide\')">' +
+      '<div class="r"><span class="tx">신청한 프로그램이 없습니다</span>' +
+      '<span class="go">프로그램 신청 ›</span></div></div>';
   }
-  return head + '<div class="mine">' + rows.map(function (r) {
+  /* 3건이면 「외 1건」 줄을 쓰나 3행을 쓰나 높이가 같다. 같은 높이면 정보를 보여주는 쪽이 낫다. */
+  var cut = rows.length <= SCHED_MAX + 1 ? rows.length : SCHED_MAX;
+  var more = rows.length - cut;
+  return head + '<div class="mine">' + rows.slice(0, cut).map(function (r) {
     return '<div class="r" onclick="' + r[1] + '"><span class="tm">' + esc(r[2]) + "</span>" +
       '<span class="tx">' + esc(r[3]) + '</span><span class="arw">›</span></div>';
-  }).join("") + "</div>";
+  }).join("") +
+    (more > 0 ? '<div class="r" onclick="App.go(\'guide_time\')"><span class="tm">+' + more + "</span>" +
+      '<span class="tx">외 ' + more + '건 · 전체 타임라인에서 보기</span><span class="arw">›</span></div>' : "") +
+    "</div>";
 }
 
 /* 홈 · 스탬프 챌린지 히어로 (design.md §4 「홈 히어로 챌린지 카드」)
-   260830 홈 단순화 때 작은 흰 카드로 바뀌면서 후킹이 사라져 되살렸다.
-   챌린지가 후킹이고 쿠폰이 그 보상이라 둘을 한 카드에 둔다.
-   순서는 design.md 규정 그대로: 아이브로 → 제목 → 부제 2줄 → 정보 필 → 진행 도트 → 흰 CTA. */
+   챌린지가 후킹이고 쿠폰이 그 보상이라 한 카드에 둔다.
+   260830: 홈이 한 화면에 들어와야 해서 진행 수치를 아이브로 우측으로 올리고,
+   설명 문구("1개만 적립해도…")는 뺐다 — 도트와 쿠폰 필이 이미 같은 말을 한다. */
 function myCouponHtml() {
   var n = S.get("stamps", []).length;
   var issued = S.get("coffee_issued", false);
   var used = S.get("coffee_used", null);
-  var openN = 0;
-  for (var i = 0; i < REWARD_LADDER.length; i++) if (n >= REWARD_LADDER[i].n) openN++;
   var cst = used ? ["사용 완료", " off"] : issued ? ["사용 가능", ""] : ["스탬프 1개면", " off"];
   var dots = [1, 2, 3, 4, 5].map(function (i) { return '<span class="' + (n >= i ? "on" : "") + '"></span>'; }).join("");
-  var foot = n >= STAMP_GOAL ? "5개 완주 · 대형경품 응모 완료"
-    : n === 0 ? "스탬프 1개만 모아도 커피 나눔권이 열려요"
-      : "지금 " + n + "개 · 받을 수 있는 보상 " + openN + "개";
-  return '<div class="sect" style="margin-top:16px"><b>내 쿠폰</b>' +
+  return '<div class="sect" style="margin-top:14px"><b>내 쿠폰</b>' +
     '<span onclick="App.go(\'pp_reward\')">보상 전체 ›</span></div>' +
     '<div class="hero2">' +
     '<span class="deco"></span><span class="deco2"><span class="tri"></span><span class="tri"></span></span>' +
-    '<p class="eb">STAMP CHALLENGE</p>' +
+    '<div class="ebrow"><p class="eb">STAMP CHALLENGE</p><p class="cnt">' + n + ' / ' + STAMP_GOAL + '</p></div>' +
     '<p class="ttl">스탬프 5개 완주 챌린지</p>' +
-    '<p class="sub">1개만 적립해도 보상이 열리고,<br>5개를 채우면 대형경품 추첨까지 자동 응모</p>' +
     '<div class="cpill"><span class="nm">커피 나눔권</span><span class="pl">18F 라운지</span>' +
     '<span class="st' + cst[1] + '">' + cst[0] + '</span></div>' +
     '<div class="p5">' + dots + '</div>' +
-    '<p class="ft">' + foot + '</p>' +
     '<button class="cta" onclick="App.go(\'' + (n >= STAMP_GOAL ? "pp_reward" : "pp_code") + '\')">' +
     (n >= STAMP_GOAL ? "내 보상 확인하기" : "스탬프 적립하기") + '</button></div>';
 }
@@ -2533,6 +2559,7 @@ var Views = {
     return "" +
       (liveOpen ? quizCardHtml() : "") +
       nowCardHtml() +
+      crowdStripHtml() +
       myScheduleHtml() +
       myCouponHtml();
   },
