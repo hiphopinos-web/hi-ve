@@ -668,7 +668,7 @@
 
 <!-- qrcode-generator 1.4.4 · QR 인코더 (MIT, Kazuhiko Arase · http://www.d-project.com/)
      참가자마다 다른 개인 QR을 화면에서 만들어야 하므로 런타임 인코더가 필요하다
-     (부스 QR은 미리 만든 비트맵 STAMP_QR을 쓰지만, 개인 QR은 사번마다 달라 미리 만들 수 없다).
+     부스 QR도 260830부터 여기서 그린다(코드가 서버에 있어 미리 만들어 둘 수 없다).
      원본을 고치지 않고 esbuild로 압축만 했다. 라이선스 전문: 웹배포용/LICENSE-qrcode-generator.txt -->
 <script>/*! qrcode-generator v1.4.4 | MIT | Kazuhiko Arase | http://www.d-project.com/ */
 var qrcode=(function(){var P=function(x,w){var g=236,l=17,n=x,s=O[w],t=null,r=0,h=null,i=[],v={},_=function(a,f){r=n*4+17,t=(function(e){for(var u=new Array(e),o=0;o<e;o+=1){u[o]=new Array(e);for(var d=0;d<e;d+=1)u[o][d]=null}return u})(r),B(0,0),B(r-7,0),B(0,r-7),E(),T(),m(a,f),n>=7&&N(a),h==null&&(h=nr(n,s,i)),U(h,f)},B=function(a,f){for(var e=-1;e<=7;e+=1)if(!(a+e<=-1||r<=a+e))for(var u=-1;u<=7;u+=1)f+u<=-1||r<=f+u||(0<=e&&e<=6&&(u==0||u==6)||0<=u&&u<=6&&(e==0||e==6)||2<=e&&e<=4&&2<=u&&u<=4?t[a+e][f+u]=!0:t[a+e][f+u]=!1)},y=function(){for(var a=0,f=0,e=0;e<8;e+=1){_(!0,e);var u=k.getLostPoint(v);(e==0||a>u)&&(a=u,f=e)}return f},T=function(){for(var a=8;a<r-8;a+=1)t[a][6]==null&&(t[a][6]=a%2==0);for(var f=8;f<r-8;f+=1)t[6][f]==null&&(t[6][f]=f%2==0)},E=function(){for(var a=k.getPatternPosition(n),f=0;f<a.length;f+=1)for(var e=0;e<a.length;e+=1){var u=a[f],o=a[e];if(t[u][o]==null)for(var d=-2;d<=2;d+=1)for(var c=-2;c<=2;c+=1)d==-2||d==2||c==-2||c==2||d==0&&c==0?t[u+d][o+c]=!0:t[u+d][o+c]=!1}},N=function(a){for(var f=k.getBCHTypeNumber(n),e=0;e<18;e+=1){var u=!a&&(f>>e&1)==1;t[Math.floor(e/3)][e%3+r-8-3]=u}for(var e=0;e<18;e+=1){var u=!a&&(f>>e&1)==1;t[e%3+r-8-3][Math.floor(e/3)]=u}},m=function(a,f){for(var e=s<<3|f,u=k.getBCHTypeInfo(e),o=0;o<15;o+=1){var d=!a&&(u>>o&1)==1;o<6?t[o][8]=d:o<8?t[o+1][8]=d:t[r-15+o][8]=d}for(var o=0;o<15;o+=1){var d=!a&&(u>>o&1)==1;o<8?t[8][r-o-1]=d:o<9?t[8][15-o-1+1]=d:t[8][15-o-1]=d}t[r-8][8]=!a},U=function(a,f){for(var e=-1,u=r-1,o=7,d=0,c=k.getMaskFunction(f),p=r-1;p>0;p-=2)for(p==6&&(p-=1);;){for(var b=0;b<2;b+=1)if(t[u][p-b]==null){var C=!1;d<a.length&&(C=(a[d]>>>o&1)==1);var A=c(u,p-b);A&&(C=!C),t[u][p-b]=C,o-=1,o==-1&&(d+=1,o=7)}if(u+=e,u<0||r<=u){u-=e,e=-e;break}}},H=function(a,f){for(var e=0,u=0,o=0,d=new Array(f.length),c=new Array(f.length),p=0;p<f.length;p+=1){var b=f[p].dataCount,C=f[p].totalCount-b;u=Math.max(u,b),o=Math.max(o,C),d[p]=new Array(b);for(var A=0;A<d[p].length;A+=1)d[p][A]=255&a.getBuffer()[A+e];e+=b;var R=k.getErrorCorrectPolynomial(C),I=K(d[p],R.getLength()-1),S=I.mod(R);c[p]=new Array(R.getLength()-1);for(var A=0;A<c[p].length;A+=1){var X=A+S.getLength()-c[p].length;c[p][A]=X>=0?S.getAt(X):0}}for(var Z=0,A=0;A<f.length;A+=1)Z+=f[A].totalCount;for(var J=new Array(Z),Q=0,A=0;A<u;A+=1)for(var p=0;p<f.length;p+=1)A<d[p].length&&(J[Q]=d[p][A],Q+=1);for(var A=0;A<o;A+=1)for(var p=0;p<f.length;p+=1)A<c[p].length&&(J[Q]=c[p][A],Q+=1);return J},nr=function(a,f,e){for(var u=Y.getRSBlocks(a,f),o=G(),d=0;d<e.length;d+=1){var c=e[d];o.put(c.getMode(),4),o.put(c.getLength(),k.getLengthInBits(c.getMode(),a)),c.write(o)}for(var p=0,d=0;d<u.length;d+=1)p+=u[d].dataCount;if(o.getLengthInBits()>p*8)throw"code length overflow. ("+o.getLengthInBits()+">"+p*8+")";for(o.getLengthInBits()+4<=p*8&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=p*8||(o.put(g,8),o.getLengthInBits()>=p*8));)o.put(l,8);return H(o,u)};v.addData=function(a,f){f=f||"Byte";var e=null;switch(f){case"Numeric":e=$(a);break;case"Alphanumeric":e=W(a);break;case"Byte":e=V(a);break;case"Kanji":e=q(a);break;default:throw"mode:"+f}i.push(e),h=null},v.isDark=function(a,f){if(a<0||r<=a||f<0||r<=f)throw a+","+f;return t[a][f]},v.getModuleCount=function(){return r},v.make=function(){if(n<1){for(var a=1;a<40;a++){for(var f=Y.getRSBlocks(a,s),e=G(),u=0;u<i.length;u++){var o=i[u];e.put(o.getMode(),4),e.put(o.getLength(),k.getLengthInBits(o.getMode(),a)),o.write(e)}for(var d=0,u=0;u<f.length;u++)d+=f[u].dataCount;if(e.getLengthInBits()<=d*8)break}n=a}_(!1,y())},v.createTableTag=function(a,f){a=a||2,f=typeof f=="undefined"?a*4:f;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+f+"px;",e+='">',e+="<tbody>";for(var u=0;u<v.getModuleCount();u+=1){e+="<tr>";for(var o=0;o<v.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+a+"px;",e+=" height: "+a+"px;",e+=" background-color: ",e+=v.isDark(u,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>",e},v.createSvgTag=function(a,f,e,u){var o={};typeof arguments[0]=="object"&&(o=arguments[0],a=o.cellSize,f=o.margin,e=o.alt,u=o.title),a=a||2,f=typeof f=="undefined"?a*4:f,e=typeof e=="string"?{text:e}:e||{},e.text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,u=typeof u=="string"?{text:u}:u||{},u.text=u.text||null,u.id=u.text?u.id||"qrcode-title":null;var d=v.getModuleCount()*a+f*2,c,p,b,C,A="",R;for(R="l"+a+",0 0,"+a+" -"+a+",0 0,-"+a+"z ",A+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',A+=o.scalable?"":' width="'+d+'px" height="'+d+'px"',A+=' viewBox="0 0 '+d+" "+d+'" ',A+=' preserveAspectRatio="xMinYMin meet"',A+=u.text||e.text?' role="img" aria-labelledby="'+F([u.id,e.id].join(" ").trim())+'"':"",A+=">",A+=u.text?'<title id="'+F(u.id)+'">'+F(u.text)+"</title>":"",A+=e.text?'<description id="'+F(e.id)+'">'+F(e.text)+"</description>":"",A+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',A+='<path d="',b=0;b<v.getModuleCount();b+=1)for(C=b*a+f,c=0;c<v.getModuleCount();c+=1)v.isDark(b,c)&&(p=c*a+f,A+="M"+p+","+C+R);return A+='" stroke="transparent" fill="black"/>',A+="</svg>",A},v.createDataURL=function(a,f){a=a||2,f=typeof f=="undefined"?a*4:f;var e=v.getModuleCount()*a+f*2,u=f,o=e-f;return er(e,e,function(d,c){if(u<=d&&d<o&&u<=c&&c<o){var p=Math.floor((d-u)/a),b=Math.floor((c-u)/a);return v.isDark(b,p)?0:1}else return 1})},v.createImgTag=function(a,f,e){a=a||2,f=typeof f=="undefined"?a*4:f;var u=v.getModuleCount()*a+f*2,o="";return o+="<img",o+=' src="',o+=v.createDataURL(a,f),o+='"',o+=' width="',o+=u,o+='"',o+=' height="',o+=u,o+='"',e&&(o+=' alt="',o+=F(e),o+='"'),o+="/>",o};var F=function(a){for(var f="",e=0;e<a.length;e+=1){var u=a.charAt(e);switch(u){case"<":f+="&lt;";break;case">":f+="&gt;";break;case"&":f+="&amp;";break;case'"':f+="&quot;";break;default:f+=u;break}}return f},ar=function(a){var f=1;a=typeof a=="undefined"?f*2:a;var e=v.getModuleCount()*f+a*2,u=a,o=e-a,d,c,p,b,C,A={"\u2588\u2588":"\u2588","\u2588 ":"\u2580"," \u2588":"\u2584","  ":" "},R={"\u2588\u2588":"\u2580","\u2588 ":"\u2580"," \u2588":" ","  ":" "},I="";for(d=0;d<e;d+=2){for(p=Math.floor((d-u)/f),b=Math.floor((d+1-u)/f),c=0;c<e;c+=1)C="\u2588",u<=c&&c<o&&u<=d&&d<o&&v.isDark(p,Math.floor((c-u)/f))&&(C=" "),u<=c&&c<o&&u<=d+1&&d+1<o&&v.isDark(b,Math.floor((c-u)/f))?C+=" ":C+="\u2588",I+=a<1&&d+1>=o?R[C]:A[C];I+=`
@@ -695,12 +695,12 @@ var FESTIVAL = {
 /* 적립 경로 8종 · 이 중 STAMP_GOAL(5)개를 채우면 완주.
    short = 스탬프 그리드처럼 좁은 자리에 쓰는 짧은 이름 */
 var STAMPS = [
-  { id: "p1", no: "01", title: "1F 전시", short: "1F 전시", desc: "1F 전시존 QR 스캔", how: "현장 QR", code: "AXP1", tap: "progOpenFl(1,'wall')" },
-  { id: "p2", no: "02", title: "AX Now! 체험", short: "부스 체험", desc: "HiDI-Q 또는 HI-Helper 부스 1곳 체험", how: "현장 QR", code: "AXP2", tap: "App.go('booth')" },
-  { id: "p3", no: "03", title: "17F 강의", short: "17F 강의", desc: "17F 오후 강의 1회 참석 (10F 제외)", how: "현장 QR", code: "AXP3", tap: "progOpenFl(17,'hall')" },
+  { id: "p1", no: "01", title: "1F 전시", short: "1F 전시", desc: "1F 전시존 QR 스캔", how: "현장 QR", site: 1, tap: "progOpenFl(1,'wall')" },
+  { id: "p2", no: "02", title: "AX Now! 체험", short: "부스 체험", desc: "HiDI-Q 또는 HI-Helper 부스 1곳 체험", how: "현장 QR", site: 1, tap: "App.go('booth')" },
+  { id: "p3", no: "03", title: "17F 강의", short: "17F 강의", desc: "17F 오후 강의 1회 참석 (10F 제외)", how: "현장 QR", site: 1, tap: "progOpenFl(17,'hall')" },
   { id: "p4", no: "04", title: "라이브 퀴즈", short: "라이브 퀴즈", desc: "키노트 퀴즈 1회 이상 응답", how: "자동 적립", tap: "App.go('home')" },
   { id: "p5", no: "05", title: "아이디어 한 줄", short: "아이디어", desc: "아이디어 1건 제출", how: "자동 적립", tap: "App.go('ideas')" },
-  { id: "p6", no: "06", title: "AI 포토부스", short: "포토부스", desc: "1F AI 포토부스 촬영 완료", how: "현장 QR", code: "AXP6", tap: "sessOpen('photo')" },
+  { id: "p6", no: "06", title: "AI 포토부스", short: "포토부스", desc: "1F AI 포토부스 촬영 완료", how: "현장 QR", site: 1, tap: "sessOpen('photo')" },
   { id: "p7", no: "07", title: "QR 퀴즈 통과", short: "QR 퀴즈", desc: "DAP Wall QR 퀴즈 1세트 통과 (60점 이상)", how: "자동 적립", tap: "App.go('wq_list')" },
   { id: "p8", no: "08", title: "미니게임 클리어", short: "미니게임", desc: "AX 링크 또는 초성퀴즈 1종 클리어", how: "자동 적립", tap: "App.go('ev_games')" }
 ];
@@ -776,16 +776,6 @@ var SESSIONS = [
   { id: "cchat", fl: 18, zone: "lounge", kind: "link", go: "ev_cchat", ttl: "AX 커피챗", sub: "같은 고민끼리 20분", who: "18F 라운지", tm: "13:00~16:30", video: 0,
     desc: "아이디어 한 줄을 제출하면 비슷한 주제의 동료와 매칭해 드립니다." }
 ];
-/* 부스 QR 매트릭스 · make_stamp_qr.py 산출물. 배포 주소가 바뀌면 그 스크립트를 다시 돌려 이 값을 갱신한다.
-   ⚠ 각 QR이 어느 스탬프인지 적어 둔 주석(완성된 #s= 주소)은 260830 삭제했다.
-   저장소가 public이라 그 4줄을 복사·붙여넣기만 해도 부스에 가지 않고 적립됐다.
-   매핑은 비공개인 make_stamp_qr.py 가 들고 있다. 여기에 다시 적지 말 것. */
-var STAMP_QR = {
-  p1: { n: 33, b: "111111100110010000111011001111111100000100010011100101010001000001101110101111010000001101001011101101110101000001110000011101011101101110101110010100001101101011101100000101100111111101100101000001111111101010101010101010101111111000000001111000100101100100000000101111100101111101110011101111100111101000001000011111001001101101101100101011000110101100111010110101010010001101110111100111011111100100100000000100001011010111011010010000010111111010011001100011100011101001111001001100011100110110100000011001010110110011111100110101101110100011001010110110001000101001001101010111101001101101010111101111000100101110101110100011001001101100100101100110111111010011100010011011111010110011011101110010010111100011001001000001101100110010101111001010101001110100010011111111100010100000101100101110110100010101000010111111101000000001010101010110001100010101111111100100111100101111101010110100000101010000110010111100011110101110101000000100100010111111001101110101100100111110001110011011101110101110100000100010001101000100000100100001010001110011011100111111101011000011011011101100010" },
-  p2: { n: 33, b: "111111100001001011100000001111111100000101110011000101110001000001101110101111010000001101001011101101110101110000000001101101011101101110100111010100001101101011101100000100001111011101000101000001111111101010101010101010101111111000000001011100000101000100000000100000101101111101110011111001110010001001011001101110111000011100101110101101000110101100111010110101100010001101010111000111111111001111110111111111010000001100000011111011110111011010111001000011100011110001011001001100011100110111110011101100100111000010001101110101101110100011001010110110001000011001001101110111001001001101101100110000011111110101110101111011111001011101000101000110011111100101101000011011111010110011011101001000110010010010111000110000101000110011101111001010101001110101010001011111000010000000001100110101111110001110011001111110110000000001110111110110101100010101111111100000100101101111101010110100000100110011000111001100011111101110100100011100100010111111001101110100001001011110101110111011101110100100011011111001010110011100000100000001110001010011111100111111101010000011011011101100010" },
-  p3: { n: 33, b: "111111100110010000111011001111111100000100010011100101010001000001101110101011010000001101001011101101110101100101110000011101011101101110101101110100001101101011101100000101100111111101100101000001111111101010101010101010101111111000000001111000100101100100000000101111100100111101110011101111100111111000001000011111001001101101101101101001000110101100111010110001000010001101110111100111011111010111100110100100001011010111011000110010000011111010011001100011101111111001011001001100011100110111000010011001010110110011111100110101101111100011001010110110001100111001001111010111101001101101000100101011011100101110101110100111000001001110100101100110111111100101101000101011111010110011011111110010001110100011001001000001100100111010101111001010101001110101010001111111100010100000101100100110110100010101000010111111101000000001110101010110001100010101111111100110110101101111101010110100000101000000110010111100011110101110101110100100100010111111001101110101111001111110001110011011101110101111000000100010001101000100000100100001010001110011011100111111101011000011011011101100010" },
-  p6: { n: 33, b: "111111100010010000111011001111111100000100010011100101010001000001101110101101010000001101001011101101110101110101110000011101011101101110101110010100001101101011101100000101101011111101100101000001111111101010101010101010101111111000000001111100100101100100000000101111100101111101110011101111100011101000001000011111001001101101101110101101000110101100111010110011000010001101110111100111011111100100101010000100001011010111011011010010011011111010011001100011101111111001111001001100011100110111100011010101010110110011111100111101101110100011001010110110001100101001101111010111101001101101110100101001001100101110101110100011000001001111100101100110111111000001101100001011111010110011011111010011001110100011001001000001100000110011101111001010101001110101010010111111100010100000101100101110100101010101000010111111101000000001110101010110001100010101111111100100100101001111101010110100000101010010110110111100011110101110101000001100100010111111001101110101110101111110001110011011101110101110100000100010001101000100000100101001010001110011011100111111101010000011011011101100010" },
-};
 /* 강의 소개 영상 · 파일이 도착하면 여기에 경로만 채우면 카드에서 재생됩니다 (웹배포용/assets/) */
 var LEC_MEDIA = { key: "assets/lec_key.html", l1: "assets/lec_l1.html", ta: "assets/lec_ta.html", tb: "assets/lec_tb.html", aws: "assets/lec_aws.html", fld: "assets/lec_fld.html" };
 /* 층별 존 정의 (워크숍 p17 · 층별기획안 기준). 평면도는 260830 폐기, 존 목록과 문구만 남는다 */
@@ -1244,6 +1234,8 @@ function checkRewards() {
     setTimeout(function () { toast("★ 패스포트 완주! 완주 스페셜권 발급 + 대형경품 응모 완료. 추첨 결과는 행사 종료 후 개별 안내드립니다."); }, 1500);
   }
 }
+/* 앱 안 행동으로 붙는 4종(라이브퀴즈·아이디어·QR퀴즈·미니게임) 전용.
+   현장 QR 은 stampByCode 가 서버로 보내므로 여기를 타지 않는다. */
 function awardStamp(id) {
   var st = S.get("stamps", []);
   if (st.indexOf(id) >= 0) return;
@@ -3621,15 +3613,29 @@ var AdminTabs = {
         (c.status === "matched" ? '<span class="badge mint">매칭 완료 · ' + c.round + " " + c.table + "</span>" : '<span class="badge gray">대기</span>') + "</div>" +
         (c.status === "pending" ? '<button class="btn mint" style="margin-top:10px" onclick="matchCoffeechat()">지금 매칭 처리</button>' : "") + "</div>");
   },
-  /* 부스에 붙일 QR · 화면 그대로 인쇄하거나, 이 화면을 띄워두고 참가자가 찍어도 된다 */
+  /* 부스 QR 인쇄 · 코드는 앱에 없다. 관리코드로 서버에서 받아 그 자리에서 QR을 그린다 (260830).
+     구판은 STAMPS[].code + 미리 만든 STAMP_QR 매트릭스를 들고 있었고, 그게 public 저장소에
+     그대로 올라가 부스에 가지 않고도 적립되는 구멍이었다. */
   qr: function () {
-    return '<div class="card soft mb12"><p class="muted" style="font-size:calc(14.5px * var(--fs))">아래 QR을 부스에 붙이면 참가자가 폰 카메라로 찍는 즉시 해당 스탬프가 적립됩니다. 이 화면을 그대로 인쇄하거나 태블릿에 띄워두고 쓰셔도 됩니다.</p></div>' +
-      STAMPS.filter(function (s) { return s.code && STAMP_QR[s.id]; }).map(function (s) {
+    if (!BE.on) return '<div class="card soft"><p class="muted">서버에 연결되지 않아 코드를 받아올 수 없습니다.</p></div>';
+    if (!SPOTS.rows) {
+      if (!SPOTS.loading) { SPOTS.loading = true; setTimeout(spotsLoad, 30); }
+      return '<div class="card soft"><p class="muted">부스 코드를 불러오는 중…</p></div>';
+    }
+    if (!SPOTS.rows.length) return '<div class="card soft"><p class="muted">등록된 부스 지점이 없습니다. 백엔드에서 지점을 먼저 설치해야 합니다.</p></div>';
+    var base = location.origin + location.pathname;
+    return '<div class="card soft mb12"><p class="muted" style="font-size:calc(14.5px * var(--fs));line-height:1.6">' +
+      '아래 QR을 부스에 붙이면 참가자가 찍어 적립합니다. <b style="color:var(--hi)">계단·저조도 지점은 A4 이상</b>으로 뽑으세요.<br>' +
+      '코드가 바뀌면(회전) 인쇄물을 다시 뽑아야 합니다.</p>' +
+      '<button class="btn line" style="margin-top:10px" onclick="SPOTS.rows=null;App.render()">코드 다시 불러오기</button></div>' +
+      SPOTS.rows.map(function (r) {
+        var url = base + "#s=" + r.code;
         return '<div class="card mb12" style="text-align:center">' +
-          '<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">' + s.no + " · " + s.title + "</b>" +
-          '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">' + s.desc + "</p>" +
-          '<div style="display:flex;justify-content:center;margin-top:12px">' + stampQrSvg(s.id, 190) + "</div>" +
-          '<p style="margin-top:8px;font-size:calc(12.5px * var(--fs));font-weight:800;letter-spacing:0.08em;color:var(--faint)">' + s.code + "</p></div>";
+          '<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">' + esc(r.name) + "</b>" +
+          '<p class="muted" style="margin-top:4px;font-size:calc(13.5px * var(--fs))">' + esc(r.id) + ' · ' + esc(r.s) + "~" + esc(r.e) +
+          (r.on ? "" : ' · <b style="color:#E5484D">중지됨</b>') + "</p>" +
+          '<div style="display:flex;justify-content:center;margin-top:12px">' + qrTextSvg(url, 190) + "</div>" +
+          '<p style="margin-top:8px;font-size:calc(12.5px * var(--fs));font-weight:800;letter-spacing:0.08em;color:var(--faint)">' + esc(r.code) + "</p></div>";
       }).join("");
   },
 
@@ -3791,6 +3797,7 @@ function beSync() {
       /* v5 · 체크인·대기 상태는 서버가 정본이다(운영 데스크 스캐너가 쓰므로 앱은 받아쓰기만 한다).
          내 차례가 되면 한 번만 알린다 · 폴링마다 토스트가 뜨지 않게 직전 상태와 비교. */
       if (res.my.checkin) S.set("checkin", res.my.checkin);
+      if (res.my.stamps) stampSync(res.my.stamps);   /* 스탬프는 서버가 정본 */
       if (res.my.queue) {
         var was = S.get("queue", {}), nowQ = res.my.queue, kq;
         for (kq in nowQ) {
@@ -3835,6 +3842,16 @@ function admVerify(v, done, keep) {
 }
 
 /* ── BE 모드 관리자 패널 · 서버의 신청·대기 목록을 콘솔 탭 위에 얹는다 ── */
+/* 부스 코드는 앱에 없다 · 관리코드로 그때그때 받아 온다 (인쇄용 화면 전용) */
+var SPOTS = { rows: null, loading: false };
+function spotsLoad() {
+  beCall({ action: "stamp_list", key: admKey() }, function (res) {
+    SPOTS.loading = false;
+    SPOTS.rows = res && res.ok ? (res.rows || []) : [];
+    if (!(res && res.ok)) toast(res && res.reason === "auth" ? "관리코드 불일치" : "부스 코드를 불러오지 못했습니다.");
+    App.render();
+  }, function () { SPOTS.loading = false; SPOTS.rows = []; toast("서버 연결 실패"); App.render(); });
+}
 var ADMIN_SRV = { resv: null, cchat: null };
 function beAdminLoad(kind) {
   if (!BE.on) return;
@@ -3968,22 +3985,49 @@ function specialHtml() {
     '<div class="body"><p class="muted" style="font-size:calc(14.5px * var(--fs))">패스포트 완주자 전용 · <b style="color:var(--hi)">1F</b>에서 이 화면을 보여주고 수령하세요. 대형경품 응모도 완료됐고, 추첨 결과는 17F 행사가 끝난 뒤 개별 안내드립니다.</p></div></div>';
 }
 
-/* ════════════════ 액션 ════════════════ */
+/* 스탬프 적립 · 판정은 서버가 한다 (260830).
+   구판은 앱이 코드→스탬프 매핑을 들고 있어서, 소스를 읽으면 부스에 가지 않고
+   현장 스탬프를 전부 자가 적립할 수 있었다(그게 대형경품 응모로 이어졌다).
+   이제 앱은 **스캔한 값을 그대로 서버에 넘기기만** 하고 어느 스탬프인지도 모른다.
+   정규화(대소문자·공백·하이픈)도 서버가 한다 — 여기서 손대면 서버 판정과 어긋난다. */
 function stampByCode(v) {
-  v = String(v || "").trim().toUpperCase();
-  var matches = STAMPS.filter(function (x) { return x.code === v; });
-  if (!matches.length) { toast("코드를 찾을 수 없어요. QR 아래 코드를 다시 확인해주세요."); return false; }
-  var got = S.get("stamps", []);
-  var s = matches.find(function (x) { return got.indexOf(x.id) < 0; });
-  if (!s) { toast("이 코드로 받을 수 있는 스탬프는 모두 적립했어요."); return false; }
-  awardStamp(s.id);
+  v = String(v || "").trim();
+  if (!v) return false;
+  if (!BE.on) { toast("서버에 연결되지 않아 적립할 수 없어요. 잠시 후 다시 시도해주세요."); return false; }
+  var u = S.get("user", {}) || {};
+  if (!u.empId) { toast("사번으로 입장한 뒤 적립할 수 있어요."); return false; }
+  if (STAMPQ.busy) return false;
+  STAMPQ.busy = true;
+  beCall({ action: "stamp_claim", emp: u.empId, code: v },
+    function (res) { STAMPQ.busy = false; stampClaimDone(res); },
+    function () { STAMPQ.busy = false; toast("서버에 연결할 수 없어요. 신호를 확인하고 다시 찍어주세요."); });
   return true;
 }
-/* 부스 QR을 인쇄용 SVG로 · 매트릭스는 미리 만들어 둔 STAMP_QR을 쓴다 */
-function stampQrSvg(sid, px) {
-  var q = STAMP_QR[sid];
-  if (!q) return "";
-  return qrPaint(function (r, c) { return q.b.charAt(r * q.n + c) === "1"; }, q.n, px);
+var STAMPQ = { busy: false };
+/* 서버 응답 하나로 로컬을 맞춘다. stamps 배열이 정본이라 이걸로 덮는다. */
+function stampClaimDone(res) {
+  if (!res || !res.ok) {
+    var why = res && res.reason;
+    toast(why === "nocode" ? "행사용 QR이 아닙니다. 부스에 붙은 QR을 찍어주세요." :
+      why === "window" ? "지금은 적립 시간이 아니에요" + (res.open ? " (" + res.open + ")" : "") :
+        why === "off" ? "이 부스는 지금 운영하지 않아요" :
+          why === "param" ? "사번으로 입장한 뒤 적립할 수 있어요." :
+            "적립하지 못했어요. 다시 찍어주세요.");
+    return;
+  }
+  stampSync(res.stamps);
+  if (res.dup) { toast("이미 적립한 스탬프예요 · " + (res.name || res.id)); return; }
+  var n = (res.stamps || []).length;
+  toast("적립 완료 · " + (res.name || res.id) +
+    (n >= STAMP_GOAL ? " · 완주 달성!" : " (" + n + "/" + STAMP_GOAL + ")"));
+  checkRewards();
+}
+/* 서버가 준 목록으로 로컬을 맞춘다 (sync 응답에서도 같은 함수를 쓴다) */
+function stampSync(list) {
+  if (!list || !list.length) return;
+  var cur = S.get("stamps", []), chg = list.length !== cur.length;
+  if (!chg) for (var i = 0; i < list.length; i++) if (cur.indexOf(list[i]) < 0) { chg = true; break; }
+  if (chg) S.set("stamps", list.slice());
 }
 
 /* ═══════════════ 양방향 QR (260830) ═══════════════
@@ -4271,7 +4315,7 @@ function scanLogHtml() {
 /* 담당자 적립 · QR이 안 될 때 운영 담당자가 참가자 폰에서 직접 처리한다 (참가자용 코드 입력은 폐기) */
 function staffStampOpen() {
   var got = S.get("stamps", []);
-  var rows = STAMPS.filter(function (s) { return s.code; }).map(function (s) {
+  var rows = STAMPS.filter(function (s) { return s.site; }).map(function (s) {
     var done = got.indexOf(s.id) >= 0;
     /* .btn line = 전역 클래스. 설정 시트 전용 스코프 클래스(.fs-admin)는 여기서 스타일이 빠진다 */
     return '<button class="btn line" style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px' +
@@ -4280,25 +4324,34 @@ function staffStampOpen() {
       '<span style="font-weight:800;color:' + (done ? "var(--faint)" : "var(--acc2)") + '">' + (done ? "적립 완료" : "적립 ›") + "</span></button>";
   }).join("");
   modalOpen('<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">담당자 적립</b>' +
-    '<p class="muted" style="margin-top:6px;font-size:calc(13.5px * var(--fs))">QR이 인식되지 않을 때, 부스 담당자가 이 화면에서 직접 적립합니다. 참가자분은 담당자에게 화면을 보여주세요.</p>' +
+    '<p class="muted" style="margin-top:6px;font-size:calc(13.5px * var(--fs))">QR이 인식되지 않을 때 쓰는 우회 경로입니다. 참가자분은 담당자에게 화면을 보여주시고, <b style="color:var(--hi)">담당자가 확인 후 부여</b>합니다. 코드는 이 기기에 저장되지 않습니다.</p>' +
     '<div id="staffBox" style="margin-top:12px">' +
     '<input id="staffCode" class="input" inputmode="numeric" placeholder="담당자 코드" style="text-align:center">' +
     '<button class="btn mint" style="margin-top:9px" onclick="staffStampAuth()">확인</button></div>' +
     '<div id="staffList" hidden>' + rows + "</div>");
 }
-/* 참가자 폰에서 도는 화면이라 코드를 저장하지 않는다(keep=false).
-   확인만 받고, 필요하면 그 값은 이 모달이 열려 있는 동안만 메모리에 든다. */
-var STAFFK = "";
-function staffStampAuth() {
-  admVerify(el("staffCode").value, function (role, key) {
-    STAFFK = key;
-    if (el("staffBox")) el("staffBox").hidden = true;
-    if (el("staffList")) el("staffList").hidden = false;
-  }, false);
-}
+/* 담당자 적립 · 코드를 거치지 않고 담당자 권한으로 부여한다.
+   코드를 참가자 폰에 내려보내면 그 참가자가 부스 코드를 다 갖게 되므로 stamp_grant 를 쓴다.
+   STAFFK 는 이 모달이 열려 있는 동안만 메모리에 있는 값이다(저장하지 않는다). */
 function staffStampGive(id) {
-  modalClose();
-  awardStamp(id);
+  if (!BE.on) { toast("서버에 연결되지 않아 적립할 수 없습니다."); return; }
+  if (!STAFFK) { toast("담당자 코드를 다시 입력해주세요."); return; }
+  var u = S.get("user", {}) || {};
+  var key = STAFFK;
+  modalClose();                       /* STAFFK 는 여기서 비워지므로 위에서 미리 복사해 둔다 */
+  beCall({ action: "stamp_grant", key: key, emp: u.empId || "", id: id },
+    function (res) {
+      if (!res || !res.ok) {
+        toast(res && res.reason === "auth" ? "담당자 코드가 올바르지 않습니다." :
+          res && res.reason === "noid" ? "담당자가 부여할 수 없는 스탬프입니다." : "적립하지 못했습니다.");
+        return;
+      }
+      stampSync(res.stamps);
+      toast(res.dup ? "이미 적립돼 있어요 · " + (res.name || id) : "담당자 적립 완료 · " + (res.name || id));
+      checkRewards();
+      App.render();
+    },
+    function () { toast("서버에 연결할 수 없습니다. 다시 시도해주세요."); });
 }
 /* ── 인앱 QR 스캔 · BarcodeDetector(안드로이드 크롬). 미지원 기기는 기본 카메라로 QR을 찍는 기존 경로 ── */
 var QRS = { stream: null, timer: null, det: null, busy: false, hint: null, next: 0, cv: null, g: null, tab: "scan" };
@@ -4681,12 +4734,8 @@ function gcEnd() {
     var mc = location.hash.match(/^#c=(\w+)/i);
     var mq = location.hash.match(/^#q=(wall[1-3])/i);
     App.go("home");
-    if (m) {
-      var got0 = S.get("stamps", []);
-      var s = STAMPS.filter(function (x) { return x.code === m[1].toUpperCase(); })
-        .find(function (x) { return got0.indexOf(x.id) < 0; });
-      if (s) setTimeout(function () { awardStamp(s.id); }, 400);
-    }
+    /* 스캔값을 그대로 서버에 넘긴다 · 앱은 어느 스탬프인지 모른다 (260830) */
+    if (m) setTimeout(function () { stampByCode(m[1]); }, 400);
     /* 커피 나눔권 사용(#c=코드)도 담당자만 · 코드 검증을 서버에 맡긴다 */
     if (mc) admVerify(mc[1], function () { setTimeout(function () { redeemCoffee(); }, 300); });
     if (mq) {
