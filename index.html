@@ -1422,6 +1422,45 @@ function dapModal() {
     '<p class="muted" style="margin-top:12px;font-size:calc(13.5px * var(--fs))">상담 내용은 함께 기록되어 행사 후 정리해 공유됩니다.</p>' +
     '<div class="tipbanner">상담 신청 후 실제 상담을 완료하신 분께<br>사은품을 드립니다</div>');
 }
+/* 커피챗 진행 안내 · 구판은 이 내용이 화면에 늘 펼쳐져 있어 자리가 컸다 */
+function cchatModal() {
+  modalOpen('<b style="font-size:calc(19px * var(--fs));color:var(--hi);display:block;text-align:center;margin-top:6px">커피챗은 어떻게<br>진행되나요?</b>' +
+    '<div class="tlstep"><span class="pill">2분</span><span class="tx2">주제 낭독</span></div>' +
+    '<div class="tlstep"><span class="pill">8분</span><span class="tx2">각자 이야기 2분씩</span></div>' +
+    '<div class="tlstep"><span class="pill">10분</span><span class="tx2">DS의 실현 경로 코멘트 · 다음 스텝 합의</span></div>' +
+    '<p class="muted" style="margin-top:12px;font-size:calc(13.5px * var(--fs))">테이블 카드가 진행을 도와드려요. 참석 확인용 커피 쿠폰이 자리에 준비됩니다.</p>' +
+    '<button class="btn line" style="margin-top:14px" onclick="modalClose()">닫기</button>');
+}
+/* 커피챗 취소 · 과제상담(resv_cancel)과 같은 흐름 (260830 사용자 지적: 취소할 수가 없다).
+   서버에 `cchat_cancel` 이 아직 없으면 로컬만 정리하고 그 사실을 그대로 알린다.
+   조용히 로컬만 지우면 매칭 담당자는 그 자리를 계속 비워 두게 된다. */
+function cchatCancel() {
+  var c = S.get("cchat", null);
+  if (!c) return;
+  modalOpen('<b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">커피챗을 취소할까요?</b>' +
+    '<p class="muted" style="margin-top:8px;font-size:calc(14.5px * var(--fs));line-height:1.6">' +
+    (c.status === "matched"
+      ? "이미 배정된 자리(" + esc(c.round || "") + " · TABLE " + esc(c.table || "") + ")가 다른 분에게 넘어갑니다."
+      : "매칭 대기에서 빠집니다.") +
+    " 다시 신청하려면 아이디어를 한 줄 더 제출하시면 됩니다.</p>" +
+    '<button class="btn line" style="margin-top:14px" onclick="modalClose(); cchatCancelGo()">취소하기</button>' +
+    '<button class="btn line" style="margin-top:8px" onclick="modalClose()">그대로 두기</button>');
+}
+function cchatCancelGo() {
+  var u = S.get("user", {}) || {};
+  S.set("cchat", null);
+  if (!BE.on || !u.empId) { toast("커피챗 신청을 취소했어요"); App.render(); return; }
+  beCall({ action: "cchat_cancel", emp: u.empId },
+    function (res) {
+      if (res && res.ok) toast("커피챗 신청을 취소했어요");
+      else toast("취소했지만 서버에 반영되지 않았습니다. 18F 라운지 담당자에게 알려주세요.");
+      App.render();
+    },
+    function () {
+      toast("취소했지만 서버에 반영되지 않았습니다. 18F 라운지 담당자에게 알려주세요.");
+      App.render();
+    });
+}
 
 /* ── v10: DAP Wall QR 퀴즈 (키노트 라이브 퀴즈와 별개 시스템) ── */
 var WQ = { set: null };
@@ -2886,20 +2925,40 @@ var Views = {
       '<div class="card soft mt16"><p class="muted">다시 풀기는 복습용이에요. 키노트에서 라이브 퀴즈에 한 번이라도 응답했다면 패스포트 <b style="color:var(--hi)">「라이브 퀴즈」</b> 칸은 이미 적립돼 있습니다.</p></div>';
   },
 
+  /* 과제상담(dap)과 같은 구조로 맞춘다 (260830 사용자 지적).
+     잉크 히어로 + 진행 단계 칩 + 상태별 안내 + 취소. 여기만 흰 카드에 설명뿐이라
+     지금 어느 단계인지도, 취소할 방법도 없었다. */
   ev_cchat: function () {
-    var cchat = S.get("cchat", null);
-    if (!cchat) {
-      return '<div class="card soft mb12"><p class="muted">아이디어 한 줄을 제출하면 커피챗 매칭 대상이 됩니다. 비슷한 고민을 가진 동료 3명과 DS파트 1명이 20분간 실현 경로를 이야기해요.<br><br>18F 라운지 · 13:00–16:30 · 30분 간격 7회차 × 2테이블</p>' +
-        '<button class="btn mint" style="margin-top:12px" onclick="App.go(\'ideas\')">아이디어 쓰러 가기</button></div>';
+    var c = S.get("cchat", null);
+    var hero = function (body) {
+      return '<div class="card mb12" style="background:var(--ink);color:#fff">' +
+        '<div class="row" style="justify-content:space-between">' +
+        '<p style="font-size:calc(12.5px * var(--fs));font-weight:800;letter-spacing:0.1em;color:var(--mint)">AX 커피챗 · 18F 라운지</p>' +
+        '<button class="chip" onclick="cchatModal()">진행 안내</button></div>' + body + "</div>";
+    };
+    if (!c) {
+      return hero('<p style="margin-top:10px;font-size:calc(19px * var(--fs));font-weight:800;line-height:1.45">같은 고민을 가진 동료 3명과<br>' +
+        '<span style="color:var(--mint)">DS파트 1명이 20분</span> 마주 앉습니다.</p>' +
+        '<p style="margin-top:6px;font-size:calc(14.5px * var(--fs));color:var(--muted)">아이디어 한 줄을 제출하면 비슷한 주제끼리 묶어 자리를 배정해 드려요.</p>') +
+        '<button class="btn mint" style="padding:15px" onclick="App.go(\'ideas\')">아이디어 쓰러 가기</button>';
     }
-    return '<div class="card mb12" style="border-color:var(--mint-deep)"><div class="row" style="justify-content:space-between"><b style="font-size:calc(16.5px * var(--fs));color:var(--hi)">내 커피챗</b>' +
-      (cchat.status === "matched" ? '<span class="badge mint">매칭 완료</span>' : '<span class="badge gray">매칭 대기</span>') + "</div>" +
-      (cchat.status === "matched" ?
-        '<p class="disp" style="margin-top:10px;font-size:26px;color:var(--hi)">' + cchat.round + ' · TABLE ' + cchat.table + '</p>' +
-        '<p class="muted" style="margin-top:5px">18F 라운지 · 현업 3 + DS 1 · 20분. 참석 확인용 커피 쿠폰이 자리에 준비됩니다.</p>' :
-        '<p class="muted" style="margin-top:8px">DS파트가 비슷한 아이디어끼리 묶는 중이에요. 매칭되면 알림으로 자리·시간을 알려드립니다.</p>') +
-      "</div>" +
-      '<div class="card soft"><p class="muted" style="font-size:calc(14.5px * var(--fs))">진행 순서(20분): 주제 낭독 2분 → 각자 이야기 2분씩 → DS의 실현 경로 코멘트 → 다음 스텝 합의. 테이블 카드가 진행을 도와드려요.</p></div>';
+    var matched = c.status === "matched";
+    var steps = ["신청", "매칭", "참석", "완료"];
+    var stepIdx = matched ? 2 : 1;
+    return hero(
+      (matched
+        ? '<p class="disp" style="margin-top:12px;font-size:36px">' + esc(c.round || "") + "</p>" +
+          '<p style="margin-top:4px;font-size:calc(14.5px * var(--fs));color:var(--muted)">TABLE ' + esc(c.table || "") + ' · 현업 3 + DS 1 · 20분</p>'
+        : '<p style="margin-top:12px;font-size:calc(22px * var(--fs));font-weight:800">매칭 대기 중</p>' +
+          '<p style="margin-top:4px;font-size:calc(14.5px * var(--fs));color:var(--muted)">DS파트가 비슷한 아이디어끼리 묶는 중이에요</p>') +
+      '<div class="rstep">' + steps.map(function (s, i) {
+        return '<span class="' + (i < stepIdx ? "done" : i === stepIdx ? "on" : "") + '">' + s + "</span>";
+      }).join("") + "</div>") +
+      '<div class="card soft"><p class="muted">' +
+      (matched
+        ? "배정 완료 · 시작 5분 전까지 18F 라운지 해당 테이블에 앉아주세요. 참석 확인용 커피 쿠폰이 자리에 준비됩니다."
+        : "매칭되면 앱 알림으로 자리와 시간을 알려드립니다.") + "</p>" +
+      '<button class="btn line" style="margin-top:10px" onclick="cchatCancel()">신청 취소</button></div>';
   },
 
   ev_games: function () {
