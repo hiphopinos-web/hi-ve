@@ -4773,21 +4773,30 @@ function gcEnd() {
   var dm = location.hash.match(/^#demo(?:=(\w+))?/i);
   if (dm) {
     LS_OK = false;   /* 데모 시드가 실사용 저장소를 오염시키지 않게 */
-    S.set("user", { empId: "1234", name: "김하이" });
+    /* 서버 sync 가 시드를 덮어 화면마다 스탬프 수가 달라졌다. 데모는 결정적이어야 한다 */
+    GAS_URL = ""; BE.on = false;
+    S.set("user", { empId: "1234", name: "박형동" });
     S.set("stamps", ["p1", "p4", "p5"]);
     S.set("coffee_issued", true);
     S.set("quiz_answers", { q1: { choice: 1, correct: true, replay: false, ts: Date.now() } });
-    S.set("quiz_state", { activeId: "q1", phase: "revealed", openedAt: Date.now() - 60000, finishedIds: ["q1"] });
+    S.set("quiz_state", dm[1] === "home_quiz"
+      ? { activeId: "q1", phase: "revealed", openedAt: Date.now() - 60000, finishedIds: ["q1"] }
+      : { activeId: null, phase: "idle", openedAt: 0, finishedIds: ["q1"] });
     S.set("cchat", { status: "matched", round: "14:30", table: "B", ts: Date.now() });
     S.set("gw_cleared", true);
     S.set("dept", "보상부문");
     S.set("wq_attempts", [{ set: "wall1", score: 80, passed: true, attemptNo: 1, dept: "보상부문", ts: Date.now() }]);
     S.set("entries", [{ id: "e1", code: "E-4821", source: "quiz", set: "wall1", ts: Date.now() }]);
     var target = dm[1] || "home";
+    if (target === "home_quiz") target = "home";
     if (["admin", "screen", "wall_quiz", "wall_wave", "wall_live", "wall_metowe", "wall_rank", "wall_tv"].indexOf(target) >= 0) S.set("admin_authed", true);
     splash.classList.add("gone");
     el("frame").classList.remove("splash-mode");
     el("app").hidden = false;
+    /* 캐프처 전용 진입점 · qr = 내 QR 패널, lec_<세션id> = 소개 영상이 붙은 프로그램 상세 */
+    if (target === "qr") { App.go("home"); qrPanelOpen("mine"); return; }
+    var ml = target.match(/^lec_(\w+)$/);
+    if (ml) { sessOpen(ml[1]); return; }
     App.go(target);
     return;
   }
