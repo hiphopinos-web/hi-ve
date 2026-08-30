@@ -1003,10 +1003,13 @@ function bePush(kind, val, once) {
  * ① 안드로이드 크롬: beforeinstallprompt 를 붙잡아 두었다가 버튼 한 번에 네이티브 설치창
  * ② iOS / 그 외: 입장 직후 하단 시트로 단계 안내 (공유 → 홈 화면에 추가)
  * ③ 카카오톡 등 인앱 브라우저: 홈 추가가 불가능하므로 기본 브라우저로 탈출 유도 */
-var A2HS = { deferred: null };
+var A2HS = { deferred: null, open: false };
 window.addEventListener("beforeinstallprompt", function (e) {
   e.preventDefault();                 // 크롬 기본 미니바 대신 우리가 원할 때 띄운다
   A2HS.deferred = e;
+  /* 이 이벤트는 페이지 로드보다 늦게 오는 일이 잦다. 그 사이 안내 시트를 이미 열었다면
+     단계 안내 대신 한 번에 되는 버튼으로 바꿔 준다. */
+  if (A2HS.open) a2hsSheet(true);
 });
 function isStandalone() {
   try {
@@ -1037,16 +1040,57 @@ function a2hsInstall() {
   });
 }
 
-/* 하단 시트 · 입장 직후 1회 자동 + 홈 카드에서 수동 호출 */
+/* 브라우저별 안내 · 「오른쪽 위 ⋮」는 크롬 기준이라 삼성 인터넷에서는 틀린 말이었다.
+   삼성 인터넷은 메뉴가 화면 아래쪽이고 항목 이름도 「현재 페이지 추가 → 홈 화면」이다.
+   (260830 사용자 제보: 안내대로 눌렀는데 그런 메뉴가 없어 추가를 못 했다) */
+function browserKind() {
+  var u = navigator.userAgent;
+  if (/SamsungBrowser/i.test(u)) return "samsung";
+  if (/FxiOS|Firefox/i.test(u)) return "firefox";
+  if (/EdgA|Edg\//i.test(u)) return "edge";
+  if (/Whale/i.test(u)) return "whale";
+  if (/Chrome|CriOS/i.test(u)) return "chrome";
+  return "etc";
+}
+function a2hsSteps() {
+  var k = browserKind();
+  if (k === "samsung") return [
+    ["화면 <b>아래쪽</b>의 <span class=\"g\">☰</span> 메뉴를 누르세요", ""],
+    ["<b>&ldquo;현재 페이지 추가&rdquo;</b> 선택", ""],
+    ["<b>&ldquo;홈 화면&rdquo;</b> 선택 · 끝!", ""]
+  ];
+  if (k === "whale") return [
+    ["아래쪽 <span class=\"g\">≡</span> 메뉴를 누르세요", ""],
+    ["<b>&ldquo;홈 화면에 추가&rdquo;</b> 선택", ""],
+    ["<b>&ldquo;추가&rdquo;</b> · 끝!", ""]
+  ];
+  if (k === "firefox") return [
+    ["오른쪽 <span class=\"g\">⋮</span> 메뉴를 누르세요", ""],
+    ["<b>&ldquo;홈 화면에 추가&rdquo;</b> 선택", ""],
+    ["<b>&ldquo;추가&rdquo;</b> · 끝!", ""]
+  ];
+  return [
+    ["오른쪽 위 <span class=\"g\">⋮</span> 메뉴를 누르세요", ""],
+    ["<b>&ldquo;홈 화면에 추가&rdquo;</b> 또는 <b>&ldquo;앱 설치&rdquo;</b> 선택", ""],
+    ["<b>&ldquo;추가&rdquo;</b> · 끝!", ""]
+  ];
+}
+
+/* 하단 시트 · 입장 직후 1회 자동 + 설정에서 수동 호출 */
 function a2hsSheet(on) {
   var box = el("a2hs");
   if (!box) return;
-  if (!on) { box.hidden = true; return; }   /* 시트만 닫는다 · 홈 카드는 재진입점으로 남긴다 */
+  if (!on) { box.hidden = true; A2HS.open = false; return; }
+  A2HS.open = true;
   var body = el("a2hsBody"), h = "";
-  if (isInApp()) {
+  var url = location.origin + location.pathname;
+  var copyRow = '<div class="a-url" onclick="a2hsCopy()">' + url +
+    ' <b style="color:var(--hi)">· 눌러서 주소 복사</b></div>';
+  if (isStandalone()) {
+    h = '<div class="a-note" style="text-align:center">이미 홈 화면 아이콘으로 열고 계세요. 추가로 하실 일이 없습니다.</div>';
+  } else if (isInApp()) {
     h = '<div class="a-note">지금은 <b>메신저 안 브라우저</b>라 바로가기를 만들 수 없어요.<br>' +
-      '오른쪽 위 메뉴에서 <b>&ldquo;다른 브라우저로 열기&rdquo;</b>를 누른 뒤 다시 시도해주세요.</div>' +
-      '<div class="a-url" onclick="a2hsCopy()">' + location.origin + location.pathname + ' <b style="color:var(--hi)">· 눌러서 주소 복사</b></div>';
+      '오른쪽 위 메뉴에서 <b>&ldquo;다른 브라우저로 열기&rdquo;</b>를 누른 뒤 다시 시도해주세요.</div>' + copyRow;
   } else if (A2HS.deferred) {
     h = '<button class="a-go" onclick="a2hsInstall()">홈 화면에 바로 추가</button>' +
       '<div class="a-note" style="text-align:center">버튼을 누르면 설치창이 뜨고, &ldquo;설치&rdquo;를 누르면 끝 · 3초면 됩니다.</div>';
@@ -1056,10 +1100,12 @@ function a2hsSheet(on) {
       '<div class="a-step"><span class="n">3</span>오른쪽 위 &ldquo;추가&rdquo; · 끝!</div>' +
       '<div class="a-note" style="text-align:center">추가가 끝나면 홈 화면의 <b>AX FESTIVAL</b> 아이콘으로 여세요.</div>';
   } else {
-    h = '<div class="a-step"><span class="n">1</span>오른쪽 위 <span class="g">⋮</span> 메뉴를 누르세요</div>' +
-      '<div class="a-step"><span class="n">2</span>&ldquo;홈 화면에 추가&rdquo; 선택</div>' +
-      '<div class="a-step"><span class="n">3</span>&ldquo;추가&rdquo; · 끝!</div>' +
-      '<div class="a-note" style="text-align:center">추가가 끝나면 홈 화면의 <b>AX FESTIVAL</b> 아이콘으로 여세요.</div>';
+    h = a2hsSteps().map(function (s, i) {
+      return '<div class="a-step"><span class="n">' + (i + 1) + '</span>' + s[0] + "</div>";
+    }).join("") +
+      /* 메뉴가 안 보인다는 제보가 실제로 있었다. 화면을 스크롤하면 툴바가 숨는 브라우저가 많다. */
+      '<div class="a-note">메뉴가 안 보이면 화면을 <b>살짝 아래로</b> 내려 주소창을 꺼낸 뒤 다시 찾아보세요.</div>' +
+      '<div class="a-note" style="margin-top:8px">그래도 안 되면 아래 주소를 복사해 브라우저 즐겨찾기에 넣어두셔도 됩니다.</div>' + copyRow;
   }
   body.innerHTML = h;
   box.hidden = false;
